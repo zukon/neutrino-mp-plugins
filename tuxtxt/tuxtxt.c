@@ -4,6 +4,9 @@
  *             (c) Thomas "LazyT" Loewe 2002-2003 (LazyT@gmx.net)             *
  ******************************************************************************
  * $Log$
+ * Revision 1.49  2003/07/02 15:40:03  lazyt
+ * fix language display
+ *
  * Revision 1.48  2003/06/24 06:59:58  alexw
  * cleanup
  *
@@ -1166,6 +1169,20 @@ void ConfigMenu(int Init)
 												{
 													RenderCharFB(menu[62*6 + byte], menu[62*6 + byte+31]);
 												}
+
+ 												if(auto_national)
+ 												{
+ 													national_subset = GetNationalSubset(pid_table[current_pid].country_code);
+ 
+ 													memcpy(&menu[62*21 + 2], &countrystring[national_subset*26], 26);
+ 
+     													PosX = StartX + desc0.font.pix_width*4 + desc0.font.pix_width/2;
+     													PosY = StartY + fixfontheight*22;
+     													for(byte = 0; byte < 31; byte++)
+     													{
+ 														RenderCharFB(menu[62*21 + byte], menu[62*21 + byte+31]);
+ 													}
+ 												}
 											}
 											break;
 
@@ -1228,6 +1245,20 @@ void ConfigMenu(int Init)
 												{
 													RenderCharFB(menu[62*6 + byte], menu[62*6 + byte+31]);
 												}
+
+ 												if(auto_national)
+ 												{
+ 													national_subset = GetNationalSubset(pid_table[current_pid].country_code);
+ 
+ 													memcpy(&menu[62*21 + 2], &countrystring[national_subset*26], 26);
+ 
+     													PosX = StartX + desc0.font.pix_width*4 + desc0.font.pix_width/2;
+     													PosY = StartY + fixfontheight*22;
+     													for(byte = 0; byte < 31; byte++)
+     													{
+ 														RenderCharFB(menu[62*21 + byte], menu[62*21 + byte+31]);
+ 													}
+ 												}
 											}
 											break;
 
@@ -1440,6 +1471,8 @@ void ConfigMenu(int Init)
 												memcpy(&menu[62*20 + 26], "ein", 3);
                 										menu[21*62 +  1] = ' ';
 										                menu[21*62 + 28] = ' ';
+ 												national_subset = GetNationalSubset(pid_table[current_pid].country_code);
+ 												memcpy(&menu[62*21 + 2], &countrystring[national_subset*26], 26);
 											}
 											else
 											{
