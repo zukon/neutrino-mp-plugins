@@ -2718,11 +2718,14 @@ void SwitchScreenMode(int newscreenmode)
 	clearbbcolor = screenmode?transp:black;
 #endif
 	ClearBB(clearbbcolor);
-	
 
 	/* set mode */
 	if (screenmode)								 /* split */
 	{
+#ifdef DREAMBOX
+		if ( screenmode == 2 && zoommode )
+			ClearFB(clearbbcolor);
+#endif
 		int fw, fh, tx, ty, tw, th;
 		int sm = 0;
 
