@@ -4004,9 +4004,9 @@ void *CacheThread(void *arg)
 		pthread_testcancel();
 
 		/* read packet */
-		unsigned int readcnt;
+		ssize_t readcnt;
 		readcnt = read(dmx, &pes_packet, sizeof(pes_packet));
-		if (!readcnt||(readcnt!=sizeof(pes_packet))){
+		if ((readcnt==-1)||(readcnt!=sizeof(pes_packet))){
 #if DEBUG
 			printf ("TuxTxt: readerror\n");
 #endif
