@@ -2573,7 +2573,11 @@ void SwitchScreenMode()
 	pageupdate = 1;
 
 	/* clear backbuffer */
+#ifndef DREAMBOX
 	memset(&backbuffer, black, sizeof(backbuffer));
+#else
+	memset(&backbuffer, screenmode?transp:black, sizeof(backbuffer));
+#endif
 
 	/* set mode */
 	if (screenmode)								 /* split */
