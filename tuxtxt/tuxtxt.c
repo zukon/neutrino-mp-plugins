@@ -1091,6 +1091,9 @@ void CleanUp()
 	/* close saa */
 	close(saa);
 
+	/* close pig */
+	close(pig);
+
 	/* close freetype */
 	FTC_Manager_Done(manager);
 	FT_Done_FreeType(library);
