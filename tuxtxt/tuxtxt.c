@@ -991,7 +991,7 @@ int Init()
 
 void CleanUp()
 {
-	int curscreenmode = screenmode;
+	int i, n, curscreenmode = screenmode;
 	
 	/* hide pig */
 	if (screenmode)
@@ -2764,7 +2764,7 @@ void SwitchScreenMode(int newscreenmode)
 #endif
 
 		int fw, fh, tx, ty, tw, th;
-
+		int sm = 0;
 
 		if (screenmode==1) /* split with topmenu */
 		{
