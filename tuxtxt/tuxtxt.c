@@ -950,7 +950,8 @@ void CleanUp()
 	ioctl(saa, SAAIOSWSS, &saa_old);
 
 #ifndef DREAMBOX
-	if (tuxbox_get_vendor() - 1 < 3)	/* scart-parameters only known for 3 dboxes, FIXME: order must be like in info.h */
+	int vendor = tuxbox_get_vendor() - 1;
+	if (vendor < 3) /* scart-parameters only known for 3 dboxes, FIXME: order must be like in info.h */
 	{
 		for (i = 1; i < 6; i += 2) /* restore dvb audio */
 		{
