@@ -866,7 +866,7 @@ int Init()
 	{
 		SDT_ready = 0;
 		getpidsdone = 0;
-		current_national_subset = national_subset; /* default from config file */
+		current_national_subset = (auto_national ? -1 : national_subset); /* default from config file if not set to automatic */
 		pageupdate = 1; /* force display of message page not found (but not twice) */
 	}
 
@@ -3136,7 +3136,7 @@ void RenderChar(int Char, int Attribute, int zoom, int yoffset)
 #ifndef DREAMBOX
 	if ((error = FTC_SBitCache_Lookup(cache, &typettf, glyph, &sbit, NULL)) != 0)
 #else
-	if ((error = FTC_SBitCache_Lookup(cache, &typettf, glyph, &sbit)) != 0)
+	if ((error = FTC_SBit_Cache_Lookup(cache, &typettf, glyph, &sbit)) != 0)
 #endif
 	{
 #if DEBUG
