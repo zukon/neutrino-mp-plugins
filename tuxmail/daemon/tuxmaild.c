@@ -3,6 +3,9 @@
  *                (c) Thomas "LazyT" Loewe 2003 (LazyT@gmx.net)
  *-----------------------------------------------------------------------------
  * $Log$
+ * Revision 1.20  2005/05/11 19:01:35  robspr1
+ * minor Mailreader changes / add to Spamlist undo
+ *
  * Revision 1.19  2005/05/11 12:01:23  lazyt
  * Protect Mailreader with optional PIN-Code
  *
@@ -1664,7 +1667,7 @@ int SendPOPCommand(int command, char *param)
 					strcpy(recv_buffer, "+OK");
 					break;
 				}
-				if(nRead < 40000)
+				if(nRead < 75000)
 				{
 					recv_buffer[0] = recv_buffer[1];
 					recv_buffer[1] = recv_buffer[2];
@@ -1673,7 +1676,7 @@ int SendPOPCommand(int command, char *param)
 				else
 				{
 					slog ? syslog(LOG_DAEMON | LOG_INFO, "Buffer Overflow") : printf("TuxMailD <Buffer Overflow>\n");
-					strcpy(recv_buffer, "+ERROR");
+					strcpy(recv_buffer, "+OK");
 					break;
 				}
 			}
