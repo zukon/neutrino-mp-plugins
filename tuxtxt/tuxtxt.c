@@ -1962,6 +1962,7 @@ void CleanUp()
 
 #if TUXTXT_CFG_STANDALONE
 	stop_thread();
+	clear_cache();
 	if (dmx != -1)
     	    close(dmx);
 	dmx = -1;
