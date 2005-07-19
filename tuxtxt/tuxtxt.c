@@ -146,9 +146,6 @@ int toptext_getnext(int startpage, int up, int findgroup)
 
 		if (!tuxtxt_cache.bttok || tuxtxt_cache.basictop[current]) /* only if existent */
 		{
-			if (!tuxtxt_cache.bttok && tuxtxt_cache.adip[current]) /* for FLOF return first linked page */
-				return current;
-
 			if (findgroup)
 			{
 				if (tuxtxt_cache.basictop[current] >= 6 && tuxtxt_cache.basictop[current] <= 7)
