@@ -64,6 +64,7 @@ class eSCGui: public eWindow
 	eListBox<eListBoxEntryText> *list;
 	eTimer *timer;
 	eMessageBox *bufferingBox;
+	eStatusBar *status;
 
 	void loadList();
 	void viewList();
