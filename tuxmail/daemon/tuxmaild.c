@@ -3,6 +3,9 @@
  *                (c) Thomas "LazyT" Loewe 2003 (LazyT@gmx.net)
  *-----------------------------------------------------------------------------
  * $Log$
+ * Revision 1.35  2005/11/11 18:41:56  robspr1
+ * - /tmp/tuxmail.new holds number of new files /  restrict reset flags for unseen mails in IMAP
+ *
  * Revision 1.34  2005/11/05 17:29:08  robspr1
  * - IMAP bugfix delete mails and restore Seen flag
  *
@@ -734,6 +737,14 @@ void *InterfaceThread(void *arg)
 					}
 
 					break;
+
+				case 'R':
+
+					slog ? syslog(LOG_DAEMON | LOG_INFO, "update") : printf("TuxMailD <update>\n");
+					if(!ReadConf())
+					{
+						intervall = 0;
+					}
 
 				case 'L':
 
@@ -2290,7 +2301,7 @@ int SendIMAPCommand(int command, char *param, char *param2)
 				case FLAGS:
 
 					// check if already seen
-					if( strstr(recv_buffer, "\\Seen") == NULL )
+					if( strstr(recv_buffer, "\\Seen") != NULL )
 					{
 						*param2='S';
 					}
@@ -4165,6 +4176,16 @@ void NotifyUser(int mails)
 
 			close(sock);
 		}
+
+	// write notify-file
+	FILE* pipe;
+	pipe = fopen(NOTIFILE,"w");
+	if( pipe != NULL)
+	{
+		fprintf(pipe, "%d", mails);
+		fclose(pipe);
+	}
+		
 }		
 
 /******************************************************************************
