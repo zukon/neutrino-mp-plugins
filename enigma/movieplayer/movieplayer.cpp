@@ -471,16 +471,11 @@ static char *NAME[] =
 	"-----------------------------",
 	"Keys (if menu is not visible)",
 	"-----------------------------",
-	"red:",
-	_("Start skipping reverse"),
-	"green:",
-	_("Play/Resync"),
-	"yellow:",
-	_("Pause"),
-	"blue:",
-	_("Start skipping forward"),
-	"1 - 9:",
-	"Skip 1 - 9 minutes",
+	"red: Start skipping reverse",
+	"green: Play/Resync",
+	"yellow: Pause",
+	"blue: Start skipping forward",
+	"1-9: Skip 1-9 minutes",
 	" "
 };
 
