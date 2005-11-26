@@ -25,7 +25,7 @@
 #include <bootmenue/bmconfig.h>
 #include <bootmenue/bmboot.h>
 
-#define VDF "Version 2.7"
+#define VDF "Version 2.8"
 
 //#define TMPFILE "/tmp/.dftemp"
 
