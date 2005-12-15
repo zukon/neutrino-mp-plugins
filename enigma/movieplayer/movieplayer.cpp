@@ -23,7 +23,7 @@
 #include <plugin.h>
 #include "movieplayer.h"
 
-#define REL "Movieplayer Plugin, Version 0.2"
+#define REL "Movieplayer Plugin, Version 0.3"
 
 extern "C" int plugin_exec(PluginParam *par);
 extern eString getWebifVersion();
@@ -183,6 +183,7 @@ void eSCGui::loadList()
 							a.Fullname = entry.mid(4);
 							a.Fullname = a.Fullname.left(a.Fullname.length() - 3);
 							a.Fullname = a.Fullname.left(a.Fullname.find_last_of("/") + 1);
+							a.Fullname = a.Fullname.strReplace(" ", "%20");
 							a.Filetype = GOUP;
 							eDebug("[MOVIEPLAYER] goup: %s",a.Fullname.c_str());
 							playList.push_back(a);
@@ -192,6 +193,7 @@ void eSCGui::loadList()
 					{
 						a.Filename = "[DIR] " + entry.mid(4);
 						a.Fullname = entry.mid(4);
+						a.Fullname = a.Fullname.strReplace(" ", "%20");
 						a.Filetype = DIRS;
 						eDebug("[MOVIEPLAYER] dir: %s",a.Fullname.c_str());
 						playList.push_back(a);
