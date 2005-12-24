@@ -53,6 +53,8 @@ class eSCGui: public eWindow
 	
 	int MODE;
 	bool menu;
+	unsigned int val;
+
 	eListBox<eListBoxEntryText> *list;
 	eTimer *timer;
 	eMessageBox *bufferingBox;
