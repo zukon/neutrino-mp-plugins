@@ -49,7 +49,7 @@ class eSCGui: public eWindow
 	
 	struct serverConfig server;
 
-	eString startdir, pathfull, cddrive;
+	eString startdir, cddrive;
 	
 	int MODE;
 	bool menu;
@@ -60,7 +60,7 @@ class eSCGui: public eWindow
 	eMessageBox *bufferingBox;
 	eStatusBar *status;
 
-	void loadList();
+	void loadList(eString path);
 	void viewList();
 	void setStatus(int val);
 
