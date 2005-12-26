@@ -338,7 +338,8 @@ void eSCGui::playerStart(int val)
 	if (menu)
 	{
 		hide();
-		cmove(ePoint(90, 800)); 
+		cmove(ePoint(90, 800));
+		show();
 		menu = false;
 	}
 
