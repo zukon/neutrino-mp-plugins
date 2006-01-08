@@ -23,7 +23,7 @@
 #include <plugin.h>
 #include "movieplayer.h"
 
-#define REL "Movieplayer Plugin, Version 0.6.1"
+#define REL "Movieplayer Plugin, Version 0.6.2"
 
 extern "C" int plugin_exec(PluginParam *par);
 extern eString getWebifVersion();
@@ -138,17 +138,17 @@ void eSCGui::loadList(int mode, eString pathfull)
 		case VCD:
 			tmp2 = "VCD";  
 			setText("VLC " + tmp2 + " - Drive: " + cddrive); 
-			tmp3 = "vcd:" + cddrive + "@1:1";
+			tmp3 = "vcd:" + cddrive + "@1:1-";
 			break;
 		case SVCD:
 			tmp2 = "SVCD"; 
 			setText("VLC " + tmp2 + " - Drive: " + cddrive); 
-			tmp3 = "vcd:" + cddrive + "@1:1";
+			tmp3 = "vcd:" + cddrive + "@1:1-";
 			break;
 		case DVD:
 			tmp2 = "DVD";  
 			setText("VLC " + tmp2 + " - Drive: " + cddrive); 
-			tmp3 = "dvdsimple:" + cddrive + "@1:1";
+			tmp3 = "dvdsimple:" + cddrive + "@1:1-";
 			break;
 	}
 
