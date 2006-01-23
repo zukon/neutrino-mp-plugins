@@ -3,6 +3,9 @@
  *                (c) Thomas "LazyT" Loewe 2003 (LazyT@gmx.net)
  *-----------------------------------------------------------------------------
  * $Log$
+ * Revision 1.41  2006/01/23 20:46:13  robspr1
+ * - wait before receiving answer on SMTP commands
+ *
  * Revision 1.40  2006/01/08 22:34:41  robspr1
  * - show correct unread-mails notification
  *
@@ -2627,6 +2630,10 @@ int SendSMTPCommand(int command, char *param)
 			{
 				if((fd_log = fopen(LOGFILE, "a")))
 				{
+					if(command == AUTH)
+					{
+						fprintf(fd_log, "SMTP <- be sure to edit the next line before you post it in a forum");
+					}
 					fprintf(fd_log, "SMTP <- %s", send_buffer);
 
 					fclose(fd_log);
@@ -2641,6 +2648,9 @@ int SendSMTPCommand(int command, char *param)
 		}
 
 	// get server response
+	
+	// wait a second to give some servers the chance to prepare the answer
+		sleep(1);
 
 		if(command == DATA2)
 		{
