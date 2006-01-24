@@ -36,6 +36,7 @@ class PLAYLIST
 public:
 	int Filetype;
 	eString Filename, Fullname;
+	eListBoxEntryText *listEntry;
 };
 
 typedef std::vector<PLAYLIST> PlayList;
@@ -67,6 +68,7 @@ class eSCGui: public eWindow
 	void loadList(int mode, eString path);
 	void viewList();
 	void setStatus(int val);
+	bool supportedFileType(eString filename);
 
 	void listSelected(eListBoxEntryText *item);
 	void listSelChanged(eListBoxEntryText *item);
