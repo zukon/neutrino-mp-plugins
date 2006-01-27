@@ -46,10 +46,7 @@ class eSCGui: public eWindow
 	enum {GOUP, DIRS, FILES};
 	enum {DATA, VCD, SVCD, DVD};
 
-	struct server_value
-	{
-		eString IP, IF_PORT, AUTH;
-	} send_parms;
+	eString VLC_IP, VLC_IF_PORT, VLC_AUTH;
 
 	PlayList playList;
 	
