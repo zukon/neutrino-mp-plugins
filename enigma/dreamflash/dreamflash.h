@@ -77,7 +77,7 @@ public:
 
 class df_main: public eWindow
 {
-	eListBox<eListBoxEntryText> *menuliste;
+	eListBox<eListBoxEntryText> *textlist;
 	void Listeselected(eListBoxEntryText *item);
 public:
 	df_main();
