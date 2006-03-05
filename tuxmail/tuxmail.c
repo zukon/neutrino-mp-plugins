@@ -3,6 +3,9 @@
  *                (c) Thomas "LazyT" Loewe 2003 (LazyT@gmx.net)
  *-----------------------------------------------------------------------------
  * $Log$
+ * Revision 1.43  2006/03/05 16:02:13  robspr1
+ * - use /tmp/keyboard.lck to signal decoding of the keyboard
+ *
  * Revision 1.42  2005/12/12 18:59:51  robspr1
  * -bugfix USER/SUSER and PASS/SPASS extraction
  *
@@ -3826,6 +3829,9 @@ void plugin_exec(PluginParam *par)
 	
 		unlink(NOTIFILE);
 	
+	// lock keyboard-conversions, this is done by the plugin itself
+		fclose(fopen(KBLCKFILE,"w"));
+	
 	// get daemon status
 
 		if(!ControlDaemon(GET_STATUS,0,0))
@@ -4302,6 +4308,9 @@ void plugin_exec(PluginParam *par)
 			}
 			UpdateDB(loop);
 		}
+
+	// enable keyboard-conversion again
+		unlink(KBLCKFILE);
 
 	// cleanup
 
