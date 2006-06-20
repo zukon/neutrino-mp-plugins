@@ -3,6 +3,9 @@
  *                (c) Thomas "LazyT" Loewe 2003 (LazyT@gmx.net)
  *-----------------------------------------------------------------------------
  * $Log$
+ * Revision 1.43  2006/06/20 21:25:36  robspr1
+ * -bugfix for param -send
+ *
  * Revision 1.42  2006/01/28 10:29:23  robspr1
  * - bugfix: close IMAP connection in any case
  *
@@ -4545,12 +4548,13 @@ int main(int argc, char **argv)
 					char linebuffer[250];
 					if( fgets(linebuffer, sizeof(linebuffer), pipein))
 					{
-						fprintf(pipeout,"Subject: %s\n\n",linebuffer);
+						fprintf(pipeout,"Subject: %s\n",linebuffer);
 					}
 					while(fgets(linebuffer, sizeof(linebuffer), pipein))
 					{
 						fputs(linebuffer,pipeout);
 					}	
+					fputs("\n",pipeout);
 					fclose(pipein);
 					fclose(pipeout);
 					SendMail(account);
