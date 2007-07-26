@@ -30,7 +30,6 @@
 //#define TMPFILE "/tmp/.dftemp"
 
 extern "C" int plugin_exec(PluginParam *par);
-extern eString getInfo(const char *file, const char *info);
 
 int fd;
 eListBox<eListBoxEntryText> *liste;
