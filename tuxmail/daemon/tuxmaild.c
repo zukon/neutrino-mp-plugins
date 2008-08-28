@@ -3,6 +3,9 @@
  *                (c) Thomas "LazyT" Loewe 2003 (LazyT@gmx.net)
  *-----------------------------------------------------------------------------
  * $Log$
+ * Revision 1.49  2008/08/28 20:30:10  robspr1
+ * increase maximum startup delay to 120
+ *
  * Revision 1.48  2007/01/06 16:27:03  robspr1
  * - accept unknown chunks in wave header
  *
@@ -528,7 +531,7 @@ int ReadConf()
 
 	// check config
 
-		if(startdelay < 15 || startdelay > 60)
+		if(startdelay < 15 || startdelay > 120)
 		{
 			slog ? syslog(LOG_DAEMON | LOG_INFO, "STARTDELAY=%d out of Range, set to \"30\"", startdelay) : printf("TuxMailD <STARTDELAY=%d out of Range, set to \"30\">\n", startdelay);
 
