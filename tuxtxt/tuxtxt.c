@@ -833,17 +833,7 @@ skip_pid:
 	first_sdt_sec = -1;
 	while (1)
 	{
-		if (read(dmx, SDT, 3) == -1)
-		{
-			perror("TuxTxt <read SDT>");
-
-			ioctl(dmx, DMX_STOP);
-			close(dmx);
-			RenderMessage(ShowServiceName);
-			return 1;
-		}
-
-		if (read(dmx, SDT+3, ((SDT[1] & 0x0f) << 8) | SDT[2]) == -1)
+		if (read(dmx, SDT, sizeof(SDT)) == -1)
 		{
 			perror("TuxTxt <read SDT>");
 
