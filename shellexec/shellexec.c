@@ -27,7 +27,7 @@
 #include "gfx.h"
 #include "lcd.h"
 #include "color.h"
-#ifndef HAVE_DREAMBOX_HARDWARE
+#ifdef HAVE_DBOX_HARDWARE
 #include <dbox/fb.h>
 #endif
 extern int FSIZE_BIG;
@@ -1685,7 +1685,7 @@ unsigned int alpha;
 
 		fb = open(FB_DEVICE, O_RDWR);
 
-#ifndef HAVE_DREAMBOX_HARDWARE
+#ifdef HAVE_DBOX_HARDWARE
 		ioctl(fb, AVIA_GT_GV_GET_BLEV, &alpha);
 #endif
 
@@ -1994,7 +1994,7 @@ unsigned int alpha;
 //	memset(lfb, TRANSP, var_screeninfo.xres*var_screeninfo.yres);
 	munmap(lfb, fix_screeninfo.smem_len);
 
-#ifndef HAVE_DREAMBOX_HARDWARE
+#ifdef HAVE_DBOX_HARDWARE
 	ioctl(fb, AVIA_GT_GV_SET_BLEV, alpha);
 #endif
 	close(fb);
