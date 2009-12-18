@@ -33,9 +33,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/fb.h>
-#if HAVE_DVB_API_VERSION == 3
 #include <linux/input.h>
-#endif
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
