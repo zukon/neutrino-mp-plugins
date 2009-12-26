@@ -158,12 +158,7 @@ void put_instance(int pval);
 
 struct fb_fix_screeninfo fix_screeninfo;
 struct fb_var_screeninfo var_screeninfo;
-
-#if HAVE_DVB_API_VERSION == 3
-
 struct input_event ev;
-
-#endif
 
 //unsigned short rccode;
 

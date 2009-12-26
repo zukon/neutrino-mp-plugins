@@ -1018,10 +1018,11 @@ void hauptseite (void)
 			sprintf(tuner,"Sat");
 		}
 	}
+#ifdef HAVE_DBOX_HARDWARE
 	if (y< 10000) sprintf(temp_string,"%s  %s  2x%s %s",tuxbox_get_vendor_str (),tuxbox_get_model_str (), fstring, tuner);
 	else sprintf(temp_string,"%s  %s  1x%s %s",tuxbox_get_vendor_str (),tuxbox_get_model_str (), fstring, tuner);
-	
-	
+#endif
+
 	RenderString("Modell:", (stx+40), (linie_oben+40), maxwidth, LEFT, size, CMHT);
 	RenderString(temp_string, (abs_links+hoffs), (linie_oben+40), maxwidth, LEFT, size, CMCT);
 
