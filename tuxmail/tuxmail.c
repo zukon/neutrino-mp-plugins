@@ -881,15 +881,27 @@ void RenderString(unsigned char *string, int sx, int sy, int maxwidth, int layou
 
 		if(size == SMALL)
 		{
+#ifdef FT_NEW_CACHE_API
+			desc.width = desc.height = 24;
+#else
 			desc.font.pix_width = desc.font.pix_height = 24;
+#endif
 		}
 		else if(size == NORMAL)
 		{
+#ifdef FT_NEW_CACHE_API
+			desc.width = desc.height = 32;
+#else
 			desc.font.pix_width = desc.font.pix_height = 32;
+#endif
 		}
 		else
 		{
+#ifdef FT_NEW_CACHE_API
+			desc.width = desc.height = 40;
+#else
 			desc.font.pix_width = desc.font.pix_height = 40;
+#endif
 		}
 
 	// set alignment
@@ -2037,7 +2049,11 @@ void EditMailFile(char* filename, int account, int mailindex )
 							nEditPos = linelen;
 						}
 						
+#ifdef FT_NEW_CACHE_API
+						desc.width = desc.height = 32;
+#else
 						desc.font.pix_width = desc.font.pix_height = 32;
+#endif
 						x = 0;
 						
 						if( nEditPos )
@@ -3732,7 +3748,11 @@ void plugin_exec(PluginParam *par)
 
 		use_kerning = FT_HAS_KERNING(face);
 
+#ifdef FT_NEW_CACHE_API
+		desc.face_id = FONT;
+#else
 		desc.font.face_id = FONT;
+#endif
 #if FREETYPE_MAJOR  == 2 && FREETYPE_MINOR == 0
 		desc.type = ftc_image_mono;
 #else
