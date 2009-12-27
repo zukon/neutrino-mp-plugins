@@ -282,7 +282,11 @@ int init_fb (void)
 
 		use_kerning = FT_HAS_KERNING(face);
 
+#ifdef FT_NEW_CACHE_API
+		desc.face_id = FONT;
+#else
 		desc.font.face_id = FONT;
+#endif
 		desc.flags = FT_LOAD_MONOCHROME;
 
 		if(!(lbb = malloc(var_screeninfo.xres*var_screeninfo.yres)))

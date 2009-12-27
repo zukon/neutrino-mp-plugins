@@ -44,6 +44,11 @@
 #include FT_CACHE_H
 #include FT_CACHE_SMALL_BITMAPS_H
 
+/* tested with freetype 2.3.9, and 2.1.4 */
+#if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 3
+#define FT_NEW_CACHE_API
+#endif
+
 #define MISS_FILE	"/var/tuxbox/config/tuxwetter/missing_translations.txt"
 
 //rc codes

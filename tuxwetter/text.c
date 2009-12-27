@@ -218,10 +218,17 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 
 		switch (size)
 		{
+#ifdef FT_NEW_CACHE_API
+			case SMALL: desc.width = desc.height = FSIZE_SMALL; break;
+			case MED:   desc.width = desc.height = FSIZE_MED; break;
+			case BIG:   desc.width = desc.height = FSIZE_BIG; break;
+			default:    desc.width = desc.height = size; break;
+#else
 			case SMALL: desc.font.pix_width = desc.font.pix_height = FSIZE_SMALL; break;
 			case MED:   desc.font.pix_width = desc.font.pix_height = FSIZE_MED; break;
 			case BIG:   desc.font.pix_width = desc.font.pix_height = FSIZE_BIG; break;
 			default:    desc.font.pix_width = desc.font.pix_height = size; break;
+#endif
 		}
 		
 	//set alignment
