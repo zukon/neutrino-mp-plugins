@@ -287,7 +287,11 @@ int init_fb (void)
 #else
 		desc.font.face_id = FONT;
 #endif
+#if FREETYPE_MAJOR  == 2 && FREETYPE_MINOR == 0
+		desc.image_type = ftc_image_mono;
+#else
 		desc.flags = FT_LOAD_MONOCHROME;
+#endif
 
 		if(!(lbb = malloc(var_screeninfo.xres*var_screeninfo.yres)))
 		{
