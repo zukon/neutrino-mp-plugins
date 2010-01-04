@@ -27,15 +27,18 @@
 #include <lib/system/econfig.h>
 #include <lib/movieplayer/movieplayer.h>
 #include <lib/movieplayer/mpconfig.h>
+#include <lib/gui/echeckbox.h>
+#include <lib/gui/combobox.h>
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
+#include <lib/gui/slider.h>
 
 class PLAYLIST
 {
 public:
 	int Filetype;
-	eString Filename, Fullname;
+	eString Filename, Fullname, Filesize;
 	eListBoxEntryText *listEntry;
 };
 
@@ -44,7 +47,7 @@ typedef std::vector<PLAYLIST> PlayList;
 class eSCGui: public eWindow
 {
 	enum {GOUP, DIRS, FILES};
-	enum {DATA, VCD, SVCD, DVD};
+	enum {DATA, VCD, DVD, CFG};
 
 	eString VLC_IP, VLC_IF_PORT, VLC_AUTH;
 
@@ -52,14 +55,14 @@ class eSCGui: public eWindow
 	
 	struct serverConfig server;
 
-	eString startdir, cddrive;
+	eString startdir, cddrive, path;
 	
 	bool menu;
-	unsigned int val;
-
+	unsigned int val, nFiles, skip_time;
+	
 	eListBox<eListBoxEntryText> *list;
 	eTimer *timer;
-	eMessageBox *bufferingBox;
+	eMessageBox *bufferingBox, *pauseBox, *infoBox, *jumpBox;
 	eStatusBar *status;
 
 	void loadList(int mode, eString path);
@@ -74,18 +77,52 @@ class eSCGui: public eWindow
 	void timerHandler();
 	void playerStart(int val);
 	void showMenu();
-
+	
 	CURLcode sendGetRequest (const eString& url, eString& response);
+	
+	void pause();
+	eString getPar(eString buf, const char* par);
+	void changeSout();
+	eString filePos(int both, eString name, eString size, eString& text);
+	void getSavedPath();
+
 public:
 	eSCGui();
 	~eSCGui();
 };
 
-class eSCGuiInfo: public eWindow
+class eSCGuiHelp: public eWindow
 {
 	eListBox<eListBoxEntryText> *list;
 public:
-	eSCGuiInfo();
+        eSCGuiHelp();
+      
+};
+
+class eSCGuiConfig: public eWindow
+{
+private:
+        eLabel *lNrSec;
+        eLabel *lmsgTime;
+        eLabel *lbuff, *lbuff1;
+        eCheckbox *playNext;
+        eCheckbox *stopErr;
+	eCheckbox *savePath;
+	eCheckbox *aSync;
+	eCheckbox *subTitles;
+	eCheckbox *resDVB;
+	eCheckbox *setNsf;
+        eComboBox *comNrSec;
+        eComboBox *comMsgTime;
+        eSlider *sBuff;
+
+        int play_next;
+	void okPressed();
+	void setDVB(int status);
+	void BuffChanged(int i);
+
+public:
+	eSCGuiConfig();
 };
 
 
