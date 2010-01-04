@@ -3,5 +3,5 @@ SUBDIRS = lib mines pac tetris snake yahtzee bouquet \
 	solitair sol
 
 if BOXTYPE_DBOX2
-SUBDIRS += outdoor c64emu
+SUBDIRS += outdoor c64emu sudoku
 endif
