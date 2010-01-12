@@ -87,7 +87,7 @@ extern "C"
 #define MENU_TEXT_SHOW_TV								"Show TV: %s"
 #define MENU_TEXT_ABOUT									"About"
 
-#define TEXT_ABOUT											"Sudoku v1.2\nby M. Schlosser\nemail: tuxbox@wasweissderteufel.de"
+#define TEXT_ABOUT "Sudoku v1.2\nby M. Schlosser\nemail: tuxbox@software-schlosser.de\nIn memory of Klaus K."
 #define TEXT_PLEASEWAIT									"please wait..."
 
 #define TEXT_ON													"on"
