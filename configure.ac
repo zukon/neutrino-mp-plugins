@@ -85,8 +85,10 @@ dvbsub/Makefile
 shellexec/Makefile
 tuxwetter/Makefile
 tuxwetter/bitmap/Makefile
+tuxwetter/shellexec/Makefile
 sysinfo/Makefile
 clock/Makefile
+clock/shellexec/Makefile
 pip/Makefile
 mosaic/Makefile
 enigma/Makefile
