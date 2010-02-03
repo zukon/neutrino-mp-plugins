@@ -16,7 +16,7 @@
 #include <plugin.h>
 #include <fx2math.h>
 
-//#define SOLBOARD_DEBUG
+#define SOLBOARD_DEBUG
 
 extern	int	doexit;
 extern	int	debug;
