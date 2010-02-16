@@ -8,6 +8,7 @@
 ####################################################################################
 
 CLOCKCFG="/var/tuxbox/config/clock.conf"
+MENU="/var/tuxbox/config/flexinc/plconfig_clock.mnu"
 
   pth="/bin/input"
     if [ ! -e $pth ]; then
@@ -20,38 +21,44 @@ CLOCKCFG="/var/tuxbox/config/clock.conf"
 
   case "$1" in
   DATE)
-    if grep -q "DATE=.*" $CLOCKCFG; then
-      sed -e "s/DATE=.*/DATE=$2/g" $CLOCKCFG > /tmp/clock.conf
+    if grep -q "^DATE=.*" $CLOCKCFG; then
+      sed -e "s/^DATE=.*/DATE=$2/g" $CLOCKCFG > /tmp/clock.conf
     fi
   ;;
 
   BIG)
-    if grep -q "BIG=.*" $CLOCKCFG; then
-      sed -e "s/BIG=.*/BIG=$2/g" $CLOCKCFG > /tmp/clock.conf
+    if grep -q "^BIG=.*" $CLOCKCFG; then
+      sed -e "s/^BIG=.*/BIG=$2/g" $CLOCKCFG > /tmp/clock.conf
     fi
   ;;
 
   SEC)
-    if grep -q "SEC=.*" $CLOCKCFG; then
-      sed -e "s/SEC=.*/SEC=$2/g" $CLOCKCFG > /tmp/clock.conf
+    if grep -q "^SEC=.*" $CLOCKCFG; then
+      sed -e "s/^SEC=.*/SEC=$2/g" $CLOCKCFG > /tmp/clock.conf
+    fi
+  ;;
+
+  BLINK)
+    if grep -q "^BLINK=.*" $CLOCKCFG; then
+      sed -e "s/^BLINK=.*/BLINK=$2/g" $CLOCKCFG > /tmp/clock.conf
     fi
   ;;
 
   MAIL)
-    if grep -q "MAIL=.*" $CLOCKCFG; then
-      sed -e "s/MAIL=.*/MAIL=$2/g" $CLOCKCFG > /tmp/clock.conf
+    if grep -q "^MAIL=.*" $CLOCKCFG; then
+      sed -e "s/^MAIL=.*/MAIL=$2/g" $CLOCKCFG > /tmp/clock.conf
     fi
   ;;
 
   FCOL)
-    if grep -q "FCOL=.*" $CLOCKCFG; then
-      sed -e "s/FCOL=.*/FCOL=$2/g" $CLOCKCFG > /tmp/clock.conf
+    if grep -q "^FCOL=.*" $CLOCKCFG; then
+      sed -e "s/^FCOL=.*/FCOL=$2/g" $CLOCKCFG > /tmp/clock.conf
     fi
   ;;
 
   BCOL)
-    if grep -q "BCOL=.*" $CLOCKCFG; then
-      sed -e "s/BCOL=.*/BCOL=$2/g" $CLOCKCFG > /tmp/clock.conf
+    if grep -q "^BCOL=.*" $CLOCKCFG; then
+      sed -e "s/^BCOL=.*/BCOL=$2/g" $CLOCKCFG > /tmp/clock.conf
     fi
   ;;
 
@@ -66,7 +73,8 @@ CLOCKCFG="/var/tuxbox/config/clock.conf"
     if [ -z $res ]; then
       exit 1
     fi
-    sed -e "s/X=.*/X=$res/g" $CLOCKCFG > /tmp/clock.conf
+    sed -e "s/^X=.*/X=$res/g" $CLOCKCFG > /tmp/clock.conf
+	sed -i -e s/"Horizontale Position[^,]*"/"Horizontale Position~t~t$res"/ $MENU
   ;;  
 
   Y)
@@ -80,7 +88,8 @@ CLOCKCFG="/var/tuxbox/config/clock.conf"
     if [ -z $res ]; then
       exit 1
     fi
-    sed -e "s/Y=.*/Y=$res/g" $CLOCKCFG > /tmp/clock.conf
+    sed -e "s/^Y=.*/Y=$res/g" $CLOCKCFG > /tmp/clock.conf
+	sed -i -e s/"Vertikale Position[^,]*"/"Vertikale Position~t~t~t$res"/ $MENU
   ;;  
   
   *)
@@ -93,6 +102,6 @@ CLOCKCFG="/var/tuxbox/config/clock.conf"
   
   if pidof clock > /dev/null; then
   	touch /tmp/.clock_kill
-  	sleep 1
-  	/var/bin/clock &
+  	sleep 1  
+  	clock &
   fi

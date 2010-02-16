@@ -19,9 +19,9 @@
  *
 */
 
-#ifndef __icqwatch_H__
+#ifndef __clock__
 
-#define __icqwatch_H__
+#define __clock__
 
 #include "config.h"
 
@@ -43,6 +43,10 @@
 #include FT_FREETYPE_H
 #include FT_CACHE_H
 #include FT_CACHE_SMALL_BITMAPS_H
+
+#define COL_TRANSP	0
+#define COL_BLACK	1
+#define COL_WHITE	2
 
 /* tested with freetype 2.3.9, and 2.1.4 */
 #if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 3

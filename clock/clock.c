@@ -37,7 +37,7 @@ unsigned char FONT[64]= "/share/fonts/pakenham.ttf";
 //#define CFG_FILE "/tmp/clock.conf"
 
 
-#define CL_VERSION  "0.13"
+#define CL_VERSION  "0.14"
 
 static char menucoltxt[CMH][24]={"Content_Selected_Text","Content_Selected","Content_Text","Content","Content_inactive_Text","inactive","Head_Text","Head"};
 
@@ -56,10 +56,9 @@ unsigned short ord[256], ogn[256], obl[256], otr[256];
 
 struct fb_cmap colormap = {0, 256, ord, ogn, obl, otr};
 
-
 unsigned char *lfb = 0, *lbb = 0;
 char tstr[512];
-int xpos=540,ypos=0,sdat=0,big=0,secs=1, fcol=2, bcol=1, mail=0;
+int xpos = 540, ypos = 0, show_date = 0, big = 0, show_sec = 1, blink = 1, fcol = COL_WHITE, bcol = COL_BLACK, mail = 0;
 
 int ExistFile(char *fname)
 {
@@ -124,7 +123,7 @@ int ReadConf()
 			}
 			if(strstr(tstr,"DATE=") == tstr)
 			{
-				sscanf(cptr+1,"%d",&sdat);
+				sscanf(cptr+1,"%d",&show_date);
 			}
 			if(strstr(tstr,"BIG=") == tstr)
 			{
@@ -132,7 +131,11 @@ int ReadConf()
 			}
 			if(strstr(tstr,"SEC=") == tstr)
 			{
-				sscanf(cptr+1,"%d",&secs);
+				sscanf(cptr+1,"%d",&show_sec);
+			}
+			if(strstr(tstr,"BLINK=") == tstr)
+			{
+				sscanf(cptr+1,"%d",&blink);
 			}
 			if(strstr(tstr,"FCOL=") == tstr)
 			{
@@ -172,7 +175,7 @@ int rv=-1;
 			{
 				rv=-1;
 			}
-//			printf("%s\n%s=%s -> %d\n",tstr,entry,cfptr,rv);
+		//	printf("%s\n%s=%s -> %d\n",tstr,entry,cfptr,rv);
 		}
 		fclose(nfh);
 	}
@@ -185,7 +188,8 @@ int rv=-1;
 
 int main (int argc, char **argv)
 {
-	int tv,index,i,j,k,w,cmct=CMCT,cmc=CMC,trnspi=TRANSP,trnsp=0,found,loop=1,x0,x1,x2,x3,x4,x5,x6,x7,ms,mw,newmail=0;
+	int tv,index,i,j,w,cmct=CMCT,cmc=CMC,trnspi=TRANSP,trnsp=0,found,loop=1,ms,mw;
+	unsigned short int digits, digit_width, margin_left, margin_top_t, font_size, x4, margin_top_d, secs_width, newmail=0, mailgfx=0;
 	time_t atim;
 	struct tm *ltim;
 	char *aptr,*rptr;
@@ -220,7 +224,7 @@ int main (int argc, char **argv)
 				{
 					if(sscanf(rptr,"%d",&j)==1)
 					{
-						sdat=j;
+						show_date=j;
 					}
 				}
 				if(strstr(aptr,"BIG=")!=NULL)
@@ -234,7 +238,14 @@ int main (int argc, char **argv)
 				{
 					if(sscanf(rptr,"%d",&j)==1)
 					{
-						secs=j;
+						show_sec=j;
+					}
+				}
+				if(strstr(aptr,"BLINK=")!=NULL)
+				{
+					if(sscanf(rptr,"%d",&j)==1)
+					{
+						blink=j;
 					}
 				}
 				if(strstr(aptr,"FCOL=")!=NULL)
@@ -379,7 +390,7 @@ int main (int argc, char **argv)
 
 		startx = sx;
 		starty = sy;
-		mw=(big)?40:30;
+		mw=(big)?42:36;
 
 	while(loop)
 	{
@@ -422,118 +433,124 @@ int main (int argc, char **argv)
 			}
 		}	
 
-		if(big)
+		if(big)			//grosse Schrift (time/date)
 		{
-			x0=3;
-			x1=14;
-			x2=26;
-			x3=BIG;
-			x4=30;
-			x5=60;
+			margin_left = 3;			// 3
+			digit_width = 14;			// 14
+			margin_top_t = 26;			// 26
+			font_size = BIG;			// 40
+			x4 = 30;					// 30
+			margin_top_d = 60;			// 60
 		}
 		else
 		{
-			x0=7;
-			x1=12;
-			x2=18;
-			x3=MED;
-			x4=18;
-			x5=40;
+			margin_left = 7;			//7  Abstand links
+			digit_width = 12;			//12 Ziffernblockbreite
+			margin_top_t = 18;			//18 Abstand "Time" von oben
+			font_size = MED;			//30 Schriftgroesse
+			x4 = 18;					//18
+			margin_top_d = 40;			//40 Abstand "Date" von oben
 		}
-		x6=0;
-		x7=0;
+		digits = 0;
+		secs_width = 0;
 		time(&atim);
-		ltim=localtime(&atim);
-		if(secs)
+		ltim = localtime(&atim);
+		if (show_sec)
 		{
-			sprintf(tstr,"%02d:%02d:%02d",ltim->tm_hour,ltim->tm_min,ltim->tm_sec);
+			sprintf(tstr, "%02d:%02d:%02d", ltim->tm_hour, ltim->tm_min, ltim->tm_sec);
 		}
 		else
 		{
-			sprintf(tstr,"   %02d%c%02d",ltim->tm_hour,(ltim->tm_sec & 1)?':':' ',ltim->tm_min);
-			if(!sdat)
+			if (!blink)
+				sprintf(tstr,"   %02d:%02d",ltim->tm_hour,ltim->tm_min);
+			else
+				sprintf(tstr,"   %02d%c%02d",ltim->tm_hour,(ltim->tm_sec & 1)?':':' ',ltim->tm_min);
+
+			if (!show_date)
 			{
-				x6=3;
-				x7=36+4*big;
-			}
+				digits = 3;				//3 Platzhalter ':ss'
+				secs_width = digits * digit_width;
+			}		
 		}
-		if((xpos>=mw)||(!secs))
+		if ((xpos >= mw) || (!show_sec))
 		{
-			ms=xpos+((secs)?0:36+4*big)-mw;
+			ms = xpos + ((show_sec) ? 0 : 36 + 6 * big) - mw;	//mail left
 		}
 		else
 		{
-			ms=xpos+100+20*big;
-		}
-		k=((ms>xpos)&&mail)?mw:0;
-		RenderBox(xpos+x7, ypos, xpos+x7+100+20*big, ypos+x2+2*(1+big), FILL, (bcol==0)?trnspi:((bcol==1)?cmc:cmct));
-		for(i=x6; i<strlen(tstr); i++)
-		{
-			*dstr=tstr[i];
-			RenderString(dstr, xpos-x0+(i*x1), ypos+x2, 30, CENTER, x3, (fcol==0)?trnspi:((fcol==2)?cmct:cmc));
+			ms = xpos + 100 + 20 * big;		//mail right
 		}
 
-		if(sdat)
+		//paint Backgroundcolor to clear digits
+		RenderBox(xpos+secs_width, ypos, xpos+secs_width+100+20*big, ypos+margin_top_t+2*(1+big), FILL, (bcol == COL_TRANSP)?trnspi:((bcol == COL_BLACK)?cmc:cmct));
+		for(i=digits; i<strlen(tstr); i++)
+		{
+			*dstr=tstr[i];
+			RenderString(dstr, xpos-margin_left+(i * digit_width), ypos+margin_top_t, 30, CENTER, font_size, (fcol == COL_TRANSP)?trnspi:((fcol == COL_WHITE)?cmct:cmc));
+		}
+
+		if(show_date)
 		{
 			sprintf(tstr,"%02d.%02d.%02d",ltim->tm_mday,ltim->tm_mon+1,ltim->tm_year-100);
-			RenderBox(xpos, ypos+x4, xpos+100+20*big, ypos+x5, FILL, (bcol==0)?trnspi:((bcol==1)?cmc:cmct));
+			//Backgroundcolor Date
+			RenderBox(xpos, ypos+x4, xpos+100+20*big, ypos+margin_top_d, FILL, (bcol == COL_TRANSP)?trnspi:((bcol == COL_BLACK)?cmc:cmct));
 			for(i=0; i<strlen(tstr); i++)
 			{
 				*dstr=tstr[i];
-				RenderString(dstr, xpos-x0+(i*x1), ypos+x5-2-2*big, 30, CENTER, x3, (fcol==0)?trnspi:((fcol==2)?cmct:cmc));
+				RenderString(dstr, xpos-margin_left+(i * digit_width), ypos+margin_top_d-2-(2*big), 30, CENTER, font_size, (fcol == COL_TRANSP)?trnspi:((fcol == COL_WHITE)?cmct:cmc));
 			}
 		}
-		if(mail)
+
+		if(newmail > 0)
 		{
-			if(newmail)
+			mailgfx = 1;
+
+			//Background mail, left site from clock
+			RenderBox(ms, ypos, ms+mw, ypos+margin_top_t+2*(1+big), FILL, (bcol == COL_TRANSP)?trnspi:((bcol == COL_BLACK)?cmc:cmct));
+			if(!(ltim->tm_sec & 1))
 			{
-				RenderBox(ms, ypos, ms+mw, ypos+x2+2*(1+big), FILL, (bcol==0)?trnspi:((bcol==1)?cmc:cmct));
-				if(!(ltim->tm_sec & 1))
-				{
-					RenderBox(ms+5, ypos+5+(1+big), ms+mw-5, ypos+x2+(1+big)-2, GRID, (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-					DrawLine(ms+5, ypos+5+(1+big), ms+mw-5, ypos+x2+(1+big)-2, (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-					DrawLine(ms+5, ypos+x2+(1+big)-2, ms+mw-5, ypos+5+(1+big), (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-					DrawLine(ms+5, ypos+5+(1+big), ms+((mw-2)/2), ypos+2, (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-					DrawLine(ms+6, ypos+6+(1+big), ms+((mw-2)/2)+1, ypos+3, (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-					DrawLine(ms+((mw-2)/2), ypos+2, ms+mw-5, ypos+5+(1+big), (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-					DrawLine(ms+((mw-2)/2)+1, ypos+3, ms+mw-6, ypos+6+(1+big), (fcol==0)?trnspi:((fcol==1)?cmc:cmct));
-				}
-				else
-				{
-					sprintf(tstr,"%d",newmail);
-					RenderString(tstr, ms, ypos+x2, mw, CENTER, x3, (fcol==0)?trnspi:((fcol==2)?cmct:cmc));
-				}
+				RenderBox (ms+8, ypos+5+(1+big), ms+mw-8, ypos+margin_top_t+(1+big)-2, GRID, (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
+				DrawLine  (ms+8, ypos+5+(1+big), ms+mw-8, ypos+margin_top_t+(1+big)-2,       (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
+				DrawLine  (ms+8, ypos+margin_top_t+(1+big)-2, ms+mw-8, ypos+5+(1+big),       (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
+				DrawLine  (ms+(9+1*big), ypos+4+(1+big), ms+(mw/2), ypos+1,                  (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
+				DrawLine  (ms+(9+1*big), ypos+5+(1+big), ms+(mw/2), ypos+2,                  (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
+				DrawLine  (ms+(mw/2), ypos+1, ms+mw-(9+1*big), ypos+4+(1+big),               (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
+				DrawLine  (ms+(mw/2), ypos+2, ms+mw-(9+1*big), ypos+5+(1+big),               (fcol == COL_TRANSP)?trnspi:((fcol == COL_BLACK)?cmc:cmct));
 			}
 			else
 			{
-				if(!sdat || secs)
-				{
-					RenderBox(ms+((ms>(xpos+100))?1:0), ypos, ms+mw-((k)?0:1), ypos+x2+2*(1+big), FILL, trnspi);
-				}
+				sprintf(tstr,"%d",newmail);
+				RenderString(tstr, ms, ypos+margin_top_t, mw, CENTER, font_size, (fcol == COL_TRANSP)?trnspi:((fcol == COL_WHITE)?cmct:cmc));
 			}
 		}
 		else
 		{
-			ms=xpos;
+			if (mailgfx > 0)
+				RenderBox(ms, ypos, ms+mw, ypos+margin_top_t+2*(1+big), FILL, (!show_date || show_sec) ? trnspi : (bcol == COL_TRANSP) ? trnspi : ((bcol == COL_BLACK)?cmc:cmct));
+			else
+				ms=xpos;
 		}
-		
-		w=100+20*big+((mail)?5*big+((secs)?mw:0):0)+k-((k&&!sdat)?mw:0);
-		for(i=0;i<=((sdat)?40:20)*(1+big);i++)
+
+		w = 100 + 20 * big + ((mailgfx) ? ((show_sec) ? mw : 0) : - secs_width);
+		for (i=0; i <= ((show_date) ? 20 : 10) * (2 + big); i++)
 		{
-			j=(starty+ypos+i)*var_screeninfo.xres+((ms<xpos)?ms:xpos)+startx;
-			if((j+w)<var_screeninfo.xres*var_screeninfo.yres)
+			j = (starty + ypos + i) * var_screeninfo.xres + ( ((ms < xpos) ? ms : xpos) + ((show_sec) ? 0 : ((mailgfx) ? 0 : secs_width)) ) + startx;			
+			if ((j+w) < var_screeninfo.xres * var_screeninfo.yres)
 			{
 				memcpy(lfb+j, lbb+j, w);
 			}
 		}
-		if(++loop>5)
+		if (newmail == 0 && mailgfx > 0)
+			mailgfx = 0;
+
+		if (++loop>5)
 		{
 			if(ExistFile("/tmp/.clock_kill"))
 			{
 				loop=0;
 			}
-		}	
-	}	
+		}
+	}
 
 	cmct=0;
 	cmc=0;
@@ -545,10 +562,10 @@ int main (int argc, char **argv)
 			cmct=colormap.transp[i];
 		}
 	}
-	memset(lbb, cmc, var_screeninfo.xres*var_screeninfo.yres);
-	for(i=0;i<=((sdat)?40:20)*(1+big);i++)
+	memset(lbb, cmc, var_screeninfo.xres*var_screeninfo.yres);	//cmc
+	for (i=0; i <= ((show_date) ? 20 : 10) * (2 + big); i++)
 	{
-		j=(starty+ypos+i)*var_screeninfo.xres+((ms<xpos)?ms:xpos)+startx;
+		j=(starty+ypos+i)*var_screeninfo.xres+((ms<xpos)?ms:xpos)+((show_sec)?0:((mailgfx)?0:secs_width))+startx;
 		if((j+100+20*big+((mail)?mw:0))<var_screeninfo.xres*var_screeninfo.yres)
 		{
 			memcpy(lfb+j, lbb+j, w);

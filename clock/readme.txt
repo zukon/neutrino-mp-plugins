@@ -37,7 +37,10 @@ nach /var/tuxbox/config/ kopieren. Deren Einträge haben folgende Bedeutung:
 
   SEC= Legt fest, ob die Sekunden in der Uhrzeit angezeigt werden sollen. Bei 1 werden die
        Sekunden angezeigt, bei 0 nicht. Werden die Sekunden nicht angezeigt, blinkt statt
-       dessen der Doppelpunkt zwischen Stunden und Minuten
+       dessen der Doppelpunkt zwischen Stunden und Minuten.(siehe BLINK)
+
+  BLINK= Legt fest, ob der Doppelpunkt zwischen Stunden und Minuten blinken soll,
+         wenn die Uhrzeit ohne Sekunden angezeigt wird. 1=blinken, 0=aus
 
   FCOL= Legt die Ziffernfarbe fest, 0=Transparent, 1=Schwarz, 2=Weiss
 
@@ -56,7 +59,7 @@ Werte werden dabei von den Kommandozeilenparametern überstimmt. Zum Beispiel:
 Es müssen nicht alle Parameter über Kommandozeile eingegeben werden. Nicht in der Kommando-
 zeile übergebene oder fehlerhafte Kommandozeilen-Parameter werden zunächst aus der clock.conf 
 übernommen oder, wenn diese nicht existiert, mit Defaultwerten vorbelegt. Diese Defaultwerte
-sind: X=540, Y=0, DATE=0, BIG=0, SEC=1, FCOL=2, BCOL=1
+sind: X=540, Y=0, DATE=0, BIG=0, SEC=1, BLINK=1, FCOL=2, BCOL=1, MAIL=0
 
 Steuerung über FlexMenü:
 ------------------------
