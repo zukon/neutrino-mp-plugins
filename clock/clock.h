@@ -36,17 +36,11 @@
 #include <linux/input.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_CACHE_H
 #include FT_CACHE_SMALL_BITMAPS_H
-
-#define COL_TRANSP	0
-#define COL_BLACK	1
-#define COL_WHITE	2
 
 /* tested with freetype 2.3.9, and 2.1.4 */
 #if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 3
@@ -54,7 +48,7 @@
 #endif
 
 //rc codes
-
+/*
 #if HAVE_DVB_API_VERSION == 1
 
 #define	RC1_0		0x5C00
@@ -111,15 +105,12 @@
 #define	RC_MINUS	0x16
 #define	RC_HELP		0x17
 #define	RC_DBOX		0x18
-#define	RC_HOME		0x1F
+#define	RC_HOME		0x1F  */
 
 //freetype stuff
 
-extern unsigned char FONT[64];
-
 enum {LEFT, CENTER, RIGHT};
 enum {SMALL, MED, BIG};
-//enum {FT_PIC=1, FT_TEXT, FT_HTML, FT_TXHTM};
 
 FT_Error 		error;
 FT_Library		library;
@@ -137,29 +128,49 @@ FT_Bool			use_kerning;
 
 //devs
 
-int fb, rc, lcd;
+int fb, rc;
 
 //framebuffer stuff
 
 enum {FILL, GRID};
-enum {EMPTY, CMCST, CMCS, CMCT, CMC, CMCIT, CMCI, CMHT, CMH, WHITE, BLUE0, TRANSP, BLUE2, ORANGE, GREEN, YELLOW, RED};
 
+#define CMCST	COL_MENUCONTENTSELECTED+7
+#define CMCS	COL_MENUCONTENTSELECTED
+#define CMCT	COL_MENUCONTENT+7
+#define CMC		COL_MENUCONTENT
+#define CMCIT	COL_MENUCONTENTINACTIVE+7
+#define CMCI	COL_MENUCONTENTINACTIVE
+#define CMHT	COL_MENUHEAD+7
+#define CMH		COL_MENUHEAD
+#define WHITE	0x10
+#define BLACK	0x01
+#define RED		0x02
+#define GREEN	0x03
+#define OLIVE	0x04
+#define BLUE0	0x05
+#define PURPLE	0x06
+#define DGREEN	0x07
+#define SILVER	0x08
+#define GRAY	0x09
+#define LRED	0x0A
+#define LGREEN	0x0B
+#define LYELLOW	0x0C
+#define BLUE1	0x0D
+#define PINK	0x0E
+#define BLUE2	0x0F
+#define TRANSP	0xFF
+#define FLASH	0x50
+
+extern unsigned char FONT[64];
 extern unsigned char *lfb, *lbb;
-extern unsigned char *proxyadress, *proxyuserpwd;
+int startx, starty, sx, ex, sy, ey;
 
 struct fb_fix_screeninfo fix_screeninfo;
 struct fb_var_screeninfo var_screeninfo;
 
-int startx, starty, sx, ex, sy, ey;
-char online;
-
 #if HAVE_DVB_API_VERSION == 3
 
 struct input_event ev;
-
-#endif
-
-unsigned short rccode;
 
 #endif
 
@@ -169,5 +180,7 @@ unsigned short rccode;
 #define RC_DEVICE	"/dev/dbox/rc0"
 #else
 #define RC_DEVICE	"/dev/input/event0"
+#endif
+
 #endif
 

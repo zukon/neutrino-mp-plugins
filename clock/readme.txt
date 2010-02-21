@@ -1,7 +1,7 @@
 ####################################################################################
-####                       Clock Version 0.13
-####                 Uhrzeit im Fernsehbild anzeigen
-####
+####                       Clock / Ssaver Version 0.15
+####                   Uhrzeit im Fernsehbild anzeigen oder
+####                       als Bildschirmschoner nutzen
 ####                    Bugreport und Anregungen im Board:
 ####       http://www.dbox2-tuning.net/forum/viewforum.php?f=27&start=0
 ####      Das New-Tuxwetter-Team: SnowHead, Worschter, Seddi, Sanguiniker
@@ -9,7 +9,49 @@
 
 Dieses Plugin blendet die Uhrzeit in das laufende Fernsehbild ein. Das ist zunächst erst
 einmal eine Testversion. Durch Verzicht auf farbige Darstellung beeinflußt das Plugin
-bereits angezeigte Menüs nicht in deren Farbdarstellung.
+bereits angezeigte Menüs nicht in deren Farbdarstellung. Ab Version 0.15 ist farbige
+Darstellung möglich.
+
+History:
+---------
+v.015
+- Fix Grafikbug in Screensaver
+- Nur noch ein Binary, Screensaver Aufruf mit clock -ss
+- 25 mögliche Vordergrundfarben, davon 8 Menüfarben (FCOL=17-24).
+- FCOL=99 für Screensaver, damit wechselt die Farbe bei jedem Aufprall.
+- zufällige Startposition- und Richtung des Screensavers.
+- Boxgröße des Hintergrundes der Bildschirmuhr angepasst.
+- Farbpalette:
+0  - transparent
+1  - schwarz
+2  - weiß
+3  - rot(maroon/Weinrot)
+4  - grün
+5  - oliv
+6  - dunkelblau
+7  - lila
+8  - dunkeltürkis
+9  - silber
+10 - grau
+11 - hellrot
+12 - hellgrün
+13 - hellgelb
+14 - blau
+15 - pink
+16 - türkis
+17 - Fensterinhalt selektiert - Textfarbe
+18 - Fensterinahlt selektiert - Hintergrundfarbe
+19 - Fensterinahlt  - Textfarbe
+20 - Fensterinhalt  - Hintergrundfarbe
+21 - Fensterinhalt deaktiviert - Textfarbe
+22 - Fensterinahlt deaktiviert - Hintergrundfarbe
+23 - Titelleiste - Textfarbe
+24 - Titelleiste - Hintergrundfarbe
+
+Benutzer des Flexmenü(Shellexec) müssen die Werte FCOL und BCOL ab v0.15 nun 2-stellig
+in die jeweilige Konfigurationsdatei eintragen!!!
+
+######################################################################################
 
 Funktion und Installation:
 --------------------------
@@ -48,7 +90,10 @@ nach /var/tuxbox/config/ kopieren. Deren Einträge haben folgende Bedeutung:
 
   MAIL= legt fest, ob die von Tuxmail erzeugte Benachrichtigung über neue Mails ausgewertet
         und angezeigt werden soll, in diesem Fall blinkt in der Anzeige das Mailsymbol im
-        Wechsel mit der Anzahl der neuen Mails
+        Wechsel mit der Anzahl der neuen Mails. Nur bei Bildschirmuhr.
+
+  SLOW= steuert die Geschwindigkeit des Bildschirmschoners. Zulässig sind Werte von 0..10.
+        Je höher die Zahl, desto langsamer bewegt sich die Anzeige über den Schirm.
 
 Für den Start über Kommandozeile können diese Parameter in der gleichen Syntax auch als
 Kommandozeilenparameter übergeben werden. Eventuell vorher aus der clock.conf ausgelesene
@@ -57,14 +102,19 @@ Werte werden dabei von den Kommandozeilenparametern überstimmt. Zum Beispiel:
   /var/bin/clock X=540 Y=0 DATE=1 BIG=1 SEC=0
 
 Es müssen nicht alle Parameter über Kommandozeile eingegeben werden. Nicht in der Kommando-
-zeile übergebene oder fehlerhafte Kommandozeilen-Parameter werden zunächst aus der clock.conf 
-übernommen oder, wenn diese nicht existiert, mit Defaultwerten vorbelegt. Diese Defaultwerte
-sind: X=540, Y=0, DATE=0, BIG=0, SEC=1, BLINK=1, FCOL=2, BCOL=1, MAIL=0
+zeile übergebene oder fehlerhafte Kommandozeilen-Parameter werden zunächst aus der clock.conf
+bzw. aus der ssaver.confübernommen oder, wenn diese nicht existiert, mit Defaultwerten vorbelegt.
+Diese Defaultwerte sind:
+X=540, Y=0, DATE=0, BIG=0, SEC=1, BLINK=1, FCOL=02, BCOL=01, MAIL=0 SLOW=1
+
+!!!!
+Benutzer des Flexmenü(Shellexec) müssen die Werte FCOL und BCOL ab v0.15 nun 2-stellig
+in die jeweilige Konfigurationsdatei eintragen.
 
 Steuerung über FlexMenü:
 ------------------------
 Die Datei clock mit den Rechten 755 nach /var/bin/ kopieren und den Text aus der Datei
-"einfuegen in shellexec.conf" in die Datei /var/tuxbox/pluhins/shellexec.conf einfügen.
+"einfuegen in shellexec.conf" in die Datei /var/tuxbox//shellexec.conf einfügen.
 Dabei eine Unix-konformen Editor verwenden. Fertig.
 
 Steuerung über blaue Taste
@@ -96,6 +146,7 @@ noriert. Der zusätzliche Parameter "SLOW=" steuert die Geschwindigkeit. Zuläss
 von 0..10. Je höher die Zahl, desto langsamer bewegt sich die Anzeige über den Schirm.
 Beendet wird der Screensaver entweder durch Anlegen der Datei "/tmp/.ssaver_kill" oder durch
 Drücken einer beliebigen Taste auf der Fernbedienung.
+
 
 Also, viel Spaß und viel Erfolg
 

@@ -5,21 +5,13 @@ AM_CPPFLAGS =  \
 clock_LDADD = \
 	@FREETYPE_LIBS@
 
-ssaver_LDADD = \
-	@FREETYPE_LIBS@
-
 bin_PROGRAMS = clock
 
 clock_SOURCES = \
 	clock.c \
 	text.c \
-	gfx.c
-
-ssaver_SOURCES = \
-	ssaver.c \
-	text.c \
-	io.c \
-	gfx.c
+	gfx.c \
+	io.c
 
 noinst_LTLIBRARIES = clock.la
 
@@ -33,5 +25,7 @@ install-exec-local:
 	install -d $(DESTDIR)$(CONFIGDIR)
 	$(LIBTOOL) --mode=install install clock.la $(DESTDIR)$(PLUGINDIR)
 	install -m 0755 $(srcdir)/sclock $(DESTDIR)$(bindir)
+	install -m 0755 $(srcdir)/sclocks $(DESTDIR)$(bindir)
 	install -m 0644 $(srcdir)/clock.cfg $(DESTDIR)$(PLUGINDIR)
 	install -m 0644 $(srcdir)/clock.conf $(DESTDIR)$(CONFIGDIR)
+	install -m 0644 $(srcdir)/ssaver.conf $(DESTDIR)$(CONFIGDIR)
