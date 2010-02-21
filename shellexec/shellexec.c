@@ -347,7 +347,7 @@ int res=1;
 	{
 		res=!system(dep);	
 		ClearKeys();
-//		res=ExistFile(dep);
+		res|=ExistFile(dep);
 	}
 	if(cmd && res)
 	{
