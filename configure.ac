@@ -91,6 +91,8 @@ tuxwetter/shellexec/Makefile
 sysinfo/Makefile
 clock/Makefile
 clock/shellexec/Makefile
+blockads/Makefile
+blockads/shellexec/Makefile
 pip/Makefile
 mosaic/Makefile
 enigma/Makefile

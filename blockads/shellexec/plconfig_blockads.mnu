@@ -1,0 +1,48 @@
+    MENUDON=Werbezapper-Einstellungen,/var/plugins/blockads/wzops
+        MENU=Default Rezap-Listeneintrag
+            SHELLRESOFF=&-Eintrag 1,/var/plugins/blockads/wzops reztime 01,grep -q "^RezapTime=01" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 2,/var/plugins/blockads/wzops reztime 02,grep -q "^RezapTime=02" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 3,/var/plugins/blockads/wzops reztime 03,grep -q "^RezapTime=03" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 4,/var/plugins/blockads/wzops reztime 04,grep -q "^RezapTime=04" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 5,/var/plugins/blockads/wzops reztime 05,grep -q "^RezapTime=05" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 6,/var/plugins/blockads/wzops reztime 06,grep -q "^RezapTime=06" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 7,/var/plugins/blockads/wzops reztime 07,grep -q "^RezapTime=07" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 8,/var/plugins/blockads/wzops reztime 08,grep -q "^RezapTime=08" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 9,/var/plugins/blockads/wzops reztime 09,grep -q "^RezapTime=09" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Eintrag 10,/var/plugins/blockads/wzops reztime 10,grep -q "^RezapTime=10" /var/plugins/blockads/blockads.conf
+            COMMENT=*
+            COMMENT=Nummer des Eintrags aus der Zeitliste
+            COMMENT=welcher defaultmäßig in der Zeitauswahl
+            COMMENT=bei Rückschaltung auf Kanälen, die nicht
+            COMMENT=auf dem Werbeserver unterstützt werden,
+            COMMENT=bzw. ohne Internet angeboten wird.
+        ENDMENU
+        
+        MENUSON=Zeitwerte für die Rezap-Liste,grep -q "^Time.=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 1,/var/plugins/blockads/wzops rezentry 1,grep -q "^Time1=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 2,/var/plugins/blockads/wzops rezentry 2,grep -q "^Time2=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 3,/var/plugins/blockads/wzops rezentry 3,grep -q "^Time3=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 4,/var/plugins/blockads/wzops rezentry 4,grep -q "^Time4=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 5,/var/plugins/blockads/wzops rezentry 5,grep -q "^Time5=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 6,/var/plugins/blockads/wzops rezentry 6,grep -q "^Time6=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 7,/var/plugins/blockads/wzops rezentry 7,grep -q "^Time7=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 8,/var/plugins/blockads/wzops rezentry 8,grep -q "^Time8=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 9,/var/plugins/blockads/wzops rezentry 9,grep -q "^Time9=" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Eintrag 10,/var/plugins/blockads/wzops rezentry 0,grep -q "^Time0=" /var/plugins/blockads/blockads.conf
+        ENDMENU
+        
+        MENU=Internetverbindung
+            SHELLRESOFF=&-Keine,/var/plugins/blockads/wzops iconnect,grep -q "^Internet=$" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-DSL,/var/plugins/blockads/wzops iconnect DSL,grep -q "^Internet=DSL" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-ISDN,/var/plugins/blockads/wzops iconnect ISDN,grep -q "^Internet=ISDN" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-ANALOG,/var/plugins/blockads/wzops iconnect ANALOG,grep -q "^Internet=ANALOG" /var/plugins/blockads/blockads.conf
+        ENDMENU
+     
+        MENU=Diverse Einstellungen
+        	ACTION=&Entprellzeit f~ur Server,/var/plugins/blockads/wzops debounce
+            SHELLRESON=&-Nur bei Werbung umschalten,/var/plugins/blockads/wzops zap 0,grep -q "^ZapAlways=1" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Immer umschalten,/var/plugins/blockads/wzops zap 1,grep -q "^ZapAlways=1" /var/plugins/blockads/blockads.conf
+            SHELLRESON=&-Lautst~arke nicht wiederherstellen,/var/plugins/blockads/wzops vol 0,grep -q "^KeepVolume=1" /var/plugins/blockads/blockads.conf
+            SHELLRESOFF=&-Lautst~arke wiederherstellen,/var/plugins/blockads/wzops vol 1,grep -q "^KeepVolume=1" /var/plugins/blockads/blockads.conf
+        ENDMENU
+    ENDMENU
