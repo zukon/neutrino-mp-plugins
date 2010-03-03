@@ -81,6 +81,8 @@ tuxclock/Makefile
 tuxclock/daemon/Makefile
 vncviewer/Makefile
 vncviewer/rfb/Makefile
+logomask/Makefile
+logomask/shellexec/Makefile
 dvbsub/Makefile
 shellexec/Makefile
 tuxwetter/Makefile
