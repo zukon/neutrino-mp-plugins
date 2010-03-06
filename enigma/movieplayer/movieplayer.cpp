@@ -1052,7 +1052,7 @@ eSCGuiConfig::eSCGuiConfig(): eWindow()  // Config window
 {
 	cmove(ePoint(120, 80));
 	setText(_("Options"));
-	resize(eSize( 450, 460));
+	resize(eSize( 450, 480));
 	int yPos = 10;
 	int fd = eSkin::getActive ()->queryValue ("fontsize", 16) + 8;	
 	
