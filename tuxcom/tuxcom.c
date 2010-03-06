@@ -4185,7 +4185,7 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 
 void DoTaskManager()
 {
-	FILE* pFile = OpenPipe("ps -aux");
+	FILE* pFile = OpenPipe("ps aux");
 	char* szFileBuffer = (char*)malloc(FILEBUFFER_SIZE);
 	szFileBuffer [0]= 0x00;
 	char *p = szFileBuffer, *p1, *p2, *pcur = szFileBuffer;
