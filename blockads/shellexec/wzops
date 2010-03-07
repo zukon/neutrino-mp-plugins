@@ -9,7 +9,7 @@
 ####################################################################################
 
 # DECLARE USER VARS ****************************************
-BLOCKADCFG="/var/plugins/blockads/blockads.conf"
+BLOCKADCFG="/var/tuxbox/config/blockads.conf"
 
   pth="/bin/input"
   if [ ! -e $pth ]; then

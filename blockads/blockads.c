@@ -203,7 +203,7 @@ FILE *fh;
 		{
 			fprintf(fh,"%s\n-1\n%d\n%s\n%d\n%d\n%d\n",chan,ztim,msgchan,volume,mute,debounce);
 			fclose(fh);
-			system("/var/plugins/blockads/blockad &");
+			system("/bin/blockad &");
 			if((fh=fopen(CFG_FILE, "r"))!=NULL)
 			{
 				sprintf(sstr,"ZapChan%1d=",cindex);
@@ -480,7 +480,7 @@ FILE *fh1,*fh2;
 							
 							fprintf(fh2,"%s\n%d\n%d\n%s\n%d\n%d\n%d\n",zapchan,cnum,rezap*60,msgchan,volume,mute,debounce);
 							fclose(fh2);
-							system("/var/plugins/blockads/blockad &");
+							system("/bin/blockad &");
 							sprintf(tstr,"Werbezapper fr Kanal %s aktiviert.\nSie können jetzt umschalten.\n\nWerbung läuft im Augenblick auch auf:\n",msgchan);
 							for(tv=0; tv<NUM_CHANNELS; tv++)
 							{

@@ -31,7 +31,7 @@
 #define FLG_FILE	"/tmp/blockads.flg"
 #define MSG_FILE	"/tmp/blockads.msg"
 #define STS_FILE	"/tmp/blockads.sts"
-#define CFG_FILE	"/var/plugins/blockads/blockads.conf"
+#define CFG_FILE	"/var/tuxbox/config/blockads.conf"
 #define NCF_FILE 	"/var/tuxbox/config/neutrino.conf"
 #define NUM_CHANNELS 12
 
