@@ -712,6 +712,6 @@ int main (int argc, char **argv)
 		CloseRC();
 		remove("/tmp/.logomask_kill");
 		remove("/tmp/logomaskset.*");
-		system("/var/plugins/logomask &");
+		system("/bin/logomask &");
 		return 0;
 }
