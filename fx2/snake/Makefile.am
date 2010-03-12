@@ -4,9 +4,9 @@ noinst_LTLIBRARIES = snake.la
 
 snake_la_SOURCES = snake.c somain.c
 
-snake_la_LIBADD = ../lib/libfx2.la
+snake_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
 
-snake_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version
+snake_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)

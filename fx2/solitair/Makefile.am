@@ -17,7 +17,9 @@ solitair_la_SOURCES = \
 	pnm_res.cpp \
 	backbuffer.cpp
 
-solitair_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lz
+solitair_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+
+solitair_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lz -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)

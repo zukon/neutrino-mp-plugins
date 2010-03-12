@@ -4,9 +4,9 @@ noinst_LTLIBRARIES = vierg.la
 
 vierg_la_SOURCES = board.c somain.c
 
-vierg_la_LIBADD = ../lib/libfx2.la
+vierg_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
 
-vierg_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version
+vierg_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)

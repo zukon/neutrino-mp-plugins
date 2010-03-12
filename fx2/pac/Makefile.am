@@ -4,7 +4,9 @@ noinst_LTLIBRARIES = pacman.la
 
 pacman_la_SOURCES = maze.c somain.c
 
-pacman_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version
+pacman_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+
+pacman_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)

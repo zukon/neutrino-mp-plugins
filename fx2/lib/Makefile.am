@@ -7,8 +7,7 @@ libfx2_la_SOURCES = draw.c pig.c rcinput.c math.c
 libfx2_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version
 
 install-exec-local:
-	install -d $(DESTDIR)$(PLUGINDIR)
-	$(LIBTOOL) --mode=install install libfx2.la $(DESTDIR)$(PLUGINDIR)
+	$(LIBTOOL) --mode=install install libfx2.la $(DESTDIR)$(libdir)
 
 uninstall-local:
-	-rm $(DESTDIR)$(PLUGINDIR)/libfx2.so
+	-rm $(DESTDIR)$(libdir)/libfx2.so

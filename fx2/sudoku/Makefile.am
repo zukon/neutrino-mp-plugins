@@ -4,9 +4,9 @@ noinst_LTLIBRARIES = sudoku.la
 
 sudoku_la_SOURCES = misc.cpp menu.cpp sudoku.cpp board.cpp somain.cpp
 
-sudoku_la_LIBADD = ../lib/libfx2.la
+sudoku_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
 
-sudoku_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version
+sudoku_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)

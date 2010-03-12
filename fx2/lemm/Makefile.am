@@ -4,7 +4,9 @@ noinst_LTLIBRARIES = lemmings.la
 
 lemmings_la_SOURCES = somain.c sprite.c lemm.c pic.c sound.c double.c
 
-lemmings_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lz
+lemmings_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+
+lemmings_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lz -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)

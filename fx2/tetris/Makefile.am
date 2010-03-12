@@ -4,9 +4,9 @@ noinst_LTLIBRARIES = tetris.la
 
 tetris_la_SOURCES = board.c somain.c
 
-tetris_la_LIBADD = ../lib/libfx2.la
+tetris_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
 
-tetris_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version
+tetris_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version -lfx2
 
 if !BOXTYPE_DREAMBOX
 
