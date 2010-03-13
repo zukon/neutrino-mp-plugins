@@ -199,7 +199,11 @@ int main (int argc, char **argv)
 		use_kerning = FT_HAS_KERNING(face);
 
 		desc.font.face_id = FONT;
+#if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0
+		desc.image_type = ftc_image_mono;
+#else
 		desc.flags = FT_LOAD_MONOCHROME;
+#endif
 
 
 		InitRC();
