@@ -4,7 +4,9 @@ noinst_LTLIBRARIES = outdoor.la
 
 outdoor_la_SOURCES = outdoor.c
 
-outdoor_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version
+outdoor_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+
+outdoor_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
