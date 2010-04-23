@@ -93,6 +93,7 @@ clock/Makefile
 clock/shellexec/Makefile
 blockads/Makefile
 blockads/shellexec/Makefile
+links/Makefile
 pip/Makefile
 mosaic/Makefile
 enigma/Makefile
