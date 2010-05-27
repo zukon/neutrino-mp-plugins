@@ -4,7 +4,9 @@ noinst_LTLIBRARIES = lcdcirc.la
 
 lcdcirc_la_SOURCES = lcdcirc.c
 
-lcdcirc_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version
+lcdcirc_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+
+lcdcirc_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
