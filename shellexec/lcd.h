@@ -54,13 +54,13 @@ enum
 	void LCD_update();
 
 	void LCD_draw_point (int x,int y, int state);
-	void LCD_draw_line (int x1, int y1, int x2, int y2, int state);
+	void LCD_draw_line (int ssx, int ssy, int eex, int eey, int state);
 	void LCD_draw_fill_rect (int left,int top,int right,int bottom,int state);
 	void LCD_draw_rectangle (int left,int top, int right, int bottom, int linestate,int fillstate);
 	void LCD_draw_polygon(int num_vertices, int *vertices, int state);
 	void LCD_draw_char(int x, int y, char c);
 	void LCD_draw_string(int x, int y, char *string);
 
-	void LCD_paintIcon(unsigned char *filename, int x, int y, int col);
+	void LCD_paintIcon(const char *const filename, int x, int y, int col);
 
 #endif

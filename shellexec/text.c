@@ -33,7 +33,7 @@ static unsigned sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä',
 void TranslateString(char *src)
 {
 int i,found,quota=0;
-char rc,*rptr=src,*tptr=src;
+char _rc,*rptr=src,*tptr=src;
 
 	while(*rptr != '\0')
 	{
@@ -44,19 +44,19 @@ char rc,*rptr=src,*tptr=src;
 		if(!quota && *rptr=='~')
 		{
 			++rptr;
-			rc=*rptr;
+			_rc=*rptr;
 			found=0;
-			for(i=0; i<sizeof(sc) && !found; i++)
+			for(i = 0; i < (int)sizeof(sc) && !found; i++)
 			{
-				if(rc==sc[i])
+				if(_rc==sc[i])
 				{
-					rc=tc[i];
+					_rc=tc[i];
 					found=1;
 				}
 			}
 			if(found)
 			{
-				*tptr=rc;
+				*tptr=_rc;
 			}
 			else
 			{
@@ -70,7 +70,7 @@ char rc,*rptr=src,*tptr=src;
 			if (!quota && *rptr==0xC3 && *(rptr+1))
 			{
 				found=0;
-				for(i=0; i<sizeof(su) && !found; i++)
+				for(i = 0; i < (int)sizeof(su) && !found; i++)
 				{
 					if(*(rptr+1)==su[i])
 					{
@@ -98,11 +98,11 @@ char rc,*rptr=src,*tptr=src;
  * MyFaceRequester
  ******************************************************************************/
 
-FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face *aface)
+FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library _library, FT_Pointer request_data, FT_Face *aface)
 {
 	FT_Error result;
 
-	result = FT_New_Face(library, face_id, 0, aface);
+	result = FT_New_Face(_library, face_id, 0, aface);
 
 	if(!result) printf("<Font \"%s\" loaded>\n", (char*)face_id);
 	else        printf("<Font \"%s\" failed>\n", (char*)face_id);
@@ -110,9 +110,8 @@ FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer requ
 	return result;
 }
 
-int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
+int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 {
-	int row, pitch, bit, x = 0, y = 0;
 	FT_UInt glyphindex;
 	FT_Vector kerning;
 
@@ -148,8 +147,9 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
-			if(sx + sbit->xadvance >= ex) return -1; /* limit to maxwidth */
+			if(_sx + sbit->xadvance >= _ex) return -1; /* limit to maxwidth */
 
+			int row, pitch, bit, x = 0, y = 0;
 			for(row = 0; row < sbit->height; row++)
 			{
 				for(pitch = 0; pitch < sbit->pitch; pitch++)
@@ -158,7 +158,7 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 					{
 						if(pitch*8 + 7-bit >= sbit->width) break; /* render needed bits only */
 
-						if((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit) *(lbb + startx + sx + sbit->left + kerning.x + x + var_screeninfo.xres*(starty + sy - sbit->top + y)) = color;
+						if((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit) *(lbb + startx + _sx + sbit->left + kerning.x + x + var_screeninfo.xres*(starty + _sy - sbit->top + y)) = color;
 
 						x++;
 					}
@@ -178,7 +178,7 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
  * GetStringLen
  ******************************************************************************/
 
-int GetStringLen(int sx, unsigned char *string)
+int GetStringLen(int offs, unsigned char *string)
 {
 int i, found;
 int stringlen = 0;
@@ -213,7 +213,7 @@ int stringlen = 0;
 						if(sscanf(string+1,"%3d",&i)==1)
 						{
 							string+=3;
-							stringlen=i-sx;
+							stringlen=i-offs;
 						}
 						else
 						{
@@ -227,7 +227,7 @@ int stringlen = 0;
 					else
 					{
 						found=0;
-						for(i=0; i<sizeof(sc) && !found; i++)
+						for(i = 0; i < (int)sizeof(sc) && !found; i++)
 						{
 							if(*string==sc[i])
 							{
@@ -248,9 +248,9 @@ int stringlen = 0;
  * RenderString
  ******************************************************************************/
 
-void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int size, int color)
+void RenderString(char *string, int _sx, int _sy, int maxwidth, int layout, int size, int color)
 {
-	int stringlen, ex, charwidth, i;
+	int stringlen, _ex, charwidth, i;
 	char rstr[256], *rptr=rstr;
 	int varcolor=color;
 
@@ -277,14 +277,14 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 
 		if(layout != LEFT)
 		{
-			stringlen = GetStringLen(sx, string);
+			stringlen = GetStringLen(_sx, string);
 
 			switch(layout)
 			{
-				case CENTER:	if(stringlen < maxwidth) sx += (maxwidth - stringlen)/2;
+				case CENTER:	if(stringlen < maxwidth) _sx += (maxwidth - stringlen)/2;
 						break;
 
-				case RIGHT:	if(stringlen < maxwidth) sx += maxwidth - stringlen;
+				case RIGHT:	if(stringlen < maxwidth) _sx += maxwidth - stringlen;
 			}
 		}
 
@@ -294,7 +294,7 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 
 	//render string
 
-		ex = sx + maxwidth;
+		_ex = _sx + maxwidth;
 
 		while(*rptr != '\0')
 		{
@@ -308,23 +308,23 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 					case 'Y': varcolor=YELLOW; break;
 					case 'B': varcolor=BLUE1; break;
 					case 'S': varcolor=color; break;
-					case 't': sx=((sx/TABULATOR)+1)*TABULATOR; break;
+					case 't': _sx=((_sx/TABULATOR)+1)*TABULATOR; break;
 					case 'T': 
 						if(sscanf(rptr+1,"%3d",&i)==1)
 						{
 							rptr+=3;
-							sx=i;
+							_sx=i;
 						}
 						else
 						{
-							sx=((sx/TABULATOR)+1)*TABULATOR;
+							_sx=((_sx/TABULATOR)+1)*TABULATOR;
 						}
 				}
 			}
 			else
 			{
-				if((charwidth = RenderChar(*rptr, sx, sy, ex, ((color!=CMCIT) && (color!=CMCST))?varcolor:color)) == -1) return; /* string > maxwidth */
-				sx += charwidth;
+				if((charwidth = RenderChar(*rptr, _sx, _sy, _ex, ((color!=CMCIT) && (color!=CMCST))?varcolor:color)) == -1) return; /* string > maxwidth */
+				_sx += charwidth;
 			}
 			rptr++;
 		}
@@ -336,11 +336,11 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 
 void remove_tabs(char *src)
 {
-int i;
 char *rmptr, *rmstr, *rmdptr;
 
 	if(src && *src)
 	{
+		int i;
 		rmstr=strdup(src);
 		rmdptr=rmstr;
 		rmptr=src;

@@ -30,6 +30,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <linux/fb.h>
@@ -48,6 +49,13 @@
 #if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 3
 #define FT_NEW_CACHE_API
 #endif
+
+#define ICON_BASE_PATH      "/share/tuxbox/neutrino/icons/"
+#define ICON_VAR_PATH       "/var/share/tuxbox/neutrino/icons/"
+#define ICON_BUTTON_RED     "rot.raw"
+#define ICON_BUTTON_GREEN   "gruen.raw"
+#define ICON_BUTTON_YELLOW  "gelb.raw"
+#define ICON_BUTTON_BLUE    "blau.raw"
 
 #define NCF_FILE "/var/tuxbox/config/neutrino.conf"
 #define ECF_FILE "/var/tuxbox/config/enigma/config"
@@ -196,6 +204,7 @@ struct fb_fix_screeninfo fix_screeninfo;
 struct fb_var_screeninfo var_screeninfo;
 
 int startx, starty, sx, ex, sy, ey;
+int iconb_w, iconb_h;
 char online;
 extern int MAX_FUNCS;
 extern int instance;

@@ -39,15 +39,24 @@ char circle[] =
 	0,0,0,0,0,1,1,0,0,0,0,0
 };
 */
-typedef struct { unsigned char width_lo; unsigned char width_hi; unsigned char height_lo; unsigned char height_hi; 	unsigned char transp; } IconHeader;
+//typedef struct { unsigned char width_lo; unsigned char width_hi; unsigned char height_lo; unsigned char height_hi; 	unsigned char transp; } IconHeader;
+struct rawHeader
+{
+	uint8_t width_lo;
+	uint8_t width_hi;
+	uint8_t height_lo;
+	uint8_t height_hi;
+	uint8_t transp;
+} __attribute__ ((packed));
 
+char res_iconfile[64];
 
 /******************************************************************************
  * RenderBox
  ******************************************************************************/
-void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
+void RenderBox(int _sx, int _sy, int _ex, int _ey, int rad, int col)
 {
-	int F,R=rad,ssx=startx+sx,ssy=starty+sy,dxx=ex-sx,dyy=ey-sy,rx,ry,wx,wy,count;
+	int F,R=rad,ssx=startx+_sx,ssy=starty+_sy,dxx=_ex-_sx,dyy=_ey-_sy,rx,ry,wx,wy,count;
 
 	unsigned char *pos=(lbb+ssx+var_screeninfo.xres*ssy);
 	unsigned char *pos0, *pos1, *pos2, *pos3;
@@ -206,24 +215,26 @@ void RenderCircle(int sx, int sy, char type)
 /******************************************************************************
  * PaintIcon
  ******************************************************************************/
-void PaintIcon(char *filename, int x, int y, unsigned char offset)
+void PaintIcon(const char * const filename, int x, int y, unsigned char offset)
 {
-	IconHeader iheader;
+	struct rawHeader iheader;
 	unsigned int  width, height,count,count2;
 	unsigned char pixbuf[768],*pixpos,compressed,pix1,pix2;
 	unsigned char * d = (lbb+(startx+x)+var_screeninfo.xres*(starty+y));
 	unsigned char * d2;
 	int fd;
 
-	fd = open(filename, O_RDONLY);
+	getIconFilePath(filename, res_iconfile);
+
+	fd = open(res_iconfile, O_RDONLY);
 
 	if (fd == -1)
 	{
-		printf("shellexec <unable to load icon: %s>\n", filename);
+		printf("[shellexec] %s: <unable to load icon: %s>\n", __FUNCTION__, res_iconfile);
 		return;
 	}
 
-	read(fd, &iheader, sizeof(IconHeader));
+	read(fd, &iheader, sizeof(struct rawHeader));
 
 	width  = (iheader.width_hi  << 8) | iheader.width_lo;
 	height = (iheader.height_hi << 8) | iheader.height_lo;
@@ -256,4 +267,58 @@ void PaintIcon(char *filename, int x, int y, unsigned char offset)
 	}
 	close(fd);
 	return;
+}
+
+void getIconFilePath(const char * const filename, char* res_buffer)
+{
+/*    	
+ *  	filename can be a single filename eg. "<filename>" 
+ *  	or absolute path eg. "/var/dir/<filename>" 
+ */
+	if (access(filename, 0) != -1)
+	{
+		strcpy(res_buffer, filename);
+		return;
+	}
+
+	char* defaultIconPath = (char*)calloc(strlen(ICON_BASE_PATH) + strlen(filename) +1, sizeof(char));
+	strcpy(defaultIconPath, ICON_BASE_PATH);
+	strcat(defaultIconPath, filename);
+	char* alterIconPath = (char*)calloc(strlen(ICON_VAR_PATH) + strlen(filename) +1, sizeof(char));
+	strcpy(alterIconPath, ICON_VAR_PATH);
+	strcat(alterIconPath, filename);
+
+	if (access(alterIconPath, 0) != -1)
+		strcpy(res_buffer, alterIconPath);
+	else
+		strcpy(res_buffer, defaultIconPath);
+
+	free(defaultIconPath);
+	free(alterIconPath);
+
+	return;
+}
+
+void getIconSize(const char * const filename, int* width, int* height)
+{
+	*width           = 0;
+	*height          = 0;
+	struct rawHeader header;
+	int              icon_fd;
+
+	getIconFilePath(filename, res_iconfile);
+
+	icon_fd = open(res_iconfile, O_RDONLY);
+
+	if (icon_fd == -1)
+	{
+		printf("[shellexec] %s: error while loading icon: %s %s\n", __FUNCTION__, res_iconfile, strerror(errno));
+		return;
+	}
+
+	read(icon_fd, &header, sizeof(struct rawHeader));
+	*height = (header.height_hi << 8) | header.height_lo;
+	*width = (header.width_hi << 8) | header.width_lo;
+
+	close(icon_fd);
 }

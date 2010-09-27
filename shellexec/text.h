@@ -30,9 +30,9 @@ extern int FSIZE_MED;
 extern int FSIZE_SMALL;
 
 void TranslateString(char *src);
-int GetStringLen(int sx, unsigned char *string);
-FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face *aface);
-void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int size, int color);
+int GetStringLen(int _sx, unsigned char *string);
+FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library _library, FT_Pointer request_data, FT_Face *aface);
+void RenderString(char *string, int _sx, int _sy, int maxwidth, int layout, int size, int color);
 void ShowMessage(char *mtitle, char *message, int wait);
 void remove_tabs(char *src);
 

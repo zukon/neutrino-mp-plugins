@@ -23,8 +23,10 @@
 
 #define __GFX_H__
 
-void RenderBox(int sx, int sy, int ex, int ey, int mode, int color);
+void getIconFilePath(const char * const filename, char* res_buffer);
+void getIconSize(const char * const filename, int* width, int* height);
+void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color);
 //void RenderCircle(int sx, int sy, char type);
-void PaintIcon(char *filename, int x, int y, unsigned char offset);
+void PaintIcon(const char * const filename, int x, int y, unsigned char offset);
 
 #endif

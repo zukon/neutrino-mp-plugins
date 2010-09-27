@@ -176,19 +176,19 @@ int abs(int val)
 	return (val<0)?(-val):val;
 }
 
-void LCD_draw_line (int x1, int y1, int x2, int y2, int state)  
+void LCD_draw_line (int ssx, int ssy, int eex, int eey, int state)  
 {   
 	int dx,dy,sdx,sdy,px,py,dxabs,dyabs,i;
 	float slope;
    
-	if(LCD_invalid_col(x1) || LCD_invalid_col(x2))
+	if(LCD_invalid_col(ssx) || LCD_invalid_col(eex))
 		return;
 
-	if(LCD_invalid_row(y1) || LCD_invalid_row(y2))
+	if(LCD_invalid_row(ssy) || LCD_invalid_row(eey))
 		return;
 	
-	dx=x2-x1;      
-	dy=y2-y1;      
+	dx=eex-ssx;      
+	dy=eey-ssy;      
 	dxabs=abs(dx);
 	dyabs=abs(dy);
 	sdx=LCD_sgn(dx);
@@ -196,16 +196,16 @@ void LCD_draw_line (int x1, int y1, int x2, int y2, int state)
 	if (dxabs>=dyabs) /* the line is more horizontal than vertical */ {
 		slope=(float)dy / (float)dx;
 		for(i=0;i!=dx;i+=sdx) {	     
-			px=i+x1;
-			py=(int)( slope*i+y1 );
+			px=i+ssx;
+			py=(int)( slope*i+ssy );
 			LCD_draw_point(px,py,state);
 		}
 	}
 	else /* the line is more vertical than horizontal */ {	
 		slope=(float)dx / (float)dy;
 		for(i=0;i!=dy;i+=sdy) {
-			px=(int)(slope*i+x1);
-			py=i+y1;
+			px=(int)(slope*i+ssx);
+			py=i+ssy;
 			LCD_draw_point(px,py,state);
 		}
 	}
@@ -285,27 +285,26 @@ void LCD_setIconBasePath(char *base)
 	strcpy(iconBasePath,base);
 }
 
-void LCD_paintIcon(unsigned char *filename, int x, int y, int col)
+void LCD_paintIcon(const char *const filename, int x, int y, int col)
 {
 	short width, height;
 	unsigned char tr, iconfile[512];
 	int count, count2;
 	
-
-	int fd;
+	int nfd;
 	sprintf(iconfile,"%s%s",iconBasePath,filename);
 
-	fd = open(iconfile, O_RDONLY );
+	nfd = open(iconfile, O_RDONLY );
 	
-	if (fd==-1)
+	if (nfd==-1)
 	{
 		printf("\nerror while loading icon: %s\n\n", iconfile);
 		return;
 	}
 
-	read(fd, &width,  2 );
-	read(fd, &height, 2 );
-	read(fd, &tr, 1 );
+	read(nfd, &width,  2 );
+	read(nfd, &height, 2 );
+	read(nfd, &tr, 1 );
 
 	width= ((width & 0xff00) >> 8) | ((width & 0x00ff) << 8);
 	height=((height & 0xff00) >> 8) | ((height & 0x00ff) << 8);
@@ -333,5 +332,5 @@ void LCD_paintIcon(unsigned char *filename, int x, int y, int col)
 		}
 	}
 	
-	close(fd);
+	close(nfd);
 }

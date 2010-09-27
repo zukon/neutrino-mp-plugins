@@ -28,13 +28,14 @@
 
 void plugin_exec()
 {
-	int ret, pid, status;
+	int pid, status;
 	pid=fork();
 	if (pid == -1) {
 		fprintf(stderr, "[%s.so] fork\n", SCRIPT);
 		return;
 	} else
 	if (pid == 0) {
+		int ret;
 		fprintf(stderr, "[%s.so] forked, executing %s\n", SCRIPT, SCRIPT);
 		for (ret=3 ; ret < 255; ret++)
 			close (ret);
