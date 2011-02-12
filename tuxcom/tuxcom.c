@@ -28,8 +28,7 @@
  * GetRCCode  (Code from Tuxmail)
  ******************************************************************************/
 
-#ifdef HAVE_DBOX_HARDWARE
-
+#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
 int GetRCCode(int mode)
 {
 	static int count = 0;
@@ -65,8 +64,11 @@ int GetRCCode(int mode)
 				case KEY_YELLOW:	rccode = RC_YELLOW;		break;
 				case KEY_BLUE:		rccode = RC_BLUE;		break;
 				case KEY_HELP:		rccode = RC_HELP;		break;
+				case KEY_INFO:		rccode = RC_HELP;		break;
 				case KEY_SETUP:		rccode = RC_DBOX;		break;
+				case KEY_MENU:		rccode = RC_DBOX;		break;
 				case KEY_HOME:		rccode = RC_HOME;		break;
+				case KEY_EXIT:		rccode = RC_HOME;		break;
 				case KEY_POWER:		rccode = RC_STANDBY;	break;
 				default:
 					if( ev.code > 0x7F )
@@ -368,12 +370,7 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 		}
 
 
-#if FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 0
-		if((error = FTC_SBit_Cache_Lookup(cache, &desc, glyphindex, &sbit)))
-#else
-		FTC_Node anode;
-		if((error = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, &anode)))
-#endif
+		if((error = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, NULL)))
 		{
 			printf("TuxCom <FTC_SBitCache_Lookup for Char \"%c\" failed with Errorcode 0x%.2X>\n", (int)currentchar, error);
 			return 0;
@@ -406,7 +403,8 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 					{
 						if(pitch*8 + 7-bit >= sbit->width) break; /* render needed bits only */
 
-						if((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit) *(lbb + StartX + sx + sbit->left + kerning.x + x + var_screeninfo.xres*(StartY + sy - sbit->top + y)) = color;
+						if ((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit)
+							memcpy(lbb + StartX*4 + sx*4 + (sbit->left + kerning.x + x)*4 + fix_screeninfo.line_length*(StartY + sy - sbit->top + y),bgra[color],4);
 
 						x++;
 					}
@@ -433,18 +431,13 @@ int GetStringLen(const char *string, int size)
 
 	//set size
 
-		switch (size)
-		{
-#ifdef FT_NEW_CACHE_API
-			case VERY_SMALL: desc.width = desc.height = FONTHEIGHT_VERY_SMALL; break;
-			case SMALL     : desc.width = desc.height = FONTHEIGHT_SMALL     ; break;
-			case BIG       : desc.width = desc.height = FONTHEIGHT_BIG       ; break;
-#else
-			case VERY_SMALL: desc.font.pix_width = desc.font.pix_height = FONTHEIGHT_VERY_SMALL; break;
-			case SMALL     : desc.font.pix_width = desc.font.pix_height = FONTHEIGHT_SMALL     ; break;
-		    case BIG       : desc.font.pix_width = desc.font.pix_height = FONTHEIGHT_BIG       ; break;
-#endif
-	 	}
+	switch (size)
+	{
+		case VERY_SMALL: desc.width = FONTHEIGHT_VERY_SMALL; break;
+		case SMALL     : desc.width = FONTHEIGHT_SMALL     ; break;
+		case BIG       : desc.width = FONTHEIGHT_BIG       ; break;
+	}
+	desc.height = FONTHEIGHT_SMALL;
 
 	//reset kerning
 
@@ -471,18 +464,13 @@ void RenderString(const char *string, int sx, int sy, int maxwidth, int layout, 
 
 	//set size
 
-		switch (size)
-		{
-#ifdef FT_NEW_CACHE_API
-			case VERY_SMALL: desc.width = desc.height = FONTHEIGHT_VERY_SMALL; break;
-			case SMALL     : desc.width = desc.height = FONTHEIGHT_SMALL     ; break;
-			case BIG       : desc.width = desc.height = FONTHEIGHT_BIG       ; break;
-#else
-			case VERY_SMALL: desc.font.pix_width = desc.font.pix_height = FONTHEIGHT_VERY_SMALL; break;
-			case SMALL     : desc.font.pix_width = desc.font.pix_height = FONTHEIGHT_SMALL     ; break;
-		    case BIG       : desc.font.pix_width = desc.font.pix_height = FONTHEIGHT_BIG       ; break;
-#endif
-	 	}
+	switch (size)
+	{
+		case VERY_SMALL: desc.width = FONTHEIGHT_VERY_SMALL; break;
+		case SMALL     : desc.width = FONTHEIGHT_SMALL     ; break;
+		case BIG       : desc.width = FONTHEIGHT_BIG       ; break;
+	}
+	desc.height = FONTHEIGHT_SMALL;
 
 	//set alignment
 
@@ -523,36 +511,30 @@ void RenderString(const char *string, int sx, int sy, int maxwidth, int layout, 
 void RenderBox(int sx, int sy, int ex, int ey, int mode, int color)
 {
 	int loop;
+	int tx;
+
 	if(mode == FILL)
 	{
-		for(; sy <= ey; sy++)
-		{
-			memset(lbb + StartX + sx + var_screeninfo.xres*(StartY + sy), color, ex-sx + 1);
-		}
+		for(; sy < ey; sy++)
+			for (tx = 0; tx < (ex - sx); tx++)
+				memcpy(lbb + StartX*4 + sx*4 + (tx*4) + fix_screeninfo.line_length*(StartY + sy),bgra[color],4);
 	}
 	else
 	{
-		//hor lines
-
-			for(loop = sx; loop <= ex; loop++)
-			{
-				*(lbb + StartX+loop + var_screeninfo.xres*(sy+StartY)) = color;
-				*(lbb + StartX+loop + var_screeninfo.xres*(sy+1+StartY)) = color;
-
-				*(lbb + StartX+loop + var_screeninfo.xres*(ey-1+StartY)) = color;
-				*(lbb + StartX+loop + var_screeninfo.xres*(ey+StartY)) = color;
-			}
-
-		//ver lines
-
-			for(loop = sy; loop <= ey; loop++)
-			{
-				*(lbb + StartX+sx + var_screeninfo.xres*(loop+StartY)) = color;
-				*(lbb + StartX+sx+1 + var_screeninfo.xres*(loop+StartY)) = color;
-
-				*(lbb + StartX+ex-1 + var_screeninfo.xres*(loop+StartY)) = color;
-				*(lbb + StartX+ex + var_screeninfo.xres*(loop+StartY)) = color;
-			}
+		for (loop = sx; loop <= ex; loop++)
+		{
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(sy+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(sy+1+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(ey-1+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(ey+StartY), bgra[color], 4);
+		}
+		for (loop = sy; loop <= ey; loop++)
+		{
+			memcpy(lbb + StartX*4+sx*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+(sx+1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+(ex-1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+ex*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+		}
 	}
 }
 void SetLanguage()
@@ -582,62 +564,70 @@ void SetLanguage()
  * plugin_exec                                                                *
  ******************************************************************************/
 
-void plugin_exec(PluginParam *par)
+int main()
 {
 	FT_Error error;
 
 	//show versioninfo
-
-	printf(MSG_VERSION);
+	printf(MSG_VERSION"\n");
 	char szMessage[400];
 
 	//get params
-
-
 	fb = rc = sx = ex = sy = ey = -1;
 
-	for(; par; par = par->next)
-	{
-		if	(!strcmp(par->id, P_ID_FBUFFER)) fb = atoi(par->val);
-		else if	(!strcmp(par->id, P_ID_RCINPUT)) rc = atoi(par->val);
-		else if	(!strcmp(par->id, P_ID_OFF_X))   sx = atoi(par->val);
-		else if	(!strcmp(par->id, P_ID_END_X))   ex = atoi(par->val);
-		else if	(!strcmp(par->id, P_ID_OFF_Y))   sy = atoi(par->val);
-		else if	(!strcmp(par->id, P_ID_END_Y))   ey = atoi(par->val);
-	}
-#if defined HAVE_DREAMBOX_HARDWARE || defined HAVE_IPBOX_HARDWARE
-	kb=open("/dev/vc/0", O_RDONLY);
-#endif
+	char *env;
+	env = getenv("SCREEN_OFF_X");
+	if (env)
+		sx = atoi(env);
+	env = getenv("SCREEN_OFF_Y");
+	if (env)
+		sy = atoi(env);
+	env = getenv("SCREEN_END_X");
+	if (env)
+		ex = atoi(env);
+	env = getenv("SCREEN_END_Y");
+	if (env)
+		ey = atoi(env);
 
-	if(fb == -1 || rc == -1 || sx == -1 || ex == -1 || sy == -1 || ey == -1)
-	{
-		printf("TuxCom <missing Param(s)>\n");
-		return;
+	/* open Framebuffer */
+	fb=open("/dev/fb/0", O_RDWR);
+	if (fb < 0) {
+		perror("TuxCom <open framebuffer>");
+		exit(1);
 	}
+
+	/* open Remote Control */
+#if HAVE_COOL_HARDWARE
+	rc = open("/dev/input/nevis_ir", O_RDONLY);
+#elif HAVE_TRIPLEDRAGON
+	rc = open("/dev/stb/tdremote", O_RDONLY);
+#else
+#error your hardware is not yet implemented.
+#endif
+	if(rc == -1) {
+		perror("TuxCom <open remote control>");
+		close(fb);
+		exit(1);
+	}
+
 	//init framebuffer
 
 	if(ioctl(fb, FBIOGET_FSCREENINFO, &fix_screeninfo) == -1)
 	{
 		printf("TuxCom <FBIOGET_FSCREENINFO failed>\n");
-		return;
+		return 2;
 	}
 
 	if(ioctl(fb, FBIOGET_VSCREENINFO, &var_screeninfo) == -1)
 	{
 		printf("TuxCom <FBIOGET_VSCREENINFO failed>\n");
-		return;
-	}
-
-	if(ioctl(fb, FBIOPUTCMAP, &colormap) == -1)
-	{
-		printf("TuxCom <FBIOPUTCMAP failed>\n");
-		return;
+		return 2;
 	}
 
 	if(!(lfb = (unsigned char*)mmap(0, fix_screeninfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0)))
 	{
 		printf("TuxCom <mapping of Framebuffer failed>\n");
-		return;
+		return 2;
 	}
 
 	//init fontlibrary
@@ -646,7 +636,7 @@ void plugin_exec(PluginParam *par)
 	{
 		printf("TuxCom <FT_Init_FreeType failed with Errorcode 0x%.2X>", error);
 		munmap(lfb, fix_screeninfo.smem_len);
-		return;
+		return 2;
 	}
 
 	if((error = FTC_Manager_New(library, 1, 2, 0, &MyFaceRequester, NULL, &manager)))
@@ -654,7 +644,7 @@ void plugin_exec(PluginParam *par)
 		printf("TuxCom <FTC_Manager_New failed with Errorcode 0x%.2X>\n", error);
 		FT_Done_FreeType(library);
 		munmap(lfb, fix_screeninfo.smem_len);
-		return;
+		return 2;
 	}
 
 	if((error = FTC_SBitCache_New(manager, &cache)))
@@ -663,78 +653,40 @@ void plugin_exec(PluginParam *par)
 		FTC_Manager_Done(manager);
 		FT_Done_FreeType(library);
 		munmap(lfb, fix_screeninfo.smem_len);
-		return;
+		return 2;
 	}
 
-#ifdef FT_NEW_CACHE_API
-/* New freetype can be built to include old FTC_Manager_Lookup_Face compat function, but
-   we don't want that. Let the preprocessor handle it. */
-#define FTC_Manager_Lookup_Face FTC_Manager_LookupFace
-#endif
-	if ((error = FTC_Manager_Lookup_Face(manager, FONT, &face)))
+	if ((error = FTC_Manager_LookupFace(manager, FONT, &face)))
 	{
-		if ((error = FTC_Manager_Lookup_Face(manager, FONT2, &face)))
+		if ((error = FTC_Manager_LookupFace(manager, FONT2, &face)))
 		{
-			printf("TuxCom <FTC_Manager_Lookup_Face failed with Errorcode 0x%.2X>\n", error);
+			printf("TuxCom <FTC_Manager_LookupFace failed with Errorcode 0x%.2X>\n", error);
 			FTC_Manager_Done(manager);
 			FT_Done_FreeType(library);
 			munmap(lfb, fix_screeninfo.smem_len);
-			return;
+			return 2;
 		}
 		else
-#ifdef FT_NEW_CACHE_API
 			desc.face_id = FONT2;
-#else
-			desc.font.face_id = FONT2;
-#endif
 	}
 	else
-#ifdef FT_NEW_CACHE_API
 		desc.face_id = FONT;
-#else
-		desc.font.face_id = FONT;
-#endif
-
 	use_kerning = FT_HAS_KERNING(face);
 
-#if FREETYPE_MAJOR  == 2 && FREETYPE_MINOR == 0
-	desc.image_type = ftc_image_mono;
-#else
 	desc.flags = FT_LOAD_MONOCHROME;
-#endif
-
-
 
 	//init backbuffer
 
-	if(!(lbb = malloc(var_screeninfo.xres*var_screeninfo.yres)))
+	if (!(lbb = malloc(fix_screeninfo.line_length * var_screeninfo.yres)))
 	{
 		printf("TuxCom <allocating of Backbuffer failed>\n");
 		FTC_Manager_Done(manager);
 		FT_Done_FreeType(library);
 		munmap(lfb, fix_screeninfo.smem_len);
-		return;
+		return 2;
 	}
-	memset(lbb, 0, var_screeninfo.xres*var_screeninfo.yres);
+	memset(lbb, 0, fix_screeninfo.line_length * var_screeninfo.yres);
 	RenderBox(0,0,var_screeninfo.xres,var_screeninfo.yres,FILL,BLACK);
-
-#ifndef HAVE_TRIPLEDRAGON
-	//open avs
-	if((avs = open(AVS, O_RDWR)) == -1)
-	{
-		printf("TuxCom <open AVS>");
-		return;
-	}
-	ioctl(avs, AVSIOGSCARTPIN8, &fnc_old);
-	ioctl(avs, AVSIOSSCARTPIN8, &fncmodes[screenmode]);
-	//open saa
-	if((saa = open(SAA, O_RDWR)) == -1)
-	{
-		printf("TuxCom <open SAA>");
-		return;
-	}
-#endif
-
 
 	//init data
 	curframe = 0;
@@ -760,14 +712,20 @@ void plugin_exec(PluginParam *par)
 	memset(&finfo[0], 0, sizeof(finfo[0]));
 	memset(&finfo[1], 0, sizeof(finfo[0]));
 
+	if (ex == -1 || sx == -1 || ey == -1 || sy == -1) {
+		sx = 40;
+		ex = var_screeninfo.xres - 40;
+		sy = 40;
+		ey = var_screeninfo.yres - 40;
+	}
 
 	// center output on screen
 	StartX = sx;
 	StartY = sy;
 	viewx = ex - sx;
 	viewy = ey - sy;
-    menuitemwidth  = viewx / MENUITEMS;
-    menuitemnumber = viewx / (MENUITEMS*6);
+	menuitemwidth  = viewx / MENUITEMS;
+	menuitemnumber = viewx / (MENUITEMS*6);
 
 	framerows = (viewy-MENUSIZE - 3*BORDERSIZE - FONTHEIGHT_SMALL) / FONTHEIGHT_SMALL;
 
@@ -780,29 +738,29 @@ void plugin_exec(PluginParam *par)
 
 	SetLanguage();
 
-#ifndef HAVE_TRIPLEDRAGON
+#if 0
 	ioctl(saa, SAAIOGWSS, &saa_old);
 	ioctl(saa, SAAIOSWSS, &saamodes[screenmode]);
 #endif
 	// setup screen
 	RenderFrame(LEFTFRAME);
 	RenderFrame(RIGHTFRAME);
-	memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
 	printf("TuxCom init successful\n");
 
 	// lock keyboard-conversions, this is done by the plugin itself
 	fclose(fopen(KBLCKFILE,"w"));
 
 #if defined HAVE_DREAMBOX_HARDWARE || defined HAVE_IPBOX_HARDWARE
- 	fcntl(rc, F_SETFL, O_NONBLOCK);
+//	fcntl(rc, F_SETFL, O_NONBLOCK);
 #endif
 #ifdef HAVE_DBOX_HARDWARE
-	fcntl(rc, F_SETFL, fcntl(rc, F_GETFL) &~ O_NONBLOCK);
+//	fcntl(rc, F_SETFL, fcntl(rc, F_GETFL) &~ O_NONBLOCK);
 #endif
 
 	int dosave = autosave;
 	int firstentry = 1;
- 	struct fileentry *pfe;
+	struct fileentry *pfe;
 	char action[256];
 	char szSel [256];
 	int pos, check;
@@ -825,7 +783,7 @@ void plugin_exec(PluginParam *par)
 				if (strcmp(szP,szPass) != 0) break;
 				RenderFrame(LEFTFRAME);
 				RenderFrame(RIGHTFRAME);
-				memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+				memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
 			}
 		}
 		firstentry = 0;
@@ -1419,7 +1377,7 @@ void plugin_exec(PluginParam *par)
 			finfo[curframe].first     = finfo[curframe].selected - framerows+1;
 		RenderFrame(LEFTFRAME);
 		RenderFrame(RIGHTFRAME);
-		memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 
 	}while(rccode != RC_HOME);
 
@@ -1437,7 +1395,7 @@ void plugin_exec(PluginParam *par)
 	// enable keyboard-conversion again
 	unlink(KBLCKFILE);
 
-#ifndef HAVE_TRIPLEDRAGON
+#if 0
 	//restore videoformat
 	ioctl(avs, AVSIOSSCARTPIN8, &fnc_old);
 	ioctl(saa, SAAIOSWSS, &saa_old);
@@ -1456,7 +1414,8 @@ void plugin_exec(PluginParam *par)
 #if defined HAVE_DREAMBOX_HARDWARE || defined HAVE_IPBOX_HARDWARE
 	if (kb != -1) close(kb);
 #endif
-	return;
+	close(rc);
+	return 0;
 }
 
 /******************************************************************************
@@ -1507,7 +1466,7 @@ void RenderMenuLine(int highlight, int refresh)
 		RenderString(colorline[colortool[i]*NUM_LANG+language], (viewx/COLORBUTTONS) *i , viewy- FONT_OFFSET_BIG , viewx/COLORBUTTONS, CENTER, SMALL  , (i == 2 ? BLACK : WHITE));
 	}
 	if (refresh == YES)
-		memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 
 }
 
@@ -1802,7 +1761,7 @@ int MessageBox(const char* msg1, const char* msg2, int mode)
 
 					RenderBox(viewx/2 + 2* BORDERSIZE               , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 2* BORDERSIZE +BUTTONWIDTH   ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == 1 ? WHITE : GREEN));
 					RenderBox(viewx/2 + 2* BORDERSIZE             +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH -1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == 1 ? WHITE : GREEN));
-					memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+					memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 					break;
 				case 2:
 					RenderBox(viewx/2 - 4* BORDERSIZE - BUTTONWIDTH - BUTTONWIDTH/2  , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 - 4* BORDERSIZE  - BUTTONWIDTH/2              ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == 0 ? WHITE : RED  ));
@@ -1813,7 +1772,7 @@ int MessageBox(const char* msg1, const char* msg2, int mode)
 
 					RenderBox(viewx/2 + 4* BORDERSIZE + BUTTONWIDTH/2                , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2  ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == 2 ? BLACK : YELLOW ));
 					RenderBox(viewx/2 + 4* BORDERSIZE + BUTTONWIDTH/2              +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2-1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == 2 ? BLACK : YELLOW ));
-					memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+					memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 					break;
 				case 4:
 					RenderBox(viewx/2 - 4* BORDERSIZE - BUTTONWIDTH - BUTTONWIDTH/2  , viewy-(viewy-he)/2 - 4*BORDERSIZE - 2*BUTTONHEIGHT  , viewx/2 - 4* BORDERSIZE  - BUTTONWIDTH/2              ,viewy-(viewy-he)/2- 4* BORDERSIZE - BUTTONHEIGHT  , GRID, (sel == 0 ? WHITE : RED    ));
@@ -1830,7 +1789,7 @@ int MessageBox(const char* msg1, const char* msg2, int mode)
 
 					RenderBox(viewx/2 + 2* BORDERSIZE                                , viewy-(viewy-he)/2 - 2*BORDERSIZE -   BUTTONHEIGHT  , viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2  ,viewy-(viewy-he)/2- 2* BORDERSIZE                 , GRID, (sel == 4 ? WHITE : BLUE2  ));
 					RenderBox(viewx/2 + 2* BORDERSIZE                              +1, viewy-(viewy-he)/2 - 2*BORDERSIZE -   BUTTONHEIGHT+1, viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2-1,viewy-(viewy-he)/2- 2* BORDERSIZE               -1, GRID, (sel == 4 ? WHITE : BLUE2  ));
-					memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+					memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 					break;
 			}
 			drawsel = 0;
@@ -1913,7 +1872,7 @@ void RenderButtons(int he, int mode)
 			RenderBox((viewx-BUTTONWIDTH)/2 , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT, viewx - (viewx-BUTTONWIDTH)/2,viewy-(viewy-he)/2 - 2*BORDERSIZE , GRID, WHITE);
 			break;
 	}
-	memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+	memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 }
 
 /******************************************************************************
@@ -2060,7 +2019,7 @@ int ShowProperties()
 			RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH+1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 - 2* BORDERSIZE             -1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == YES ? WHITE : RED  ));
 			RenderBox(viewx/2 + 2* BORDERSIZE               , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 2* BORDERSIZE +BUTTONWIDTH  ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == NO ? WHITE : GREEN));
 			RenderBox(viewx/2 + 2* BORDERSIZE             +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH-1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == NO ? WHITE : GREEN));
-			memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			drawsel = 0;
 		}
 
@@ -2204,7 +2163,7 @@ void DoEditFTP(char* szFile,char* szTitle)
 			RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH+1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 - 2* BORDERSIZE             -1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == YES ? WHITE : RED  ));
 			RenderBox(viewx/2 + 2* BORDERSIZE               , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 2* BORDERSIZE +BUTTONWIDTH  ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == NO ? WHITE : GREEN));
 			RenderBox(viewx/2 + 2* BORDERSIZE             +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH-1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == NO ? WHITE : GREEN));
-			memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			drawsel = 0;
 		}
 		if (end == YES)
@@ -2266,7 +2225,7 @@ void DoMainMenu()
 		}
 		RenderString(szEntry,(viewx-wi)/2+ BORDERSIZE , (viewy-he)/2 + BORDERSIZE + (i+1)*FONTHEIGHT_BIG-FONT_OFFSET , wi, CENTER, BIG, WHITE);
 	}
-	memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+	memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 	int drawsel = 0;
 	do{
 		GetRCCode(RC_NORMAL);
@@ -2285,7 +2244,7 @@ void DoMainMenu()
 								return;
 							case 2:
 								screenmode = 1-screenmode;
-#ifndef HAVE_TRIPLEDRAGON
+#if 0
 								ioctl(avs, AVSIOSSCARTPIN8, &fncmodes[screenmode]);
 								ioctl(saa, SAAIOSWSS, &saamodes[screenmode]);
 #endif
@@ -2404,7 +2363,7 @@ void DoMainMenu()
 				}
 				RenderString(szEntry,(viewx-wi)/2+ BORDERSIZE , (viewy-he)/2 + BORDERSIZE + (i+1)*FONTHEIGHT_BIG-FONT_OFFSET , wi, CENTER, BIG, WHITE);
 			}
-			memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			drawsel = 0;
 		}
 	}while(1);
@@ -2501,7 +2460,7 @@ int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, in
 	colortool[3] = (pass == NO ? ACTION_INSTEXT  : ACTION_NOACTION);
 	RenderMenuLine(-1, EDIT);
 
-	memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+	memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 
 	do{
 		while (GetRCCode(RC_EDIT) == 0);
@@ -2817,7 +2776,7 @@ int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, in
 			colortool[3] = ACTION_NOACTION;
 		}
 		RenderMenuLine(-1, EDIT);
-		memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 	}while(1);
 
 	rccode = -1;
@@ -3870,7 +3829,7 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 	            p = p1+1;
 			}
 			pStop = p;
-			memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			while (GetRCCode(RC_NORMAL) == 0);
 			switch (rccode)
 			{
@@ -4289,7 +4248,7 @@ void DoTaskManager()
 			}
 			RenderBox(  viewx/6 +3*BORDERSIZE, BORDERSIZE+FONTHEIGHT_BIG  ,   viewx/6 + 4*BORDERSIZE, viewy-MENUSIZE             , FILL, WHITE);
 			RenderBox(  viewx/3 -2*BORDERSIZE, BORDERSIZE+FONTHEIGHT_BIG  ,   viewx/3 -   BORDERSIZE, viewy-MENUSIZE             , FILL, WHITE);
-			memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			while (GetRCCode(RC_NORMAL) == 0);
 			switch (rccode)
 			{
@@ -4795,7 +4754,7 @@ void ShowFile(FILE* pipe, char* szAction)
 
 		if (row > framerows - 2)
 		{
-			memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			while (1)
 			{
 				GetRCCode(RC_NORMAL);
@@ -4816,7 +4775,7 @@ void ShowFile(FILE* pipe, char* szAction)
 	}
 	if (row>0)
 	{
-		memcpy(lfb, lbb, var_screeninfo.xres*var_screeninfo.yres);
+		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 		while (1)
 		{
 			GetRCCode(RC_NORMAL);

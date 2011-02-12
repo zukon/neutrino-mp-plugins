@@ -23,6 +23,7 @@
 */
 
 #include <config.h>
+#define _FILE_OFFSET_BITS 64
 #include <errno.h>
 #include <locale.h>
 #include <fcntl.h>
@@ -37,9 +38,9 @@
 #include <sys/mman.h>
 #include <sys/dir.h>
 #include <sys/stat.h>
-#include <plugin.h>
+//#include <plugin.h>
 
-#ifndef HAVE_TRIPLEDRAGON
+#if 0
 #include <dbox/avs_core.h>
 #include <dbox/saa7126_core.h>
 #define AVS "/dev/dbox/avs0"
@@ -57,7 +58,7 @@
 #include FT_CACHE_SMALL_BITMAPS_H
 
 
-#ifdef HAVE_DBOX_HARDWARE
+#ifdef HAVE_COOL_HARDWARE
 #include <linux/input.h>
 #endif
 
@@ -78,7 +79,7 @@
 #define FILEBUFFER_SIZE (100 * 1024) // Edit files up to 100k
 #define FTPBUFFER_SIZE  (200 * 1024) // FTP Download Buffer size
 
-#define MSG_VERSION    "Tuxbox Commander Version 1.16"
+#define MSG_VERSION    "Tuxbox Commander Version 1.17-hd"
 #define MSG_COPYRIGHT  "© dbluelle 2004-2007"
 
 #if defined HAVE_DREAMBOX_HARDWARE || defined HAVE_IPBOX_HARDWARE
@@ -160,7 +161,7 @@ static const signed char rccodes[0x23] =
 #endif
 
 
-#ifdef HAVE_DBOX_HARDWARE
+#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
 // rc codes
 #define	RC_0			'0'
 #define	RC_1			'1'
@@ -276,13 +277,9 @@ int rcaltgrtable[] =
 
 //freetype stuff
 
-#define FONT FONTDIR "/pakenham.ttf"
+#define FONT "/share/fonts/neutrino.ttf"
 // if font is not in usual place, we look here:
-#define FONT2 "/var/tuxbox/config/enigma/fonts/pakenham.ttf"
-
-#if (FREETYPE_MAJOR > 2 || (FREETYPE_MAJOR == 2 && (FREETYPE_MINOR > 1 || (FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 8))))
-#define FT_NEW_CACHE_API
-#endif
+#define FONT2 "/share/fonts/pakenham.ttf"
 
 enum {LANG_INT,LANG_DE, LANG_IT, LANG_SV, LANG_PT};
 enum {RC_NORMAL,RC_EDIT};
@@ -293,11 +290,7 @@ FT_Library		library;
 FTC_Manager		manager;
 FTC_SBitCache		cache;
 FTC_SBit		sbit;
-#if FREETYPE_MAJOR  == 2 && FREETYPE_MINOR == 0
-FTC_Image_Desc		desc;
-#else
 FTC_ImageTypeRec	desc;
-#endif
 FT_Face			face;
 FT_UInt			prev_glyphindex;
 FT_Bool			use_kerning;
@@ -324,6 +317,21 @@ unsigned char *lfb = 0, *lbb = 0;
 struct fb_fix_screeninfo fix_screeninfo;
 struct fb_var_screeninfo var_screeninfo;
 
+#if HAVE_TRIPLEDRAGON
+static unsigned char bgra[][4] = {
+"\x00\x00\x00\x00", "\xFF\xFF\xFF\xFF", "\xFF\x00\x00\x00", "\xFF\x00\x00\x80",
+"\xFF\x00\x80\xFF", "\xFF\xFF\xC0\x00", "\xFF\x00\xD0\x00", "\xFF\xE8\xE8\x00",
+"\xFF\xFF\x00\x00", "\xFF\xB0\xB0\xB0", "\xFF\x00\xFF\x00", "\xFF\x50\x50\x50",
+"\xC0\x00\x00\x80", "\xC0\x50\x50\x50", "\xFF\x00\x40\xFF" };
+#else
+static unsigned char bgra[][4] = {
+"\x00\x00\x00\x00", "\xFF\xFF\xFF\xFF", "\x00\x00\x00\xFF", "\x80\x00\x00\xFF",
+"\xFF\x80\x00\xFF", "\x00\xC0\xFF\xFF", "\x00\xD0\x00\xFF", "\x00\xE8\xE8\xFF",
+"\x00\x00\xFF\xFF", "\xB0\xB0\xB0\xFF", "\x00\xFF\x00\xFF", "\x50\x50\x50\xFF",
+"\x80\x00\x00\xC0", "\x50\x50\x50\xC0", "\xFF\x40\x00\xFf" };
+#endif
+#define CONFIG_FILE "/var/tuxbox/config/tuxcom.conf"
+
 unsigned short rd[] = {0xFF<<8, 0x00<<8, 0x00<<8, 0x00<<8, 0xFF<<8, 0x00<<8, 0xE8<<8, 0xFF<<8, 0xb0<<8, 0x00<<8, 0x50<<8, 0x00<<8, 0x50<<8, 0x00<<8};
 unsigned short gn[] = {0xFF<<8, 0x00<<8, 0x00<<8, 0x80<<8, 0xC0<<8, 0xd0<<8, 0xE8<<8, 0x00<<8, 0xb0<<8, 0xff<<8, 0x50<<8, 0x00<<8, 0x50<<8, 0x40<<8};
 unsigned short bl[] = {0xFF<<8, 0x00<<8, 0x80<<8, 0xFF<<8, 0x00<<8, 0x00<<8, 0x00<<8, 0x00<<8, 0xb0<<8, 0x00<<8, 0x50<<8, 0x80<<8, 0x50<<8, 0xff<<8};
@@ -334,7 +342,7 @@ struct fb_cmap colormap = {1, 14, rd, gn, bl, tr};
 int trans_map     [] = {BLUE1,BLUE_TRANSP,TRANSP};
 int trans_map_mark[] = {GRAY2,GRAY_TRANSP,GRAY_TRANSP};
 
-#ifdef HAVE_DBOX_HARDWARE
+#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
 struct input_event ev;
 #endif
 
@@ -366,7 +374,7 @@ char szTextSearchstring[FILENAME_MAX];
 char szPass[20];
 long commandsize;
 
-#ifndef HAVE_TRIPLEDRAGON
+#ifdef HAVE_DBOX_HARDWARE
 int fncmodes[] = {AVS_FNCOUT_EXT43, AVS_FNCOUT_EXT169};
 int saamodes[] = {SAA_WSS_43F, SAA_WSS_169F};
 #endif
