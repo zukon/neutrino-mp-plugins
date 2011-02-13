@@ -9,7 +9,7 @@ else
 SUBDIRS += pluginx
 endif
 
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = \
-	tuxbox-plugins.pc
+#pkgconfigdir = $(libdir)/pkgconfig
+#pkgconfig_DATA = \
+#	tuxbox-plugins.pc
 

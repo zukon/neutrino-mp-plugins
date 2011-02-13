@@ -11,11 +11,13 @@ AM_PROG_LIBTOOL
 
 TUXBOX_BOXTYPE
 
+if false; then
 if test "$BOXTYPE" != "tripledragon"; then
 # we neither have dvb headers nor driver sources nor the dbox capture api on TD ;)
 TUXBOX_APPS_DVB
 TUXBOX_APPS_DRIVER
 TUXBOX_APPS_CAPTURE
+fi
 fi
 
 # needed by enigma/movieplayer
