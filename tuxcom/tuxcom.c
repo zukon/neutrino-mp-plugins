@@ -3652,7 +3652,16 @@ void InsertText(char* pStart, char* pEnd,char* szText, int sel, int* pcount)
 void DoEditFile(char* szFile, char* szTitle,  int writable)
 {
 	FILE* pFile = fopen(szFile,"r");
+	if (!pFile) {
+		perror("DoEditFile fopen");
+		return;
+	};
 	char* szFileBuffer = (char*)malloc(FILEBUFFER_SIZE);
+	if (!szFileBuffer) {
+		perror("DoEditFile malloc");
+		fclose(pFile);
+		return;
+	}
 	szFileBuffer [0]= 0x00;
 
 	char *p = szFileBuffer, *p1, *pcur = szFileBuffer, *pStart = szFileBuffer, *pStop = NULL, *pMarkStart = NULL,*pMarkStop = NULL, *pMark = NULL;
