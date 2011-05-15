@@ -357,7 +357,7 @@ int avs, saa, fnc_old, saa_old, screenmode;
 int rc, fb, kb;
 int sx, ex, sy, ey;
 int PosX, PosY, StartX, StartY, FrameWidth, NameWidth, SizeWidth;
-int curframe, cursort, curvisibility, singleview;
+int curframe, cursort, curvisibility, singleview, lastnoncur;
 int tool[MENUITEMS*2];
 int colortool[COLORBUTTONS];
 int overwriteall, skipall;

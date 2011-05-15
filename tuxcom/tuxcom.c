@@ -697,6 +697,7 @@ int main()
 
 	//init data
 	curframe = 0;
+	lastnoncur = -1;
 	cursort = SORT_UP;
 	curvisibility = 0;
 	singleview = 0;
@@ -811,6 +812,7 @@ int main()
 					break;
 				case RC_OK:
 					pfe = GetSelected(curframe);
+					lastnoncur = -1; /* trigger repaint of both panels */
 					if (pfe && (S_ISDIR(pfe->fentry.st_mode) ||  (finfo[curframe].zipfile[0] != 0x00 && S_ISLNK(pfe->fentry.st_mode))))
 					{
 						if (strcmp(pfe->name,"..") == 0)
@@ -961,6 +963,7 @@ int main()
 				case RC_1:
 					if (tool[ACTION_PROPS-1] == ACTION_PROPS)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_PROPS-1, YES);
 						if (ShowProperties() == YES)
 						{
@@ -972,6 +975,7 @@ int main()
 				case RC_2:
 					if (tool[ACTION_RENAME-1] == ACTION_RENAME)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_RENAME-1, YES);
 						pfe = GetSelected(curframe);
 						char szBuf[256];
@@ -1025,6 +1029,7 @@ int main()
 				case RC_3:
 					if (tool[ACTION_VIEW-1] == ACTION_VIEW)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_VIEW-1, YES);
 						DoViewFile();
 					}
@@ -1032,6 +1037,7 @@ int main()
 				case RC_4:
 					if (tool[ACTION_EDIT-1] == ACTION_EDIT)
 					{
+						lastnoncur = -1;
 						pfe = GetSelected(curframe);
 						sprintf(action,"%s%s",finfo[curframe].path, pfe->name);
 						if (CheckZip(pfe->name) == FTP)
@@ -1059,6 +1065,7 @@ int main()
 				case RC_5:
 					if (tool[ACTION_COPY-1] == ACTION_COPY)
 					{
+						lastnoncur = -1;
 						tmpzipdir[0] = 0x00;
 						char* szZipCommand = (char*)malloc(commandsize);
 						szZipCommand[0] = 0x00;
@@ -1127,6 +1134,7 @@ int main()
 				case RC_6:
 					if (tool[ACTION_MOVE-1] == ACTION_MOVE)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_MOVE-1, YES);
 						pfe = GetSelected(curframe);
 						if (finfo[curframe].markcount > 0)
@@ -1184,6 +1192,7 @@ int main()
 				case RC_7:
 					if (tool[ACTION_MKDIR-1] == ACTION_MKDIR)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_MKDIR-1, YES);
 						char szDir[FILENAME_MAX];
 						szDir[0] = 0x00;
@@ -1218,6 +1227,7 @@ int main()
 				case RC_8:
 					if (tool[ACTION_DELETE-1] == ACTION_DELETE)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_DELETE-1, YES);
 						pfe = GetSelected(curframe);
 						if (finfo[curframe].markcount > 0)
@@ -1260,6 +1270,7 @@ int main()
 				case RC_9:
 					if (tool[ACTION_MKFILE-1] == ACTION_MKFILE)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_MKFILE-1, YES);
 						char szDir[FILENAME_MAX];
 						szDir[0] = 0x00;
@@ -1286,6 +1297,7 @@ int main()
 				case RC_0:
 					if (tool[ACTION_MKLINK-1] == ACTION_MKLINK)
 					{
+						lastnoncur = -1;
 						RenderMenuLine(ACTION_MKLINK-1, YES);
 						char szDir[FILENAME_MAX];
 						pfe = GetSelected(curframe);
@@ -1311,6 +1323,7 @@ int main()
 					break;
 				case RC_RED:
 					{
+						lastnoncur = -1;
 						char szMsg[356];
 						sprintf(szMsg,msg[MSG_COMMAND*NUM_LANG+language]);
 						char* szCommand = (char*)malloc(commandsize);
@@ -1338,6 +1351,7 @@ int main()
 					sortframe(curframe, szSel);
 					break;
 				case RC_BLUE: // Refresh
+					lastnoncur = -1;
 					FillDir(1-curframe,SELECT_NOCHANGE);
 					FillDir(  curframe,SELECT_NOCHANGE);
 					break;
@@ -1346,11 +1360,13 @@ int main()
 					if (curvisibility > 2) curvisibility = 0;
 					break;
 				case RC_DBOX: // main menu
+					lastnoncur = -1;
 					DoMainMenu();
 					break;
 				case RC_HOME:
 					if (autosave == BTN_ASK)
 					{
+						lastnoncur = -1;
 						switch (MessageBox(msg[MSG_SAVESETTINGS*NUM_LANG+language],"",YESNOCANCEL))
 						{
 							case YES:
@@ -1484,7 +1500,7 @@ void RenderMenuLine(int highlight, int refresh)
 
 void RenderFrame(int frame)
 {
-	if (singleview && curframe != frame)
+	if ((singleview || (lastnoncur == frame)) && curframe != frame)
 		return;
 
 	int row = 0;
@@ -1493,6 +1509,10 @@ void RenderFrame(int frame)
 	short bselected;
 	struct fileentry* pfe;
 
+	if (singleview)
+		lastnoncur = -1;
+	else if (curframe != frame)
+		lastnoncur = frame;
 
 	int nBackColor;
 
