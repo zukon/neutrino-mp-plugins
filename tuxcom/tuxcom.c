@@ -325,11 +325,12 @@ int GetRCCode()
  * MyFaceRequester
  ******************************************************************************/
 
-FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face *aface)
+FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library _library, FT_Pointer request_data, FT_Face *aface)
 {
 	FT_Error result;
+	(void)request_data; /* avoid compiler warning about unused argument */
 
-	result = FT_New_Face(library, face_id, 0, aface);
+	result = FT_New_Face(_library, face_id, 0, aface);
 
 	if(!result) printf("TuxCom <Font \"%s\" loaded>\n", (char*)face_id);
 	else        printf("TuxCom <Font \"%s\" failed>\n", (char*)face_id);
@@ -341,7 +342,7 @@ FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer requ
  * RenderChar
  ******************************************************************************/
 
-int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
+int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 {
 	int row, pitch, bit, x = 0, y = 0;
 	FT_UInt glyphindex;
@@ -352,10 +353,8 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 	{
 		if(color != -1)
 		{
-			if (sx+10 < ex)
-			{
-				RenderBox(sx,sy-10, sx+10,sy,GRID,color);
-			}
+			if (_sx + 10 < _ex)
+				RenderBox(_sx, _sy - 10, _sx + 10, _sy, GRID, color);
 			else
 				return -1;
 		}
@@ -400,7 +399,7 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
-			if(sx + sbit->xadvance >= ex) return -1; /* limit to maxwidth */
+			if (_sx + sbit->xadvance >= _ex) return -1; /* limit to maxwidth */
 
 			for(row = 0; row < sbit->height; row++)
 			{
@@ -411,7 +410,7 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 						if(pitch*8 + 7-bit >= sbit->width) break; /* render needed bits only */
 
 						if ((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit)
-							memcpy(lbb + StartX*4 + sx*4 + (sbit->left + kerning.x + x)*4 + fix_screeninfo.line_length*(StartY + sy - sbit->top + y),bgra[color],4);
+							memcpy(lbb + StartX*4 + _sx*4 + (sbit->left + kerning.x + x)*4 + fix_screeninfo.line_length*(StartY + _sy - sbit->top + y),bgra[color],4);
 
 						x++;
 					}
@@ -465,9 +464,9 @@ int GetStringLen(const char *string, int size)
  * RenderString
  ******************************************************************************/
 
-void RenderString(const char *string, int sx, int sy, int maxwidth, int layout, int size, int color)
+void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout, int size, int color)
 {
-	int stringlen, ex, charwidth;
+	int stringlen, _ex, charwidth;
 
 	//set size
 
@@ -487,10 +486,10 @@ void RenderString(const char *string, int sx, int sy, int maxwidth, int layout, 
 
 			switch(layout)
 			{
-				case CENTER:	if(stringlen < maxwidth) sx += (maxwidth - stringlen)/2;
+				case CENTER:	if (stringlen < maxwidth) _sx += (maxwidth - stringlen)/2;
 						break;
 
-				case RIGHT:	if(stringlen < maxwidth) sx += maxwidth - stringlen;
+				case RIGHT:	if (stringlen < maxwidth) _sx += maxwidth - stringlen;
 			}
 		}
 
@@ -500,13 +499,13 @@ void RenderString(const char *string, int sx, int sy, int maxwidth, int layout, 
 
 	//render string
 
-		ex = sx + maxwidth;
+		_ex = _sx + maxwidth;
 
 		while(*string != '\0' && *string != '\n')
 		{
-			if((charwidth = RenderChar(*string, sx, sy, ex, color)) == -1) return; /* string > maxwidth */
+			if ((charwidth = RenderChar(*string, _sx, _sy, _ex, color)) == -1) return; /* string > maxwidth */
 
-			sx += charwidth;
+			_sx += charwidth;
 			string++;
 		}
 }
@@ -515,32 +514,32 @@ void RenderString(const char *string, int sx, int sy, int maxwidth, int layout, 
  * RenderBox
  ******************************************************************************/
 
-void RenderBox(int sx, int sy, int ex, int ey, int mode, int color)
+void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 {
 	int loop;
 	int tx;
 
 	if(mode == FILL)
 	{
-		for(; sy < ey; sy++)
-			for (tx = 0; tx < (ex - sx); tx++)
-				memcpy(lbb + StartX*4 + sx*4 + (tx*4) + fix_screeninfo.line_length*(StartY + sy),bgra[color],4);
+		for(; _sy < _ey; _sy++)
+			for (tx = 0; tx < (_ex - _sx); tx++)
+				memcpy(lbb + StartX*4 + _sx*4 + (tx*4) + fix_screeninfo.line_length*(StartY + _sy),bgra[color],4);
 	}
 	else
 	{
-		for (loop = sx; loop <= ex; loop++)
+		for (loop = _sx; loop <= _ex; loop++)
 		{
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(sy+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(sy+1+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(ey-1+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(ey+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_sy+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_sy+1+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_ey-1+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_ey+StartY), bgra[color], 4);
 		}
-		for (loop = sy; loop <= ey; loop++)
+		for (loop = _sy; loop <= _ey; loop++)
 		{
-			memcpy(lbb + StartX*4+sx*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+(sx+1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+(ex-1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+ex*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+_sx*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+(_sx+1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+(_ex-1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(lbb + StartX*4+_ex*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
 		}
 	}
 }
@@ -2424,7 +2423,7 @@ void DoSearchFiles()
  * GetInputString                                                             *
  ******************************************************************************/
 
-int GetInputString(int width,int maxchars, char* str, char * msg, int pass)
+int GetInputString(int width, int maxchars, char *str, char *message, int pass)
 {
 
 
@@ -2432,7 +2431,7 @@ int GetInputString(int width,int maxchars, char* str, char * msg, int pass)
 
 
 
-	le1 = GetStringLen(msg, BIG);
+	le1 = GetStringLen(message, BIG);
 	wi = MINBOX;
 	if (width > viewx - 8* BORDERSIZE) width = viewx - 8* BORDERSIZE;
 	if (le1   > wi ) wi = le1 + 6*BORDERSIZE;
@@ -2444,7 +2443,7 @@ int GetInputString(int width,int maxchars, char* str, char * msg, int pass)
 
 	RenderBox((viewx-wi)/2 , (viewy-he) /2, viewx-(viewx-wi)/2, viewy-(viewy-he)/2, FILL, trans_map[curvisibility]);
 	RenderBox((viewx-wi)/2 , (viewy-he) /2, viewx-(viewx-wi)/2, viewy-(viewy-he)/2, GRID, WHITE);
-	RenderString(msg,(viewx-wi)/2-BORDERSIZE , (viewy-he)/2 + BORDERSIZE + FONTHEIGHT_BIG-FONT_OFFSET , wi+2*BORDERSIZE, CENTER, BIG, WHITE);
+	RenderString(message, (viewx-wi)/2-BORDERSIZE, (viewy-he)/2 + BORDERSIZE + FONTHEIGHT_BIG-FONT_OFFSET, wi+2*BORDERSIZE, CENTER, BIG, WHITE);
 
 	x = (viewx-width)/2 - BORDERSIZE;
 	y = (viewy-he)/2+ 2*BORDERSIZE + FONTHEIGHT_BIG;
@@ -4332,7 +4331,7 @@ void DoTaskManager()
 						char szCmd[2000];
 						sprintf(szCmd,"kill -9 %s", prid);
 						system(szCmd);
-						FILE* pFile = OpenPipe("ps -aux");
+						pFile = OpenPipe("ps -aux");
 						if (pFile == NULL)
 						{
 							MessageBox(MSG_VERSION,MSG_COPYRIGHT,OK);
@@ -4391,8 +4390,8 @@ void DoExecute(char* szAction, int showoutput)
 	}
 	else
 	{
-		FILE* pipe = OpenPipe(szAction);
-		if (pipe== NULL)
+		FILE* _pipe = OpenPipe(szAction);
+		if (_pipe == NULL)
 		{
 			printf("tuxcom: could not open pipe\n");
 			char message[1000];
@@ -4402,7 +4401,7 @@ void DoExecute(char* szAction, int showoutput)
 			return;
 		}
 //		ShowFile(pipe, szAction);
-		fclose(pipe);
+		fclose(_pipe);
 		DoEditFile("/tmp/tuxcom.out", (showoutput== SHOW_SEARCHRESULT ? info[INFO_SEARCH2*NUM_LANG+language] : szAction) ,(showoutput== SHOW_SEARCHRESULT ? SEARCHRESULT : NO));
 	}
 	rccode = -1;
@@ -4433,7 +4432,7 @@ void ReadZip(int typ)
 {
 	if (typ == FTP) { OpenFTP(); return;}
 	MessageBox(msg[MSG_READ_ZIP_DIR*NUM_LANG+language],"",NOBUTTON);
-	FILE* pipe;
+	FILE* _pipe;
 	char szAction[400], szLine[400], name[FILENAME_MAX];
 	char* p;
 	char d,r,w,x;
@@ -4454,8 +4453,8 @@ void ReadZip(int typ)
 	strcpy(finfo[curframe].zipfile,GetSelected(curframe)->name);
 	strcpy(finfo[curframe].zippath,"/");
 	finfo[curframe].ziptype = typ;
-	pipe = OpenPipe(szAction);
-	if (pipe== NULL)
+	_pipe = OpenPipe(szAction);
+	if (_pipe== NULL)
 	{
 		printf("tuxcom: could not open pipe\n");
 		char message[1000];
@@ -4464,7 +4463,7 @@ void ReadZip(int typ)
 
 		return;
 	}
-	while( fgets( szLine, 400, pipe ) )
+	while (fgets(szLine, 400, _pipe))
 	{
 		p=strchr(szLine,'\n');
 		if ( p )
@@ -4498,7 +4497,7 @@ void ReadZip(int typ)
 	}
 
 
-	fclose(pipe);
+	fclose(_pipe);
 
 }
 
@@ -4774,7 +4773,7 @@ int FTPcmd(int frame, const char *s1, const char *s2, char *buf)
  * ShowFile                                                                   *
  ******************************************************************************/
 
-void ShowFile(FILE* pipe, char* szAction)
+void ShowFile(FILE* _pipe, char* szAction)
 {
 	// Code from splugin (with little modifications...)
 	char *p;
@@ -4792,7 +4791,7 @@ void ShowFile(FILE* pipe, char* szAction)
 	RenderString(szAction,2*BORDERSIZE, BORDERSIZE+FONTHEIGHT_BIG-FONT_OFFSET_BIG  , viewx-4*BORDERSIZE, CENTER, BIG, WHITE);
 
 	int row = 0;
-	while( fgets( line, 128, pipe ) )
+	while (fgets(line, 128, _pipe))
 	{
 		p=strchr(line,'\n');
 		if ( p )
@@ -4860,13 +4859,13 @@ void SetPassword()
 
 FILE* OpenPipe(char* szAction)
 {
-	FILE *pipe;
+	FILE *p;
 	char szCommand[4000];
 	system("rm -f /tmp/tuxcom.out");
 	sprintf(szCommand,"%s > /tmp/tuxcom.out",szAction);
 	system(szCommand);
-	pipe = fopen("/tmp/tuxcom.out","r");
-	return pipe;
+	p = fopen("/tmp/tuxcom.out","r");
+	return p;
 }
 
 /******************************************************************************
