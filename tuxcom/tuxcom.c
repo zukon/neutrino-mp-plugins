@@ -344,7 +344,7 @@ FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library _library, FT_Pointer req
 
 int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 {
-	int row, pitch, bit, x = 0, y = 0;
+	int row, pitch, bit;
 	FT_UInt glyphindex;
 	FT_Vector kerning;
 	FT_Error error;
@@ -401,25 +401,22 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 		{
 			if (_sx + sbit->xadvance >= _ex) return -1; /* limit to maxwidth */
 
+			unsigned char *p = lbb + (StartX + _sx + sbit->left + kerning.x) * 4 + fix_screeninfo.line_length * (StartY + _sy - sbit->top);
 			for(row = 0; row < sbit->height; row++)
 			{
+				unsigned char *q = p;
 				for(pitch = 0; pitch < sbit->pitch; pitch++)
 				{
 					for(bit = 7; bit >= 0; bit--)
 					{
 						if(pitch*8 + 7-bit >= sbit->width) break; /* render needed bits only */
-
 						if ((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit)
-							memcpy(lbb + StartX*4 + _sx*4 + (sbit->left + kerning.x + x)*4 + fix_screeninfo.line_length*(StartY + _sy - sbit->top + y),bgra[color],4);
-
-						x++;
+							memcpy(q, bgra[color], 4);
+						q += 4;
 					}
 				}
-
-				x = 0;
-				y++;
+				p += fix_screeninfo.line_length;
 			}
-
 		}
 
 	//return charwidth
@@ -518,28 +515,53 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 {
 	int loop;
 	int tx;
+	unsigned char *p1, *p2, *p3, *p4;
 
 	if(mode == FILL)
 	{
+		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		for(; _sy < _ey; _sy++)
+		{
+			p2 = p1;
 			for (tx = 0; tx < (_ex - _sx); tx++)
-				memcpy(lbb + StartX*4 + _sx*4 + (tx*4) + fix_screeninfo.line_length*(StartY + _sy),bgra[color],4);
+			{
+				memcpy(p2, bgra[color], 4);
+				p2 += 4;
+			}
+			p1 += fix_screeninfo.line_length;
+		}
 	}
 	else
 	{
+		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
+		p2 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _ey);
+		p3 = p1 + fix_screeninfo.line_length;
+		p4 = p2 - fix_screeninfo.line_length;
 		for (loop = _sx; loop <= _ex; loop++)
 		{
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_sy+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_sy+1+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_ey-1+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+loop*4 + fix_screeninfo.line_length*(_ey+StartY), bgra[color], 4);
+			memcpy(p1, bgra[color], 4);
+			memcpy(p2, bgra[color], 4);
+			memcpy(p3, bgra[color], 4);
+			memcpy(p4, bgra[color], 4);
+			p1 += 4;
+			p2 += 4;
+			p3 += 4;
+			p4 += 4;
 		}
+		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
+		p2 = lbb + (StartX + _ex) * 4 + fix_screeninfo.line_length * (StartY + _sy);
+		p3 = p1 + 4;
+		p4 = p2 - 4;
 		for (loop = _sy; loop <= _ey; loop++)
 		{
-			memcpy(lbb + StartX*4+_sx*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+(_sx+1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+(_ex-1)*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
-			memcpy(lbb + StartX*4+_ex*4 + fix_screeninfo.line_length*(loop+StartY), bgra[color], 4);
+			memcpy(p1, bgra[color], 4);
+			memcpy(p2, bgra[color], 4);
+			memcpy(p3, bgra[color], 4);
+			memcpy(p4, bgra[color], 4);
+			p1 += fix_screeninfo.line_length;
+			p2 += fix_screeninfo.line_length;
+			p3 = p1 + 4;
+			p4 = p2 - 4;
 		}
 	}
 }
