@@ -361,6 +361,13 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
 		}
 		return 10;
 	}
+
+	if (currentchar == '\t')
+	{
+		/* simulate horizontal TAB */
+		return 15;
+	};
+
 	//load char
 
 		if(!(glyphindex = FT_Get_Char_Index(face, currentchar)))
