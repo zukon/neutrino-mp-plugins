@@ -3679,10 +3679,13 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 	memset(szFileBuffer,0,FILEBUFFER_SIZE);
 	while( fgets( p, FILEBUFFER_SIZE - offset, pFile ) )
 	{
-	  offset+=strlen(p);
-	  count++;
-	  if (offset >= FILEBUFFER_SIZE ) break;
-	  p = (char*)(p+strlen(p));
+		size_t l = strlen(p);
+		offset += l;
+		count++;
+		/* fgets gets max. size-1 bytes */
+		if (offset >= FILEBUFFER_SIZE -1)
+			break;
+		p += l;
 	}
 	lstat(szFile,&st);
 
@@ -3728,10 +3731,12 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 				offset = 0;
 				while( fgets( p, FILEBUFFER_SIZE-offset, pFile ) )
 				{
-				  offset+=strlen(p);
-				  count++;
-				  if (offset >= FILEBUFFER_SIZE ) break;
-				  p = (char*)(p+strlen(p));
+					size_t l = strlen(p);
+					offset += l;
+					count++;
+					if (offset >= FILEBUFFER_SIZE - 1)
+						break;
+					p += l;
 				}
 				if (readall == NO) totalcount = curcount + count;
 				if (feof(pFile)) // EOF reached
@@ -3754,10 +3759,12 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 				offset = 0;
 				while( fgets( p, FILEBUFFER_SIZE-offset, pFile ) )
 				{
-				  offset+=strlen(p);
-				  count++;
-				  if (offset >= FILEBUFFER_SIZE ) break;
-				  p = (char*)(p+strlen(p));
+					size_t l = strlen(p);
+					offset += l;
+					count++;
+					if (offset >= FILEBUFFER_SIZE - 1)
+						break;
+					p += l;
 				}
 				if (filepos == 0)
 				{
@@ -4054,10 +4061,12 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 						offset = 0;
 						while( fgets( p, FILEBUFFER_SIZE-offset, pFile ) )
 						{
-						  offset+=strlen(p);
-						  count++;
-						  if (offset >= FILEBUFFER_SIZE ) break;
-						  p = (char*)(p+strlen(p));
+							size_t l = strlen(p);
+							offset += l;
+							count++;
+							if (offset >= FILEBUFFER_SIZE - 1)
+								break;
+							p += l;
 						}
 						curcount = 0;
 					}
@@ -4167,17 +4176,17 @@ void DoTaskManager()
 	memset(szFileBuffer,0,FILEBUFFER_SIZE);
 	while( fgets( p, FILEBUFFER_SIZE - offset, pFile ) )
 	{
-	  if (offset == 0) // ignore first line
-	  {
-		  offset+=strlen(p);
-		  continue;
-	  }
-
-
-	  count++;
-	  offset+=strlen(p);
-	  if (offset >= FILEBUFFER_SIZE ) break;
-	  p = (char*)(p+strlen(p));
+		size_t l = strlen(p);
+		if (offset == 0) // ignore first line
+		{
+			offset += l;
+			continue;
+		}
+		count++;
+		offset += l;
+		if (offset >= FILEBUFFER_SIZE - 1)
+			break;
+		p += l;
 	}
 	fclose(pFile);
 
@@ -4307,16 +4316,18 @@ void DoTaskManager()
 						memset(szFileBuffer,0,FILEBUFFER_SIZE);
 						while( fgets( p, FILEBUFFER_SIZE - offset, pFile ) )
 						{
-						  count++;
-						  if (offset == 0) // ignore first line
-						  {
-							  offset+=strlen(p);
-							  continue;
-						  }
-						  offset+=strlen(p);
-						  count++;
-						  if (offset >= FILEBUFFER_SIZE ) break;
-						  p = (char*)(p+strlen(p));
+							size_t l = strlen(p);
+							count++;
+							if (offset == 0) // ignore first line
+							{
+								offset += l;
+								continue;
+							}
+							offset += l;
+							count++; /* FIXME? count++ twice? */
+							if (offset >= FILEBUFFER_SIZE - 1)
+								break;
+							p += l;
 						}
 						fclose(pFile);
 					}
