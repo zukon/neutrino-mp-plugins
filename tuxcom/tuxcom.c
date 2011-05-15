@@ -1371,12 +1371,10 @@ int main()
 						{
 							case YES:
 								dosave = BTN_YES;
-								while (GetRCCode(RC_NORMAL) == 0);
 								rccode = RC_HOME;
 								break;
 							case NO:
 								dosave = BTN_NO;
-								while (GetRCCode(RC_NORMAL) == 0);
 								rccode = RC_HOME;
 								break;
 							case CANCEL:
