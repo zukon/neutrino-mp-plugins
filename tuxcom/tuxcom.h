@@ -669,7 +669,7 @@ struct frameinfo
 	unsigned long long  	marksize;
 	long          			first;
 	long		  			selected;
-	unsigned long  			count;
+	long			count;
 	unsigned long long  	size;
 	struct fileentry*		flist;
 	struct marker * 		mlist;
@@ -718,7 +718,7 @@ int 				DoMove(struct fileentry* pfe, int typ, int checktype);
 void	          	DoViewFile();
 void	          	DoEditFile(char* szFile, char* szTitle, int writable);
 void	          	DoTaskManager();
-int               	DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, int back, int pass);
+int			DoEditString(int x, int y, int width, unsigned int maxchars, char* str, int vsize, int back, int pass);
 int 	          	ShowProperties();
 void 		 	  	RenderButtons(int he, int mode);
 int 			  	flistcmp(struct fileentry * p1, struct fileentry * p2);

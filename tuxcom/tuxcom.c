@@ -1446,7 +1446,8 @@ int main()
 void RenderMenuLine(int highlight, int refresh)
 {
 	char szEntry[20];
-	int i,j;
+	int i;
+	unsigned int j;
 	RenderBox(menuitemwidth * MENUITEMS                 ,viewy-MENUSIZE, viewx, viewy-MENUSIZE / 2 , FILL, (highlight == MENUITEMS-1 ? GREEN : BLUE2) );
 	for (i = 0; i < MENUITEMS; i++)
 	{
@@ -2458,12 +2459,12 @@ int GetInputString(int width,int maxchars, char* str, char * msg, int pass)
  ******************************************************************************/
 
 
-int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, int back, int pass)
+int DoEditString(int x, int y, int width, unsigned int maxchars, char* str, int vsize, int back, int pass)
 {
-
-	int pos = 0, start = 0, slen, he = (vsize==BIG ? FONTHEIGHT_BIG : FONTHEIGHT_SMALL);
+	unsigned int pos = 0, markpos = 0, start = 0;
+	int slen, he = (vsize==BIG ? FONTHEIGHT_BIG : FONTHEIGHT_SMALL);
 	int prev_key = -1;
-	int markmode = 0, markpos=0;
+	int markmode = 0;
 	char szbuf[maxchars+1];
 	char szdst[maxchars+1];
 	char * pch;
@@ -2535,7 +2536,7 @@ int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, in
 			{
 				if (pos > 0)
 				{
-					if (pos== strlen(szdst)-1) // remove last char when at end of line
+					if (pos == strlen(szdst)-1) // remove last char when at end of line
 					{
 						szdst[pos-1] = 0x00;
 					}
@@ -2590,7 +2591,8 @@ int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, in
 						break;
 					}
 				case RC_LEFT:
-					pos--;
+					if (pos > 0)
+						pos--;
 					prev_key = -1;
 					break;
 				case RC_RIGHT:
@@ -2614,7 +2616,8 @@ int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, in
 					{
 						if (pos== strlen(szdst)-1) // remove last char when at end of line
 						{
-							pos--;
+							if (pos > 0)
+								pos--;
 							szdst[pos] = 0x00;
 						}
 						else if (szdst[pos] != 0x00)
@@ -2729,7 +2732,7 @@ int DoEditString(int x, int y, int width, int maxchars, char* str, int vsize, in
 					}
 
 		}
-		if (pos <  0            ) pos = 0;
+		// if (pos <  0            ) pos = 0; // cannot happen, pos is unsigned :)
 		if (pos >= strlen(szdst))
 		{
 			if (pos > maxchars) pos = maxchars;
@@ -3444,7 +3447,7 @@ int DoCopy(struct fileentry* pfe, int typ, int checktype, char* szZipCommand)
 				MessageBox(szMessage,"reading stream failure",OK);
 				break;
 			}
-			if (fwrite(xbuf,1,r,fnewFile) != r)
+			if ((long)fwrite(xbuf,1,r,fnewFile) != r)
 			{
 				sprintf(szMessage, msg[MSG_FTP_ERROR*NUM_LANG+language],"RETR ",pfe->name);
 				MessageBox(szMessage,"writing file failure",OK);
@@ -3663,10 +3666,10 @@ void DoViewFile()
  ******************************************************************************/
 void InsertText(char* pStart, char* pEnd,char* szText, int sel, int* pcount)
 {
-	int oldlen = (pEnd ? pEnd-pStart: strlen(pStart));
+	int oldlen = (pEnd ? pEnd-pStart: (int)strlen(pStart));
 	int newlen = strlen(szText);
 	if (pEnd && szText[newlen-1] != '\n') {szText[newlen] = '\n'; newlen++;}
-	int movlen = (pEnd ? (FILEBUFFER_SIZE-newlen <= strlen(pEnd) ? FILEBUFFER_SIZE-newlen-1 : strlen(pEnd)) : 0);
+	int movlen = (pEnd ? (FILEBUFFER_SIZE-newlen <= (int)strlen(pEnd) ? FILEBUFFER_SIZE-newlen-1 : (int)strlen(pEnd)) : 0);
 	int step = (sel > 0 && (*(pStart-1) != '\n') ? 1 : 0)+ (szText[newlen-1] != '\n' ? 1 : 0);
 	if (pEnd && (oldlen != newlen+step) && movlen > 0)
 		memmove((void*)(pStart+newlen+step),pEnd,movlen);
@@ -4012,7 +4015,7 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 						pMarkStart = pMarkStop = NULL;
 						p1 = strchr(pcur,'\n');
 						if (p1) p1++;
-						int plen = (p1 ? p1-pcur: strlen(pcur));
+						int plen = (p1 ? p1-pcur: (int)strlen(pcur));
 						strncpy(szInputBuffer,pcur,plen);
 						szInputBuffer[plen]=0x00;
 						RenderBox(0, 2*BORDERSIZE+FONTHEIGHT_BIG+(sel-row)*FONTHEIGHT_SMALL-1 , viewx, 2*BORDERSIZE+FONTHEIGHT_BIG+(sel-row+1)*FONTHEIGHT_SMALL+1, GRID, WHITE);
@@ -4037,7 +4040,7 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 					else if (writable == SEARCHRESULT)
 					{
 						p1 = strchr(pcur,'\n');
-						int plen = (p1 ? p1-pcur: strlen(pcur));
+						int plen = (p1 ? p1-pcur: (int)strlen(pcur));
 						strncpy(szInputBuffer,pcur,plen);
 						szInputBuffer[plen]=0x00;
 						char* plast = strrchr(szInputBuffer,'/');
