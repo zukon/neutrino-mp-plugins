@@ -29,7 +29,7 @@
  ******************************************************************************/
 
 #if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
-int GetRCCode(int mode)
+int GetRCCode()
 {
 	static int count = 0;
 	//get code

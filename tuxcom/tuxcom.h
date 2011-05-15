@@ -112,7 +112,7 @@ static const char *charset = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 #define KEY_HELP	0x5C82
 #endif
 
-#ifndef HAVE_DBOX_HARDWARE
+#ifdef HAVE_TRIPLEDRAGON
 #define	RC_0		0x00
 #define	RC_1		0x01
 #define	RC_2		0x02
@@ -139,9 +139,7 @@ static const char *charset = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 #define	RC_HELP		0x17
 #define	RC_DBOX		0x18
 #define	RC_HOME		0x1F
-#endif
 
-#ifdef HAVE_TRIPLEDRAGON
 #define RC_PAGEUP	RC_LEFT
 #define RC_PAGEDOWN	RC_RIGHT
 /* translate from TD rc code to the above defines */
@@ -344,7 +342,7 @@ struct fb_cmap colormap = {1, 14, rd, gn, bl, tr};
 int trans_map     [] = {BLUE1,BLUE_TRANSP,TRANSP};
 int trans_map_mark[] = {GRAY2,GRAY_TRANSP,GRAY_TRANSP};
 
-#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
+#if defined HAVE_DBOX_HARDWARE
 struct input_event ev;
 #endif
 
