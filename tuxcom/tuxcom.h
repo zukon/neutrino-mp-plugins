@@ -142,6 +142,8 @@
 #endif
 
 #ifdef HAVE_TRIPLEDRAGON
+#define RC_PAGEUP	RC_LEFT
+#define RC_PAGEDOWN	RC_RIGHT
 /* translate from TD rc code to the above defines */
 static const signed char rccodes[0x23] =
 	{ -1,
@@ -152,7 +154,7 @@ static const signed char rccodes[0x23] =
 	-1,	RC_0,	-1,	-1,
 		RC_MUTE,
 	RC_DBOX, -1, RC_HELP, RC_HOME,
-	    -1,		    -1,
+	   RC_PAGEDOWN, RC_PAGEUP,
 		   RC_UP,
 	  RC_LEFT, RC_OK, RC_RIGHT,
 		   RC_DOWN,

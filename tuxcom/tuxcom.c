@@ -311,7 +311,7 @@ int GetRCCode()
 		}
 		rccode = -1;
 
-		return 1;
+		return 0;
 	}
 
 	rccode = -1;
