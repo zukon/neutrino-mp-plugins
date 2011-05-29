@@ -1932,45 +1932,73 @@ int ShowProperties()
 
 	int sel = NO, pos = -1, mode, i, le1, wi , he = 10 * BORDERSIZE + BUTTONHEIGHT + 8 * FONTHEIGHT_BIG;
 	int ri[3];
+	char tm[3][100];
+	char *tm_info[3];
+	int tm_len[2][3];
 	char action[FILENAME_MAX];
 
 	ri[0] =  ((pfe->fentry.st_mode & S_IRUSR) == S_IRUSR ? 1 : 0);
 	ri[1] =  ((pfe->fentry.st_mode & S_IWUSR) == S_IWUSR ? 1 : 0);
 	ri[2] =  ((pfe->fentry.st_mode & S_IXUSR) == S_IXUSR ? 1 : 0);
 
+	/* pointer to the description strings */
+	tm_info[0] = info[INFO_ACCESSED * NUM_LANG + language];
+	tm_info[1] = info[INFO_MODIFIED * NUM_LANG + language];
+	tm_info[2] = info[INFO_CREATED  * NUM_LANG + language];
+	/* the three date strings for [amc]time */
+	strftime(tm[0], 100 ,info[INFO_DATETIME * NUM_LANG + language], localtime(&pfe->fentry.st_atime));
+	strftime(tm[1], 100, info[INFO_DATETIME * NUM_LANG + language], localtime(&pfe->fentry.st_mtime));
+	strftime(tm[2], 100, info[INFO_DATETIME * NUM_LANG + language], localtime(&pfe->fentry.st_ctime));
+
+	wi = 0;
+	for (i = 0; i < 3; i++) {
+		tm_len[0][i] = GetStringLen(tm_info[i], BIG);
+		tm_len[1][i] = GetStringLen(tm[i], BIG);
+		int tmp = tm_len[0][i] + tm_len[1][i] + 8 * BORDERSIZE; /* 3 left and right, 2 in the middle */
+		if (tmp > wi)
+			wi = tmp;
+	}
+
 	le1 = GetStringLen(pfe->name, BIG);
-	wi = 400;
 	if (le1 + 4*BORDERSIZE > wi  ) wi = le1 + 4*BORDERSIZE;
 	if (wi > viewx - 4* BORDERSIZE) wi = viewx - 4* BORDERSIZE;
 
+	/* box */
+	int bstartx = (viewx - wi) / 2;
+	int bstarty = (viewy - he) / 2;
+	int bendx   = bstartx + wi;
+	int bendy   = bstarty + he;
+	/* strings */
+	int sstartx = bstartx + 3 * BORDERSIZE;
+	int swidth  = wi      - 6 * BORDERSIZE;
+	int sstarty = bstarty + 2 * BORDERSIZE - FONT_OFFSET;
 	mode  =  (finfo[curframe].writable ? OKCANCEL : OK);
-	RenderBox((viewx-wi)/2 , (viewy-he) /2, viewx-(viewx-wi)/2, viewy-(viewy-he)/2, FILL, trans_map[curvisibility]);
-	RenderBox((viewx-wi)/2 , (viewy-he) /2, viewx-(viewx-wi)/2, viewy-(viewy-he)/2, GRID, WHITE);
-	RenderString(pfe->name,(viewx-wi)/2+  2* BORDERSIZE , (viewy-he)/2 + 2*BORDERSIZE + FONTHEIGHT_BIG-FONT_OFFSET , wi, CENTER, BIG, WHITE);
+	RenderBox(bstartx, bstarty, bendx, bendy, FILL, trans_map[curvisibility]);
+	RenderBox(bstartx, bstarty, bendx, bendy, GRID, WHITE);
+	RenderString(pfe->name, sstartx, sstarty + FONTHEIGHT_BIG, swidth, CENTER, BIG, WHITE);
 
 	char sizeString[200];
 	GetSizeString(sizeString,pfe->fentry.st_size,1);
 	sprintf(sizeString,"%s byte(s)",sizeString);
 
-	RenderString(sizeString,(viewx-wi)/2+  2* BORDERSIZE , (viewy-he)/2 + 2*BORDERSIZE + 2*FONTHEIGHT_BIG-FONT_OFFSET , wi, CENTER, BIG, WHITE);
+	RenderString(sizeString, sstartx, sstarty + 2 * FONTHEIGHT_BIG, wi, CENTER, BIG, WHITE);
 
-	RenderString(info[INFO_ACCESSED*NUM_LANG+language],(viewx-wi)/2+ 3* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (3)*FONTHEIGHT_BIG-FONT_OFFSET , wi, LEFT, BIG, WHITE);
-	RenderString(info[INFO_MODIFIED*NUM_LANG+language],(viewx-wi)/2+ 3* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (4)*FONTHEIGHT_BIG-FONT_OFFSET , wi, LEFT, BIG, WHITE);
-	RenderString(info[INFO_CREATED *NUM_LANG+language],(viewx-wi)/2+ 3* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (5)*FONTHEIGHT_BIG-FONT_OFFSET , wi, LEFT, BIG, WHITE);
-	char tm[100];
-	strftime(tm,100,info[INFO_DATETIME *NUM_LANG+language],localtime(&pfe->fentry.st_atime));
-	RenderString(tm,viewx/2- 2* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (3)*FONTHEIGHT_BIG-FONT_OFFSET , wi/2, RIGHT, BIG, WHITE);
-	strftime(tm,100,info[INFO_DATETIME *NUM_LANG+language],localtime(&pfe->fentry.st_mtime));
-	RenderString(tm,viewx/2- 2* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (4)*FONTHEIGHT_BIG-FONT_OFFSET , wi/2, RIGHT, BIG, WHITE);
-	strftime(tm,100,info[INFO_DATETIME *NUM_LANG+language],localtime(&pfe->fentry.st_ctime));
-	RenderString(tm,viewx/2- 2* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (5)*FONTHEIGHT_BIG-FONT_OFFSET , wi/2, RIGHT, BIG, WHITE);
-
+	int ytmp = sstarty + 3 * FONTHEIGHT_BIG;
 	for (i = 0; i < 3 ; i++)
 	{
-		RenderString(props[i*NUM_LANG+language],(viewx-wi)/2+ 3* BORDERSIZE , (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-FONT_OFFSET , wi, LEFT, BIG, WHITE);
-		RenderBox(viewx-(viewx-wi)/2 - 2* BORDERSIZE - FONTHEIGHT_BIG+2, (viewy-he)/2 + 6*BORDERSIZE + (i+5)*FONTHEIGHT_BIG+2, viewx-(viewx-wi)/2 - 2*BORDERSIZE-2, (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-2, FILL, (ri[i] == 0 ? RED : GREEN));
-		RenderBox(      (viewx-wi)/2 + 2* BORDERSIZE                 +1, (viewy-he)/2 + 6*BORDERSIZE + (i+5)*FONTHEIGHT_BIG+1, viewx-(viewx-wi)/2 - 2*BORDERSIZE-1, (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-1, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
-		RenderBox(      (viewx-wi)/2 + 2* BORDERSIZE                 +2, (viewy-he)/2 + 6*BORDERSIZE + (i+5)*FONTHEIGHT_BIG+2, viewx-(viewx-wi)/2 - 2*BORDERSIZE-2, (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-2, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
+		RenderString(tm_info[i], sstartx, ytmp, swidth, LEFT,  BIG, WHITE);
+		RenderString(tm[i],      sstartx, ytmp, swidth, RIGHT, BIG, WHITE);
+		ytmp += FONTHEIGHT_BIG;
+	}
+
+	ytmp = sstarty + 6 * FONTHEIGHT_BIG + BORDERSIZE * 2;
+	for (i = 0; i < 3 ; i++)
+	{
+		RenderString(props[i*NUM_LANG+language], sstartx, ytmp - FONT_OFFSET, wi, LEFT, BIG, WHITE);
+		RenderBox(sstartx + swidth - FONTHEIGHT_BIG, ytmp - FONTHEIGHT_BIG + 8, sstartx + swidth,                ytmp - 1, FILL, (ri[i] == 0 ? RED : GREEN));
+		RenderBox(sstartx - BORDERSIZE + 1,          ytmp - FONTHEIGHT_BIG + 4, sstartx + swidth + BORDERSIZE-1, ytmp + 2, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
+		RenderBox(sstartx - BORDERSIZE + 2,          ytmp - FONTHEIGHT_BIG + 5, sstartx + swidth + BORDERSIZE-2, ytmp + 1, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
+		ytmp += FONTHEIGHT_BIG;
 	}
 	RenderButtons(he,mode);
 	int drawsel = 0;
@@ -2054,21 +2082,27 @@ int ShowProperties()
 				default:
 					continue;
 		}
-		if (drawsel)
+
+		if (! drawsel)
+			continue;
+
+		ytmp = sstarty + 6 * FONTHEIGHT_BIG + BORDERSIZE * 2;
+		for (i = 0; i < 3 ; i++)
 		{
-			for (i = 0; i < 3 ; i++)
-			{
-				RenderBox(viewx-(viewx-wi)/2 - 2* BORDERSIZE - FONTHEIGHT_BIG+2, (viewy-he)/2 + 6*BORDERSIZE + (i+5)*FONTHEIGHT_BIG+2, viewx-(viewx-wi)/2 - 2*BORDERSIZE-2, (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-2, FILL, (ri[i] == 0 ? RED : GREEN));
-				RenderBox(      (viewx-wi)/2 + 2* BORDERSIZE                 +2, (viewy-he)/2 + 6*BORDERSIZE + (i+5)*FONTHEIGHT_BIG+2, viewx-(viewx-wi)/2 - 2*BORDERSIZE-2, (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-2, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
-				RenderBox(      (viewx-wi)/2 + 2* BORDERSIZE                 +1, (viewy-he)/2 + 6*BORDERSIZE + (i+5)*FONTHEIGHT_BIG+1, viewx-(viewx-wi)/2 - 2*BORDERSIZE-1, (viewy-he)/2 + 6*BORDERSIZE + (i+6)*FONTHEIGHT_BIG-1, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
-			}
-			RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH  , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 - 2* BORDERSIZE               ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == YES ? WHITE : RED  ));
-			RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH+1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 - 2* BORDERSIZE             -1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == YES ? WHITE : RED  ));
-			RenderBox(viewx/2 + 2* BORDERSIZE               , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 2* BORDERSIZE +BUTTONWIDTH  ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == NO ? WHITE : GREEN));
-			RenderBox(viewx/2 + 2* BORDERSIZE             +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH-1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == NO ? WHITE : GREEN));
-			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
-			drawsel = 0;
+			RenderString(props[i*NUM_LANG+language], sstartx, ytmp - FONT_OFFSET, wi, LEFT, BIG, WHITE);
+			RenderBox(sstartx + swidth - FONTHEIGHT_BIG, ytmp - FONTHEIGHT_BIG + 8, sstartx + swidth,                ytmp - 1, FILL, (ri[i] == 0 ? RED : GREEN));
+			RenderBox(sstartx - BORDERSIZE + 1,          ytmp - FONTHEIGHT_BIG + 4, sstartx + swidth + BORDERSIZE-1, ytmp + 2, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
+			RenderBox(sstartx - BORDERSIZE + 2,          ytmp - FONTHEIGHT_BIG + 5, sstartx + swidth + BORDERSIZE-2, ytmp + 1, GRID, (pos == i ? WHITE :trans_map[curvisibility]));
+			ytmp += FONTHEIGHT_BIG;
 		}
+		int ye_button = bendy - 2 * BORDERSIZE;
+		int ys_button = ye_button - BUTTONHEIGHT;
+		RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH  , ys_button,     viewx/2 - 2* BORDERSIZE               , ye_button,     GRID, (sel == YES ? WHITE : RED));
+		RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH+1, ys_button + 1, viewx/2 - 2* BORDERSIZE             -1, ye_button - 1, GRID, (sel == YES ? WHITE : RED));
+		RenderBox(viewx/2 + 2* BORDERSIZE               , ys_button,     viewx/2 + 2* BORDERSIZE +BUTTONWIDTH  , ye_button,     GRID, (sel == NO ? WHITE : GREEN));
+		RenderBox(viewx/2 + 2* BORDERSIZE             +1, ys_button + 1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH-1, ye_button - 1, GRID, (sel == NO ? WHITE : GREEN));
+		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+		drawsel = 0;
 
 	}while(1);
 	rccode = -1;
@@ -2245,7 +2279,7 @@ void DoEditFTP(char* szFile,char* szTitle)
 void DoMainMenu()
 {
 	int pos = 0, i, wi , he = (MAINMENU+1) * BORDERSIZE + MAINMENU * FONTHEIGHT_BIG;
-	wi = 500;
+	wi = viewx * 2 / 3;
 	char szEntry[200];
 	if (wi > viewx - 4* BORDERSIZE) wi = viewx - 4* BORDERSIZE;
 
