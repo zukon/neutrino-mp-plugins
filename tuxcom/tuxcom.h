@@ -58,7 +58,7 @@
 #include FT_CACHE_SMALL_BITMAPS_H
 
 
-#ifdef HAVE_COOL_HARDWARE
+#if HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON
 #include <linux/input.h>
 #endif
 
@@ -112,7 +112,8 @@ static const char *charset = " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVW
 #define KEY_HELP	0x5C82
 #endif
 
-#ifdef HAVE_TRIPLEDRAGON
+#if 0
+// HAVE_TRIPLEDRAGON
 #define	RC_0		0x00
 #define	RC_1		0x01
 #define	RC_2		0x02
@@ -161,7 +162,7 @@ static const signed char rccodes[0x23] =
 #endif
 
 
-#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
+#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON
 // rc codes
 #define	RC_0			'0'
 #define	RC_1			'1'

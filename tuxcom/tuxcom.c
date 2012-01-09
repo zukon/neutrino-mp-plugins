@@ -28,7 +28,7 @@
  * GetRCCode  (Code from Tuxmail)
  ******************************************************************************/
 
-#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE
+#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON
 int GetRCCode()
 {
 	static int count = 0;
@@ -292,7 +292,7 @@ int GetRCCode(int mode)
 }
 #endif
 
-#ifdef HAVE_TRIPLEDRAGON
+#if 0
 int GetRCCode()
 {
 	static unsigned short LastKey = -1;
@@ -625,10 +625,8 @@ int main()
 	}
 
 	/* open Remote Control */
-#if HAVE_COOL_HARDWARE
+#if HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON
 	rc = open("/dev/input/nevis_ir", O_RDONLY);
-#elif HAVE_TRIPLEDRAGON
-	rc = open("/dev/stb/tdremote", O_RDONLY);
 #else
 #error your hardware is not yet implemented.
 #endif
