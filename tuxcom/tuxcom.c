@@ -2543,7 +2543,7 @@ int DoEditString(int x, int y, int width, unsigned int maxchars, char* str, int 
 
 	do{
 		while (GetRCCode(RC_EDIT) == 0);
-#ifdef HAVE_DBOX_HARDWARE
+//#ifdef HAVE_DBOX_HARDWARE
 		if ((rccode >=0x20) && (rccode < 0x0100))
 		{
 		  kbcode=rccode;
@@ -2582,7 +2582,7 @@ int DoEditString(int x, int y, int width, unsigned int maxchars, char* str, int 
 		}
 		else
 		  kbcode = 0;
-#endif
+//#endif
 		if (kbcode != 0 && markmode == 0)
 		{
 			if (kbcode == 0x7f) // backspace
