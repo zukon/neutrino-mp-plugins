@@ -4286,6 +4286,9 @@ void DoTaskManager()
 
 	RenderMenuLine(-1, NO);
 
+	/* 3 panels */
+	int p_start[3] = { 0, viewx / 8, viewx / 4 };
+	int p_end[3]   = { viewx / 8, viewx / 4, viewx };
 
 	while( 1 )
 	{
@@ -4310,11 +4313,11 @@ void DoTaskManager()
           p= p1+1;
 		}
 		strsize = GetStringLen(MSG_COPYRIGHT, BIG);
-		RenderString(MSG_VERSION  ,2*BORDERSIZE               , BORDERSIZE+FONTHEIGHT_BIG-FONT_OFFSET_BIG  , viewx-5*BORDERSIZE-strsize, LEFT, BIG, WHITE);
-		RenderString(MSG_COPYRIGHT,viewx-2*BORDERSIZE-strsize , BORDERSIZE+FONTHEIGHT_BIG-FONT_OFFSET_BIG  , strsize+BORDERSIZE        , RIGHT, BIG, WHITE);
-		RenderString(msg[MSG_PROCESSID  *NUM_LANG+language]   , 2*BORDERSIZE               , 2*BORDERSIZE+FONTHEIGHT_BIG+FONTHEIGHT_SMALL-FONT_OFFSET, viewx/6, RIGHT, SMALL, WHITE);
-		RenderString(msg[MSG_PROCESSUSER*NUM_LANG+language]   , 5*BORDERSIZE + viewx/6     , 2*BORDERSIZE+FONTHEIGHT_BIG+FONTHEIGHT_SMALL-FONT_OFFSET, viewx/6, LEFT , SMALL, WHITE);
-		RenderString(msg[MSG_PROCESSNAME*NUM_LANG+language]   ,                viewx/3     , 2*BORDERSIZE+FONTHEIGHT_BIG+FONTHEIGHT_SMALL-FONT_OFFSET, viewx/3, LEFT , SMALL, WHITE);
+		RenderString(MSG_VERSION  ,2*BORDERSIZE              , BORDERSIZE+FONTHEIGHT_BIG-FONT_OFFSET_BIG  , viewx-5*BORDERSIZE-strsize, LEFT, BIG, WHITE);
+		RenderString(MSG_COPYRIGHT,viewx-2*BORDERSIZE-strsize, BORDERSIZE+FONTHEIGHT_BIG-FONT_OFFSET_BIG  , strsize+BORDERSIZE        , RIGHT, BIG, WHITE);
+		RenderString(msg[MSG_PROCESSID  *NUM_LANG+language]  , p_start[0]+2*BORDERSIZE    , 2*BORDERSIZE+FONTHEIGHT_BIG+FONTHEIGHT_SMALL-FONT_OFFSET, p_end[0]-2*BORDERSIZE, RIGHT, SMALL, WHITE);
+		RenderString(msg[MSG_PROCESSUSER*NUM_LANG+language]  , p_start[1]+2*BORDERSIZE    , 2*BORDERSIZE+FONTHEIGHT_BIG+FONTHEIGHT_SMALL-FONT_OFFSET, p_end[1]-2*BORDERSIZE, LEFT , SMALL, WHITE);
+		RenderString(msg[MSG_PROCESSNAME*NUM_LANG+language]  , p_start[2]+2*BORDERSIZE    , 2*BORDERSIZE+FONTHEIGHT_BIG+FONTHEIGHT_SMALL-FONT_OFFSET, p_end[2]-2*BORDERSIZE, LEFT , SMALL, WHITE);
 		RenderBox(               0, BORDERSIZE+FONTHEIGHT_BIG + 2*FONTHEIGHT_SMALL-FONT_OFFSET  , viewx     , 2*BORDERSIZE+FONTHEIGHT_BIG + 2*FONTHEIGHT_SMALL-FONT_OFFSET, FILL, WHITE);
 
 		if ( p )
@@ -4345,9 +4348,9 @@ void DoTaskManager()
 				strncpy(procname,(char*)(p + k),255);
           		p2=strchr(procname,'\n');
           		if (p2 != NULL) *p2 = 0x00;
-          		RenderString(    prid,2*BORDERSIZE           , 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET,   viewx/6 , RIGHT, SMALL, WHITE);
-          		RenderString(     uid,5*BORDERSIZE+  viewx/6 , 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET,   viewx/6 , LEFT , SMALL, WHITE);
-          		RenderString(procname,               viewx/3 , 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, 2*viewx/3 , LEFT , SMALL, WHITE);
+			RenderString(    prid,p_start[0]+2*BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, p_end[0]-p_start[0]-3*BORDERSIZE, RIGHT, SMALL, WHITE);
+			RenderString(     uid,p_start[1]+2*BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, p_end[1]-p_start[1]-3*BORDERSIZE, LEFT , SMALL, WHITE);
+			RenderString(procname,p_start[2]+2*BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, p_end[2]-p_start[2]-3*BORDERSIZE, LEFT , SMALL, WHITE);
           		p1=strchr(p,'\n');
 	            if (p1 == NULL)
 	            {
@@ -4361,8 +4364,8 @@ void DoTaskManager()
 				}
 	            p = p1+1;
 			}
-			RenderBox(  viewx/6 +3*BORDERSIZE, BORDERSIZE+FONTHEIGHT_BIG  ,   viewx/6 + 4*BORDERSIZE, viewy-MENUSIZE             , FILL, WHITE);
-			RenderBox(  viewx/3 -2*BORDERSIZE, BORDERSIZE+FONTHEIGHT_BIG  ,   viewx/3 -   BORDERSIZE, viewy-MENUSIZE             , FILL, WHITE);
+			RenderBox(p_end[0], BORDERSIZE+FONTHEIGHT_BIG, p_end[0]+BORDERSIZE, viewy-MENUSIZE, FILL, WHITE);
+			RenderBox(p_end[1], BORDERSIZE+FONTHEIGHT_BIG, p_end[1]+BORDERSIZE, viewy-MENUSIZE, FILL, WHITE);
 			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
 			while (GetRCCode(RC_NORMAL) == 0);
 			switch (rccode)
