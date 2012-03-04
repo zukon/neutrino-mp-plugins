@@ -4327,10 +4327,22 @@ void DoTaskManager()
 					RenderBox(BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+i*FONTHEIGHT_SMALL , viewx- BORDERSIZE , 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL, FILL, BLUE2);
 				}
 				if (*p == 0x00) break;
-				sscanf(p,"%s%s",prid,uid);
-
+				sscanf(p,"%s%s", uid, prid);
+				int j = 0, k, lasttype;
+				lasttype = isspace(*p);
+				/* count the no-space to space transitions to skip 16 fields */
+				for (k = 0; *(p + k); k++)
+				{
+					if (lasttype != isspace(*(p + k)))
+					{
+						lasttype = isspace(*(p + k));
+						j++;
+						if (j > 15)
+							break;
+					}
+				}
 				memset(procname,0,256);
-				strncpy(procname,(char*)(p+26),255);
+				strncpy(procname,(char*)(p + k),255);
           		p2=strchr(procname,'\n');
           		if (p2 != NULL) *p2 = 0x00;
           		RenderString(    prid,2*BORDERSIZE           , 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET,   viewx/6 , RIGHT, SMALL, WHITE);
