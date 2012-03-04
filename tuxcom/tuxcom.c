@@ -3,6 +3,7 @@
 
 	Copyright (C) 2004 'dbluelle' (dbluelle@blau-weissoedingen.de)
 	Tripledragon adaption: (C) 2009 Stefan Seyfried
+	More neutrino-hd fixes: (C) 2011-2012 Stefan Seyfried
 
 	Homepage: http://www.blau-weissoedingen.de/dreambox/
 
@@ -4241,6 +4242,45 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 	fclose(pFile);
 	free(szFileBuffer);
 }
+
+/* the number of fields is doubled, as this counts space -> no space transitions */
+int getFieldOffset(char *p, int field)
+{
+	int i = 0;
+	int lasttype, curtype, k;
+	lasttype = isspace(*p);
+
+	for (k = 0; p[k]; k++)
+	{
+		curtype = isspace(p[k]);
+		if (lasttype != curtype)
+		{
+			lasttype = curtype;
+			i++;
+			if (i >= field)
+				break;
+		}
+	}
+	return k;
+}
+
+void getUidPidProcname(char *p, char *procname, char *uid, char *prid)
+{
+	char *q;
+	int off;
+	sscanf(p, "%s%s", uid, prid);
+	off = getFieldOffset(p, 16);
+	memset(procname, 0, 256);
+	strncpy(procname, (char *)(p + off), 255);
+	q = strchr(procname, '\n');
+	if (q)
+		*q = 0x00;
+	/* strip trailing whitespace */
+	q = procname + strlen(procname);
+	while (isspace(*(--q)))
+		*q = 0x00;
+}
+
 /******************************************************************************
  * DoTaskManager                                                              *
  ******************************************************************************/
@@ -4250,7 +4290,7 @@ void DoTaskManager()
 	FILE* pFile = OpenPipe("ps aux");
 	char* szFileBuffer = (char*)malloc(FILEBUFFER_SIZE);
 	szFileBuffer [0]= 0x00;
-	char *p = szFileBuffer, *p1, *p2, *pcur = szFileBuffer;
+	char *p = szFileBuffer, *p1, *pcur = szFileBuffer;
 	char szMsg[2000], procname[256], prid[20]="",uid[100]="";
 	int offset = 0, count = 0;
 	if (pFile == NULL)
@@ -4330,24 +4370,7 @@ void DoTaskManager()
 					RenderBox(BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+i*FONTHEIGHT_SMALL , viewx- BORDERSIZE , 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL, FILL, BLUE2);
 				}
 				if (*p == 0x00) break;
-				sscanf(p,"%s%s", uid, prid);
-				int j = 0, k, lasttype;
-				lasttype = isspace(*p);
-				/* count the no-space to space transitions to skip 16 fields */
-				for (k = 0; *(p + k); k++)
-				{
-					if (lasttype != isspace(*(p + k)))
-					{
-						lasttype = isspace(*(p + k));
-						j++;
-						if (j > 15)
-							break;
-					}
-				}
-				memset(procname,0,256);
-				strncpy(procname,(char*)(p + k),255);
-          		p2=strchr(procname,'\n');
-          		if (p2 != NULL) *p2 = 0x00;
+				getUidPidProcname(p, procname, uid, prid);
 			RenderString(    prid,p_start[0]+2*BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, p_end[0]-p_start[0]-3*BORDERSIZE, RIGHT, SMALL, WHITE);
 			RenderString(     uid,p_start[1]+2*BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, p_end[1]-p_start[1]-3*BORDERSIZE, LEFT , SMALL, WHITE);
 			RenderString(procname,p_start[2]+2*BORDERSIZE, 2*BORDERSIZE+FONTHEIGHT_BIG+2*FONTHEIGHT_SMALL+(i+1)*FONTHEIGHT_SMALL -FONT_OFFSET, p_end[2]-p_start[2]-3*BORDERSIZE, LEFT , SMALL, WHITE);
@@ -4393,12 +4416,9 @@ void DoTaskManager()
 					sel = count;
 					break;
 				case RC_RED:
-					sscanf(pcur,"%s%s",prid,uid);
-					memset(procname,0,256);
-					strncpy(procname,(char*)(pcur+26),255);
-	          		p2=strchr(procname,'\n');
-	          		if (p2 != NULL) *p2 = 0x00;
-					sprintf(szMsg,msg[MSG_KILLPROC*NUM_LANG+language],procname);
+					getUidPidProcname(pcur, procname, uid, prid);
+					int off = getFieldOffset(procname, 4);
+					sprintf(szMsg, msg[MSG_KILLPROC*NUM_LANG+language], procname + off);
 					if (MessageBox(szMsg, info[INFO_PROC*NUM_LANG+language],OKCANCEL) == OK)
 					{
 						char szCmd[2000];
