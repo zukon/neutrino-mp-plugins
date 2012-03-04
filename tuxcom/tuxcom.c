@@ -4424,7 +4424,7 @@ void DoTaskManager()
 						char szCmd[2000];
 						sprintf(szCmd,"kill -9 %s", prid);
 						system(szCmd);
-						pFile = OpenPipe("ps -aux");
+						pFile = OpenPipe("ps aux");
 						if (pFile == NULL)
 						{
 							MessageBox(MSG_VERSION,MSG_COPYRIGHT,OK);
@@ -4432,19 +4432,20 @@ void DoTaskManager()
 						}
 						sel = 0;
 						p = szFileBuffer;
+						pcur = p;
 						count = 0;
+						offset = 0;
 						memset(szFileBuffer,0,FILEBUFFER_SIZE);
 						while( fgets( p, FILEBUFFER_SIZE - offset, pFile ) )
 						{
 							size_t l = strlen(p);
-							count++;
 							if (offset == 0) // ignore first line
 							{
 								offset += l;
 								continue;
 							}
 							offset += l;
-							count++; /* FIXME? count++ twice? */
+							count++;
 							if (offset >= FILEBUFFER_SIZE - 1)
 								break;
 							p += l;
