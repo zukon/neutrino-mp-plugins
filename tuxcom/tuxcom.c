@@ -399,9 +399,8 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
-			if (_sx + sbit->xadvance >= _ex) return -1; /* limit to maxwidth */
-
 			unsigned char *p = lbb + (StartX + _sx + sbit->left + kerning.x) * 4 + fix_screeninfo.line_length * (StartY + _sy - sbit->top);
+			unsigned char *r = p + (_ex - _sx) * 4;	/* end of usable box */
 			for(row = 0; row < sbit->height; row++)
 			{
 				unsigned char *q = p;
@@ -413,10 +412,15 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 						if ((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit)
 							memcpy(q, bgra[color], 4);
 						q += 4;
+						if (q > r)	/* we are past _ex */
+							break;
 					}
 				}
 				p += fix_screeninfo.line_length;
+				r += fix_screeninfo.line_length;
 			}
+			if (_sx + sbit->xadvance >= _ex)
+				return -1; /* limit to maxwidth */
 		}
 
 	//return charwidth
