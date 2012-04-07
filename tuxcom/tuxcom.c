@@ -445,7 +445,7 @@ int GetStringLen(const char *string, int size)
 		case SMALL     : desc.width = FONTHEIGHT_SMALL     ; break;
 		case BIG       : desc.width = FONTHEIGHT_BIG       ; break;
 	}
-	desc.height = FONTHEIGHT_SMALL;
+	desc.height = desc.width;//  FONTHEIGHT_SMALL;
 
 	//reset kerning
 
@@ -478,7 +478,7 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 		case SMALL     : desc.width = FONTHEIGHT_SMALL     ; break;
 		case BIG       : desc.width = FONTHEIGHT_BIG       ; break;
 	}
-	desc.height = FONTHEIGHT_SMALL;
+	desc.height = desc.width;//  FONTHEIGHT_SMALL;
 
 	//set alignment
 
@@ -660,6 +660,30 @@ int main()
 		printf("TuxCom <mapping of Framebuffer failed>\n");
 		return 2;
 	}
+
+	FONTHEIGHT_VERY_SMALL = _FONTHEIGHT_VERY_SMALL * var_screeninfo.yres / 576;
+	FONTHEIGHT_SMALL = _FONTHEIGHT_SMALL * var_screeninfo.yres / 576;
+	FONTHEIGHT_BIG = _FONTHEIGHT_BIG * var_screeninfo.yres / 576;
+	FONT_OFFSET = _FONT_OFFSET * var_screeninfo.yres / 576;
+	FONT_OFFSET_BIG = _FONT_OFFSET_BIG * var_screeninfo.yres / 576;
+	MENUSIZE = _MENUSIZE * var_screeninfo.yres / 576;
+	MINBOX = _MINBOX * var_screeninfo.yres / 576;
+	BUTTONWIDTH = _BUTTONWIDTH * var_screeninfo.yres / 576;
+	BUTTONHEIGHT = _BUTTONHEIGHT * var_screeninfo.yres / 576;
+#if HAVE_SPARK_HARDWARE
+	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x70 FB */
+	if (var_screeninfo.xres != 1280)
+	{
+		if (sx != -1)
+			sx = sx * var_screeninfo.xres / 1280;
+		if (ex != -1)
+			ex = ex * var_screeninfo.xres / 1280;
+		if (sy != -1)
+			sy = sy * var_screeninfo.yres / 720;
+		if (ey != -1)
+			ey = ey * var_screeninfo.yres / 720;
+	}
+#endif
 
 	//init fontlibrary
 
