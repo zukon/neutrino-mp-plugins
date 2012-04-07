@@ -388,9 +388,9 @@ AC_SUBST(CATALOGS)
 
 AC_DEFUN([TUXBOX_BOXTYPE],[
 AC_ARG_WITH(boxtype,
-	[  --with-boxtype          valid values: dbox2,tripledragon,dreambox,ipbox,coolstream,generic],
+	[  --with-boxtype          valid values: dbox2,tripledragon,dreambox,ipbox,coolstream,spark,generic],
 	[case "${withval}" in
-		dbox2|dreambox|ipbox|tripledragon|coolstream|generic)
+		dbox2|dreambox|ipbox|tripledragon|coolstream|spark|generic)
 			BOXTYPE="$withval"
 			;;
 		dm*)
@@ -402,7 +402,7 @@ AC_ARG_WITH(boxtype,
 	esac], [BOXTYPE="dbox2"])
 
 AC_ARG_WITH(boxmodel,
-	[  --with-boxmodel         valid for dreambox: dm500, dm500plus, dm600pvr, dm56x0, dm7000, dm7020, dm7025)
+	[  --with-boxmodel         valid for dreambox: dm500, dm500plus, dm600pvr, dm56x0, dm7000, dm7020, dm7025
                           valid for ipbox: ip200, ip250, ip350, ip400],
 	[case "${withval}" in
 		dm500|dm500plus|dm600pvr|dm56x0|dm7000|dm7020|dm7025)
@@ -432,6 +432,7 @@ AC_SUBST(BOXMODEL)
 
 AM_CONDITIONAL(BOXTYPE_DBOX2, test "$BOXTYPE" = "dbox2")
 AM_CONDITIONAL(BOXTYPE_TRIPLE, test "$BOXTYPE" = "tripledragon")
+AM_CONDITIONAL(BOXTYPE_SPARK, test "$BOXTYPE" = "spark")
 AM_CONDITIONAL(BOXTYPE_DREAMBOX, test "$BOXTYPE" = "dreambox")
 AM_CONDITIONAL(BOXTYPE_IPBOX, test "$BOXTYPE" = "ipbox")
 AM_CONDITIONAL(BOXTYPE_COOL, test "$BOXTYPE" = "coolstream")
@@ -452,6 +453,8 @@ if test "$BOXTYPE" = "dbox2"; then
 	AC_DEFINE(HAVE_DBOX_HARDWARE, 1, [building for a dbox2])
 elif test "$BOXTYPE" = "tripledragon"; then
 	AC_DEFINE(HAVE_TRIPLEDRAGON, 1, [building for a tripledragon])
+elif test "$BOXTYPE" = "spark"; then
+	AC_DEFINE(HAVE_SPARK_HARDWARE, 1, [building for a spark st7111 box])
 elif test "$BOXTYPE" = "dreambox"; then
 	AC_DEFINE(HAVE_DREAMBOX_HARDWARE, 1, [building for a dreambox])
 elif test "$BOXTYPE" = "ipbox"; then

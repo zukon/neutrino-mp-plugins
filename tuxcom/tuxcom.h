@@ -58,7 +58,7 @@
 #include FT_CACHE_SMALL_BITMAPS_H
 
 
-#if HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON
+#if HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON || HAVE_SPARK_HARDWARE
 #include <linux/input.h>
 #endif
 
@@ -162,7 +162,7 @@ static const signed char rccodes[0x23] =
 #endif
 
 
-#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON
+#if defined HAVE_DBOX_HARDWARE || defined HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON || HAVE_SPARK_HARDWARE
 // rc codes
 #define	RC_0			'0'
 #define	RC_1			'1'
