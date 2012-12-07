@@ -1610,7 +1610,9 @@ int main()
 	FTC_Manager_Done(manager);
 	FT_Done_FreeType(library);
 
+#if !defined(MARTII) || !defined(HAVE_SPARK_HARDWARE)
 	free(lbb);
+#endif
 	munmap(lfb, fix_screeninfo.smem_len);
 
 	// enable keyboard-conversion again
