@@ -806,7 +806,7 @@ int main()
 	BUTTONHEIGHT = _BUTTONHEIGHT * var_screeninfo.yres / 576;
 #ifndef MARTII
 #if HAVE_SPARK_HARDWARE
-	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x70 FB */
+	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x720 FB */
 	if (var_screeninfo.xres != 1280)
 	{
 		if (sx != -1)
