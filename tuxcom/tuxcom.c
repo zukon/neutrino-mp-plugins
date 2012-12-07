@@ -26,6 +26,8 @@
 
 #include "tuxcom.h"
 #ifdef MARTII
+#define DEFAULT_XRES 1280
+#define DEFAULT_YRES 720
 static int stride;
 #endif
 /******************************************************************************
@@ -541,7 +543,9 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 {
 	int loop;
+#if !defined(MARTII) || !defined(HAVE_SPARK_HARDWARE)
 	int tx;
+#endif
 #ifdef MARTII
 	uint32_t *p1, *p2, *p3, *p4;
 #else
@@ -550,30 +554,55 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 
 	if(mode == FILL)
 	{
-#ifdef MARTII
-		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		STMFBIO_BLT_DATA bltData;
+		memset(&bltData, 0, sizeof(STMFBIO_BLT_DATA));
+
+		bltData.operation  = BLT_OP_FILL;
+		bltData.dstOffset  = 1920 * 1080 * 4;
+		bltData.dstPitch   = DEFAULT_XRES * 4;
+
+		bltData.dst_left   = StartX + _sx;
+		bltData.dst_top    = StartY + _sy;
+		bltData.dst_right  = StartX + _ex;
+		bltData.dst_bottom = StartY + _ey;
+
+		bltData.dstFormat  = SURF_ARGB8888;
+		bltData.srcFormat  = SURF_ARGB8888;
+		bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
+		bltData.srcMemBase = STMFBGP_FRAMEBUFFER;
+		bltData.colour     = bgra[color];
+
+		if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
+			perror("RenderBox ioctl STMFBIO_BLT");
+		if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+			perror("RenderBox ioctl STMFBIO_SYNC_BLITTER");
 #else
+# ifdef MARTII
+		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
+# else
 		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
-#endif
+# endif
 		for(; _sy < _ey; _sy++)
 		{
 			p2 = p1;
 			for (tx = 0; tx < (_ex - _sx); tx++)
 			{
-#ifdef MARTII
+# ifdef MARTII
 				*p2 = bgra[color];
 				p2++;
-#else
+# else
 				memcpy(p2, bgra[color], 4);
 				p2 += 4;
-#endif
+# endif
 			}
-#ifdef MARTII
+# ifdef MARTII
 			p1 += stride;
-#else
+# else
 			p1 += fix_screeninfo.line_length;
-#endif
+# endif
 		}
+#endif
 	}
 	else
 	{
@@ -673,9 +702,6 @@ void SetLanguage()
  ******************************************************************************/
 
 #ifdef MARTII
-#define DEFAULT_XRES 1280
-#define DEFAULT_YRES 720
-
 void blit(void) {
 #ifdef HAVE_SPARK_HARDWARE
 	STMFBIO_BLT_DATA  bltData;
@@ -694,14 +720,14 @@ void blit(void) {
 
 	struct fb_var_screeninfo s;
 	if (ioctl(fb, FBIOGET_VSCREENINFO, &s) == -1)
-		perror("frameBuffer <FBIOGET_VSCREENINFO>");
+		perror("blit FBIOGET_VSCREENINFO");
 
 	bltData.dstPitch   = s.xres * 4;
 	bltData.dstFormat = SURF_BGRA8888;
 	bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
 
 	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-		perror("CFrameBuffer::blit ioctl STMFBIO_SYNC_BLITTER 1");
+		perror("blit ioctl STMFBIO_SYNC_BLITTER 1");
 	msync(lbb, DEFAULT_XRES * DEFAULT_YRES * 4, MS_SYNC);
 
 	bltData.dst_right  = s.xres - 1;
@@ -709,7 +735,7 @@ void blit(void) {
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
 	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-		perror("CFrameBuffer::blit ioctl STMFBIO_SYNC_BLITTER 2");
+		perror("blit ioctl STMFBIO_SYNC_BLITTER 2");
 #else
 	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
 #endif
