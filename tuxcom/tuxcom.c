@@ -527,6 +527,10 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 
 		_ex = _sx + maxwidth;
 
+#ifdef MARTII
+		if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+			perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+#endif
 		while(*string != '\0' && *string != '\n')
 		{
 			if ((charwidth = RenderChar(*string, _sx, _sy, _ex, color)) == -1) return; /* string > maxwidth */
@@ -547,7 +551,9 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 	int tx;
 #endif
 #ifdef MARTII
+# if !defined(HAVE_SPARK_HARDWARE)
 	uint32_t *p1, *p2, *p3, *p4;
+# endif
 #else
 	unsigned char *p1, *p2, *p3, *p4;
 #endif
@@ -575,8 +581,6 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 
 		if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 			perror("RenderBox ioctl STMFBIO_BLT");
-		if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-			perror("RenderBox ioctl STMFBIO_SYNC_BLITTER");
 #else
 # ifdef MARTII
 		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
@@ -606,20 +610,26 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 	}
 	else
 	{
-#ifdef MARTII
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		RenderBox(_sx, _sy, _ex, _sy + 1, FILL, color);
+		RenderBox(_sx, _ey - 1, _ex, _ey, FILL, color);
+		RenderBox(_sx, _sy + 1, _sx + 1, _ey - 1, FILL, color);
+		RenderBox(_ex - 1, _sy + 1, _ex, _ey - 1, FILL, color);
+#else
+# ifdef MARTII
 		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
 		p2 = lbb + (StartX + _sx) + stride * (StartY + _ey);
 		p3 = p1 + stride;
 		p4 = p2 - stride;
-#else
+# else
 		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		p2 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _ey);
 		p3 = p1 + fix_screeninfo.line_length;
 		p4 = p2 - fix_screeninfo.line_length;
-#endif
+# endif
 		for (loop = _sx; loop <= _ex; loop++)
 		{
-#ifdef MARTII
+# ifdef MARTII
 			*p1 = bgra[color];
 			*p2 = bgra[color];
 			*p3 = bgra[color];
@@ -628,7 +638,7 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 			p2++;
 			p3++;
 			p4++;
-#else
+# else
 			memcpy(p1, bgra[color], 4);
 			memcpy(p2, bgra[color], 4);
 			memcpy(p3, bgra[color], 4);
@@ -637,22 +647,22 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 			p2 += 4;
 			p3 += 4;
 			p4 += 4;
-#endif
+# endif
 		}
-#ifdef MARTII
+# ifdef MARTII
 		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
 		p2 = lbb + (StartX + _ex) + stride * (StartY + _sy);
 		p3 = p1 + 1;
 		p4 = p2 - 1;
-#else
+# else
 		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		p2 = lbb + (StartX + _ex) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		p3 = p1 + 4;
 		p4 = p2 - 4;
-#endif
+# endif
 		for (loop = _sy; loop <= _ey; loop++)
 		{
-#ifdef MARTII
+# ifdef MARTII
 			*p1 = bgra[color];
 			*p2 = bgra[color];
 			*p3 = bgra[color];
@@ -661,7 +671,7 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 			p2 += stride;
 			p3 = p1 + 1;
 			p4 = p2 - 1;
-#else
+# else
 			memcpy(p1, bgra[color], 4);
 			memcpy(p2, bgra[color], 4);
 			memcpy(p3, bgra[color], 4);
@@ -670,8 +680,9 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 			p2 += fix_screeninfo.line_length;
 			p3 = p1 + 4;
 			p4 = p2 - 4;
-#endif
+# endif
 		}
+#endif
 	}
 }
 void SetLanguage()
@@ -906,7 +917,9 @@ int main()
 		return 2;
 	}
 #endif
+#ifndef MARTII
 	memset(lbb, 0, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 	RenderBox(0,0,var_screeninfo.xres,var_screeninfo.yres,FILL,BLACK);
 
 	//init data
@@ -1681,6 +1694,11 @@ void RenderMenuLine(int highlight, int refresh)
 	{
 		RenderBox(menuitemwidth * i                 ,viewy-MENUSIZE, menuitemwidth *(i+1)                 , viewy-MENUSIZE / 2 , FILL, (i == highlight ? GREEN : BLUE2) );
 		RenderBox(menuitemwidth * i                 ,viewy-MENUSIZE, menuitemwidth * i   + menuitemnumber , viewy-MENUSIZE / 2 , FILL, BLUE1);
+#ifdef MARTII
+	}
+	for (i = 0; i < MENUITEMS; i++)
+	{
+#endif
 
 		sprintf(szEntry,"%d",(i+1)%MENUITEMS);
 		RenderString(szEntry          , menuitemwidth * i +1              , viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemnumber              , CENTER, SMALL, WHITE);
@@ -1713,6 +1731,11 @@ void RenderMenuLine(int highlight, int refresh)
 		                                                            					                   (i == 1 ? GREEN  :
 		                                                            					                   (i == 2 ? YELLOW : BLUE1))));
 		RenderBox( (viewx/COLORBUTTONS) *i ,viewy-MENUSIZE/2, (i < COLORBUTTONS-1 ? (viewx/COLORBUTTONS) *(i+1) : viewx) , viewy , GRID,  WHITE );
+#ifdef MARTII
+	}
+	for (i = 0; i < COLORBUTTONS; i++)
+	{
+#endif
 		RenderString(colorline[colortool[i]*NUM_LANG+language], (viewx/COLORBUTTONS) *i , viewy- FONT_OFFSET_BIG , viewx/COLORBUTTONS, CENTER, SMALL  , (i == 2 ? BLACK : WHITE));
 	}
 	if (refresh == YES)
@@ -1770,6 +1793,20 @@ void RenderFrame(int frame)
 			tool[ACTION_MKFILE-1] = ACTION_MKFILE; // mkfile allowed
 		}
 	}
+#ifdef MARTII
+	while (row < framerows && (finfo[frame].first + row < finfo[frame].count))
+	{
+		bselected =  ((finfo[frame].first + row == finfo[frame].selected) && (curframe == frame));
+		bcolor = (bselected ? (IsMarked(frame,finfo[frame].first + row) ? BLUE3 : BLUE2)
+		                    : (IsMarked(frame,finfo[frame].first + row) ? trans_map_mark[curvisibility] : nBackColor));
+		PosY = (row+1) * FONTHEIGHT_SMALL + BORDERSIZE ;
+		PosX = (singleview ? 0 : frame * FrameWidth) + BORDERSIZE;
+
+		RenderBox(PosX, PosY-FONTHEIGHT_SMALL,((1+frame+singleview)*FrameWidth), PosY, FILL, bcolor);
+		row++;
+	}
+	row = 0;
+#endif
 	while (row < framerows && (finfo[frame].first + row < finfo[frame].count))
 	{
 		bselected =  ((finfo[frame].first + row == finfo[frame].selected) && (curframe == frame));
@@ -1843,7 +1880,9 @@ void RenderFrame(int frame)
 		PosY = (row+1) * FONTHEIGHT_SMALL + BORDERSIZE ;
 		PosX = (singleview ? 0 : frame * FrameWidth) + BORDERSIZE;
 
+#ifndef MARTII
 		RenderBox(PosX, PosY-FONTHEIGHT_SMALL,((1+frame+singleview)*FrameWidth), PosY, FILL, bcolor);
+#endif
 		RenderString(pfe->name, PosX+2, PosY-FONT_OFFSET, NameWidth*(1+(singleview*1.4))-2, LEFT, SMALL,fcolor);
 		RenderString(sizeString, (singleview ? 2 :1+frame)*FrameWidth -2*BORDERSIZE - 2*SizeWidth*(1+singleview), PosY-FONT_OFFSET, 2*SizeWidth*(1+singleview), RIGHT, SMALL,fcolor);
 		row++;
