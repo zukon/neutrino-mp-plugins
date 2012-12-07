@@ -25,6 +25,9 @@
 */
 
 #include "tuxcom.h"
+#ifdef MARTII
+static int stride;
+#endif
 /******************************************************************************
  * GetRCCode  (Code from Tuxmail)
  ******************************************************************************/
@@ -400,25 +403,44 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
+#ifdef MARTII
+			uint32_t *p = lbb + (StartX + _sx + sbit->left + kerning.x) + stride * (StartY + _sy - sbit->top);
+			uint32_t *r = p + (_ex - _sx);	/* end of usable box */
+#else
 			unsigned char *p = lbb + (StartX + _sx + sbit->left + kerning.x) * 4 + fix_screeninfo.line_length * (StartY + _sy - sbit->top);
 			unsigned char *r = p + (_ex - _sx) * 4;	/* end of usable box */
+#endif
 			for(row = 0; row < sbit->height; row++)
 			{
+#ifdef MARTII
+				uint32_t *q = p;
+#else
 				unsigned char *q = p;
+#endif
 				for(pitch = 0; pitch < sbit->pitch; pitch++)
 				{
 					for(bit = 7; bit >= 0; bit--)
 					{
 						if(pitch*8 + 7-bit >= sbit->width) break; /* render needed bits only */
 						if ((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit)
+#ifdef MARTII
+							*q = bgra[color];
+						q++;
+#else
 							memcpy(q, bgra[color], 4);
 						q += 4;
+#endif
 						if (q > r)	/* we are past _ex */
 							break;
 					}
 				}
+#ifdef MARTII
+				p += stride;
+				r += stride;
+#else
 				p += fix_screeninfo.line_length;
 				r += fix_screeninfo.line_length;
+#endif
 			}
 			if (_sx + sbit->xadvance >= _ex)
 				return -1; /* limit to maxwidth */
@@ -520,30 +542,64 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 {
 	int loop;
 	int tx;
+#ifdef MARTII
+	uint32_t *p1, *p2, *p3, *p4;
+#else
 	unsigned char *p1, *p2, *p3, *p4;
+#endif
 
 	if(mode == FILL)
 	{
+#ifdef MARTII
+		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
+#else
 		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
+#endif
 		for(; _sy < _ey; _sy++)
 		{
 			p2 = p1;
 			for (tx = 0; tx < (_ex - _sx); tx++)
 			{
+#ifdef MARTII
+				*p2 = bgra[color];
+				p2++;
+#else
 				memcpy(p2, bgra[color], 4);
 				p2 += 4;
+#endif
 			}
+#ifdef MARTII
+			p1 += stride;
+#else
 			p1 += fix_screeninfo.line_length;
+#endif
 		}
 	}
 	else
 	{
+#ifdef MARTII
+		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
+		p2 = lbb + (StartX + _sx) + stride * (StartY + _ey);
+		p3 = p1 + stride;
+		p4 = p2 - stride;
+#else
 		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		p2 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _ey);
 		p3 = p1 + fix_screeninfo.line_length;
 		p4 = p2 - fix_screeninfo.line_length;
+#endif
 		for (loop = _sx; loop <= _ex; loop++)
 		{
+#ifdef MARTII
+			*p1 = bgra[color];
+			*p2 = bgra[color];
+			*p3 = bgra[color];
+			*p4 = bgra[color];
+			p1++;
+			p2++;
+			p3++;
+			p4++;
+#else
 			memcpy(p1, bgra[color], 4);
 			memcpy(p2, bgra[color], 4);
 			memcpy(p3, bgra[color], 4);
@@ -552,13 +608,31 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 			p2 += 4;
 			p3 += 4;
 			p4 += 4;
+#endif
 		}
+#ifdef MARTII
+		p1 = lbb + (StartX + _sx) + stride * (StartY + _sy);
+		p2 = lbb + (StartX + _ex) + stride * (StartY + _sy);
+		p3 = p1 + 1;
+		p4 = p2 - 1;
+#else
 		p1 = lbb + (StartX + _sx) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		p2 = lbb + (StartX + _ex) * 4 + fix_screeninfo.line_length * (StartY + _sy);
 		p3 = p1 + 4;
 		p4 = p2 - 4;
+#endif
 		for (loop = _sy; loop <= _ey; loop++)
 		{
+#ifdef MARTII
+			*p1 = bgra[color];
+			*p2 = bgra[color];
+			*p3 = bgra[color];
+			*p4 = bgra[color];
+			p1 += stride;
+			p2 += stride;
+			p3 = p1 + 1;
+			p4 = p2 - 1;
+#else
 			memcpy(p1, bgra[color], 4);
 			memcpy(p2, bgra[color], 4);
 			memcpy(p3, bgra[color], 4);
@@ -567,6 +641,7 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 			p2 += fix_screeninfo.line_length;
 			p3 = p1 + 4;
 			p4 = p2 - 4;
+#endif
 		}
 	}
 }
@@ -648,6 +723,9 @@ int main()
 		printf("TuxCom <FBIOGET_FSCREENINFO failed>\n");
 		return 2;
 	}
+#ifdef MARTII
+	stride = fix_screeninfo.line_length/4;
+#endif
 
 	if(ioctl(fb, FBIOGET_VSCREENINFO, &var_screeninfo) == -1)
 	{
@@ -655,7 +733,11 @@ int main()
 		return 2;
 	}
 
+#ifdef MARTII
+	if(!(lfb = (uint32_t*)mmap(0, fix_screeninfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0)))
+#else
 	if(!(lfb = (unsigned char*)mmap(0, fix_screeninfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0)))
+#endif
 	{
 		printf("TuxCom <mapping of Framebuffer failed>\n");
 		return 2;
@@ -671,7 +753,7 @@ int main()
 	BUTTONWIDTH = _BUTTONWIDTH * var_screeninfo.yres / 576;
 	BUTTONHEIGHT = _BUTTONHEIGHT * var_screeninfo.yres / 576;
 #if HAVE_SPARK_HARDWARE
-	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x70 FB */
+	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x720 FB */
 	if (var_screeninfo.xres != 1280)
 	{
 		if (sx != -1)

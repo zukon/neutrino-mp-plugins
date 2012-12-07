@@ -315,11 +315,22 @@ int FONTHEIGHT_VERY_SMALL, FONTHEIGHT_SMALL, FONTHEIGHT_BIG, FONT_OFFSET, FONT_O
 enum {FILL, GRID};
 enum {TRANSP, WHITE, BLACK, BLUE1, BLUE2, ORANGE, GREEN, YELLOW, RED, GRAY,GREEN2,GRAY2, BLUE_TRANSP, GRAY_TRANSP, BLUE3};
 
+#ifdef MARTII
+uint32_t *lfb = NULL, *lbb = NULL;
+#else
 unsigned char *lfb = 0, *lbb = 0;
+#endif
 
 struct fb_fix_screeninfo fix_screeninfo;
 struct fb_var_screeninfo var_screeninfo;
 
+#ifdef MARTII
+static uint32_t bgra[] = {
+	0x00000000, 0xffffffff, 0xff000000, 0xff000080,
+	0xff0080ff, 0xffffc000, 0xff00d000, 0xffe8e800,
+	0xffff0000, 0xffb0b0b0, 0xff00ff00, 0xff505050,
+	0xc0000080, 0xc0505050, 0xff0040ff };
+#else
 #if HAVE_TRIPLEDRAGON
 static unsigned char bgra[][4] = {
 "\x00\x00\x00\x00", "\xFF\xFF\xFF\xFF", "\xFF\x00\x00\x00", "\xFF\x00\x00\x80",
@@ -332,6 +343,7 @@ static unsigned char bgra[][4] = {
 "\xFF\x80\x00\xFF", "\x00\xC0\xFF\xFF", "\x00\xD0\x00\xFF", "\x00\xE8\xE8\xFF",
 "\x00\x00\xFF\xFF", "\xB0\xB0\xB0\xFF", "\x00\xFF\x00\xFF", "\x50\x50\x50\xFF",
 "\x80\x00\x00\xC0", "\x50\x50\x50\xC0", "\xFF\x40\x00\xFf" };
+#endif
 #endif
 #define CONFIG_FILE "/var/tuxbox/config/tuxcom.conf"
 
