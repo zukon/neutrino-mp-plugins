@@ -672,6 +672,49 @@ void SetLanguage()
  * plugin_exec                                                                *
  ******************************************************************************/
 
+#ifdef MARTII
+#define DEFAULT_XRES 1280
+#define DEFAULT_YRES 720
+
+void blit(void) {
+#ifdef HAVE_SPARK_HARDWARE
+	STMFBIO_BLT_DATA  bltData;
+	memset(&bltData, 0, sizeof(STMFBIO_BLT_DATA));
+
+	bltData.operation  = BLT_OP_COPY;
+
+	bltData.srcOffset  = 1920 * 1080 * 4;
+	bltData.srcPitch   = DEFAULT_XRES * 4;
+
+	bltData.src_right  = DEFAULT_XRES - 1;
+	bltData.src_bottom = DEFAULT_YRES - 1;
+
+	bltData.srcFormat = SURF_BGRA8888;
+	bltData.srcMemBase = STMFBGP_FRAMEBUFFER;
+
+	struct fb_var_screeninfo s;
+	if (ioctl(fb, FBIOGET_VSCREENINFO, &s) == -1)
+		perror("frameBuffer <FBIOGET_VSCREENINFO>");
+
+	bltData.dstPitch   = s.xres * 4;
+	bltData.dstFormat = SURF_BGRA8888;
+	bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
+
+	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+		perror("CFrameBuffer::blit ioctl STMFBIO_SYNC_BLITTER 1");
+	msync(lbb, DEFAULT_XRES * DEFAULT_YRES * 4, MS_SYNC);
+
+	bltData.dst_right  = s.xres - 1;
+	bltData.dst_bottom = s.yres - 1;
+	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
+		perror("STMFBIO_BLT");
+	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+		perror("CFrameBuffer::blit ioctl STMFBIO_SYNC_BLITTER 2");
+#else
+	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
+}
+#endif
 int main()
 {
 	FT_Error error;
@@ -724,7 +767,12 @@ int main()
 		return 2;
 	}
 #ifdef MARTII
-	stride = fix_screeninfo.line_length/4;
+# ifdef HAVE_SPARK_HARDWARE
+	fix_screeninfo.line_length = DEFAULT_XRES << 2;
+	stride = DEFAULT_XRES;
+# else
+	stride = fix_screeninfo.line_length >> 2;
+# endif
 #endif
 
 	if(ioctl(fb, FBIOGET_VSCREENINFO, &var_screeninfo) == -1)
@@ -732,6 +780,10 @@ int main()
 		printf("TuxCom <FBIOGET_VSCREENINFO failed>\n");
 		return 2;
 	}
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+	var_screeninfo.xres = DEFAULT_XRES;
+	var_screeninfo.yres = DEFAULT_YRES;
+#endif
 
 #ifdef MARTII
 	if(!(lfb = (uint32_t*)mmap(0, fix_screeninfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fb, 0)))
@@ -752,8 +804,9 @@ int main()
 	MINBOX = _MINBOX * var_screeninfo.yres / 576;
 	BUTTONWIDTH = _BUTTONWIDTH * var_screeninfo.yres / 576;
 	BUTTONHEIGHT = _BUTTONHEIGHT * var_screeninfo.yres / 576;
+#ifndef MARTII
 #if HAVE_SPARK_HARDWARE
-	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x720 FB */
+	/* hack: convert offsets to real screen resolution. neutrino always uses 1280x70 FB */
 	if (var_screeninfo.xres != 1280)
 	{
 		if (sx != -1)
@@ -765,6 +818,7 @@ int main()
 		if (ey != -1)
 			ey = ey * var_screeninfo.yres / 720;
 	}
+#endif
 #endif
 
 	//init fontlibrary
@@ -814,6 +868,9 @@ int main()
 
 	//init backbuffer
 
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+	lbb = lfb + 1920 * 1080;
+#else
 	if (!(lbb = malloc(fix_screeninfo.line_length * var_screeninfo.yres)))
 	{
 		printf("TuxCom <allocating of Backbuffer failed>\n");
@@ -822,6 +879,7 @@ int main()
 		munmap(lfb, fix_screeninfo.smem_len);
 		return 2;
 	}
+#endif
 	memset(lbb, 0, fix_screeninfo.line_length * var_screeninfo.yres);
 	RenderBox(0,0,var_screeninfo.xres,var_screeninfo.yres,FILL,BLACK);
 
@@ -883,7 +941,11 @@ int main()
 	// setup screen
 	RenderFrame(LEFTFRAME);
 	RenderFrame(RIGHTFRAME);
+#ifdef MARTII
+	blit();
+#else
 	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
 	printf("TuxCom init successful\n");
 
 	// lock keyboard-conversions, this is done by the plugin itself
@@ -921,7 +983,11 @@ int main()
 				if (strcmp(szP,szPass) != 0) break;
 				RenderFrame(LEFTFRAME);
 				RenderFrame(RIGHTFRAME);
+#ifdef MARTII
+				blit();
+#else
 				memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
 			}
 		}
 		firstentry = 0;
@@ -1528,7 +1594,11 @@ int main()
 			finfo[curframe].first     = finfo[curframe].selected - framerows+1;
 		RenderFrame(LEFTFRAME);
 		RenderFrame(RIGHTFRAME);
+#ifdef MARTII
+		blit();
+#else
 		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 
 	}while(rccode != RC_HOME);
 
@@ -1618,7 +1688,11 @@ void RenderMenuLine(int highlight, int refresh)
 		RenderString(colorline[colortool[i]*NUM_LANG+language], (viewx/COLORBUTTONS) *i , viewy- FONT_OFFSET_BIG , viewx/COLORBUTTONS, CENTER, SMALL  , (i == 2 ? BLACK : WHITE));
 	}
 	if (refresh == YES)
+#ifdef MARTII
+		blit();
+#else
 		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 
 }
 
@@ -1917,7 +1991,11 @@ int MessageBox(const char* msg1, const char* msg2, int mode)
 
 					RenderBox(viewx/2 + 2* BORDERSIZE               , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 2* BORDERSIZE +BUTTONWIDTH   ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == 1 ? WHITE : GREEN));
 					RenderBox(viewx/2 + 2* BORDERSIZE             +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH -1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == 1 ? WHITE : GREEN));
+#ifdef MARTII
+					blit();
+#else
 					memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 					break;
 				case 2:
 					RenderBox(viewx/2 - 4* BORDERSIZE - BUTTONWIDTH - BUTTONWIDTH/2  , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 - 4* BORDERSIZE  - BUTTONWIDTH/2              ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == 0 ? WHITE : RED  ));
@@ -1928,7 +2006,11 @@ int MessageBox(const char* msg1, const char* msg2, int mode)
 
 					RenderBox(viewx/2 + 4* BORDERSIZE + BUTTONWIDTH/2                , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2  ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == 2 ? BLACK : YELLOW ));
 					RenderBox(viewx/2 + 4* BORDERSIZE + BUTTONWIDTH/2              +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2-1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == 2 ? BLACK : YELLOW ));
+#ifdef MARTII
+					blit();
+#else
 					memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 					break;
 				case 4:
 					RenderBox(viewx/2 - 4* BORDERSIZE - BUTTONWIDTH - BUTTONWIDTH/2  , viewy-(viewy-he)/2 - 4*BORDERSIZE - 2*BUTTONHEIGHT  , viewx/2 - 4* BORDERSIZE  - BUTTONWIDTH/2              ,viewy-(viewy-he)/2- 4* BORDERSIZE - BUTTONHEIGHT  , GRID, (sel == 0 ? WHITE : RED    ));
@@ -1945,7 +2027,11 @@ int MessageBox(const char* msg1, const char* msg2, int mode)
 
 					RenderBox(viewx/2 + 2* BORDERSIZE                                , viewy-(viewy-he)/2 - 2*BORDERSIZE -   BUTTONHEIGHT  , viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2  ,viewy-(viewy-he)/2- 2* BORDERSIZE                 , GRID, (sel == 4 ? WHITE : BLUE2  ));
 					RenderBox(viewx/2 + 2* BORDERSIZE                              +1, viewy-(viewy-he)/2 - 2*BORDERSIZE -   BUTTONHEIGHT+1, viewx/2 + 4* BORDERSIZE +BUTTONWIDTH + BUTTONWIDTH/2-1,viewy-(viewy-he)/2- 2* BORDERSIZE               -1, GRID, (sel == 4 ? WHITE : BLUE2  ));
+#ifdef MARTII
+					blit();
+#else
 					memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 					break;
 			}
 			drawsel = 0;
@@ -2028,7 +2114,11 @@ void RenderButtons(int he, int mode)
 			RenderBox((viewx-BUTTONWIDTH)/2 , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT, viewx - (viewx-BUTTONWIDTH)/2,viewy-(viewy-he)/2 - 2*BORDERSIZE , GRID, WHITE);
 			break;
 	}
+#ifdef MARTII
+	blit();
+#else
 	memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 }
 
 /******************************************************************************
@@ -2210,7 +2300,11 @@ int ShowProperties()
 		RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH+1, ys_button + 1, viewx/2 - 2* BORDERSIZE             -1, ye_button - 1, GRID, (sel == YES ? WHITE : RED));
 		RenderBox(viewx/2 + 2* BORDERSIZE               , ys_button,     viewx/2 + 2* BORDERSIZE +BUTTONWIDTH  , ye_button,     GRID, (sel == NO ? WHITE : GREEN));
 		RenderBox(viewx/2 + 2* BORDERSIZE             +1, ys_button + 1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH-1, ye_button - 1, GRID, (sel == NO ? WHITE : GREEN));
+#ifdef MARTII
+		blit();
+#else
 		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 		drawsel = 0;
 
 	}while(1);
@@ -2353,7 +2447,11 @@ void DoEditFTP(char* szFile,char* szTitle)
 			RenderBox(viewx/2 - 2* BORDERSIZE -BUTTONWIDTH+1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 - 2* BORDERSIZE             -1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == YES ? WHITE : RED  ));
 			RenderBox(viewx/2 + 2* BORDERSIZE               , viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT  , viewx/2 + 2* BORDERSIZE +BUTTONWIDTH  ,viewy-(viewy-he)/2- 2* BORDERSIZE  , GRID, (sel == NO ? WHITE : GREEN));
 			RenderBox(viewx/2 + 2* BORDERSIZE             +1, viewy-(viewy-he)/2 - 2*BORDERSIZE - BUTTONHEIGHT+1, viewx/2 + 2* BORDERSIZE +BUTTONWIDTH-1,viewy-(viewy-he)/2- 2* BORDERSIZE-1, GRID, (sel == NO ? WHITE : GREEN));
+#ifdef MARTII
+			blit();
+#else
 			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 			drawsel = 0;
 		}
 		if (end == YES)
@@ -2415,7 +2513,11 @@ void DoMainMenu()
 		}
 		RenderString(szEntry,(viewx-wi)/2+ BORDERSIZE , (viewy-he)/2 + BORDERSIZE + (i+1)*FONTHEIGHT_BIG-FONT_OFFSET , wi, CENTER, BIG, WHITE);
 	}
+#ifdef MARTII
+	blit();
+#else
 	memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 	int drawsel = 0;
 	do{
 		GetRCCode(RC_NORMAL);
@@ -2553,7 +2655,11 @@ void DoMainMenu()
 				}
 				RenderString(szEntry,(viewx-wi)/2+ BORDERSIZE , (viewy-he)/2 + BORDERSIZE + (i+1)*FONTHEIGHT_BIG-FONT_OFFSET , wi, CENTER, BIG, WHITE);
 			}
+#ifdef MARTII
+			blit();
+#else
 			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 			drawsel = 0;
 		}
 	}while(1);
@@ -2650,7 +2756,11 @@ int DoEditString(int x, int y, int width, unsigned int maxchars, char* str, int 
 	colortool[3] = (pass == NO ? ACTION_INSTEXT  : ACTION_NOACTION);
 	RenderMenuLine(-1, EDIT);
 
+#ifdef MARTII
+	blit();
+#else
 	memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 
 	do{
 		while (GetRCCode(RC_EDIT) == 0);
@@ -2968,7 +3078,11 @@ int DoEditString(int x, int y, int width, unsigned int maxchars, char* str, int 
 			colortool[3] = ACTION_NOACTION;
 		}
 		RenderMenuLine(-1, EDIT);
+#ifdef MARTII
+		blit();
+#else
 		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 	}while(1);
 
 	rccode = -1;
@@ -4037,7 +4151,11 @@ void DoEditFile(char* szFile, char* szTitle,  int writable)
 	            p = p1+1;
 			}
 			pStop = p;
+#ifdef MARTII
+			blit();
+#else
 			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 			while (GetRCCode(RC_NORMAL) == 0);
 			switch (rccode)
 			{
@@ -4495,7 +4613,11 @@ void DoTaskManager()
 			}
 			RenderBox(p_end[0], BORDERSIZE+FONTHEIGHT_BIG, p_end[0]+BORDERSIZE, viewy-MENUSIZE, FILL, WHITE);
 			RenderBox(p_end[1], BORDERSIZE+FONTHEIGHT_BIG, p_end[1]+BORDERSIZE, viewy-MENUSIZE, FILL, WHITE);
+#ifdef MARTII
+			blit();
+#else
 			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 			while (GetRCCode(RC_NORMAL) == 0);
 			switch (rccode)
 			{
@@ -5001,7 +5123,11 @@ void ShowFile(FILE* _pipe, char* szAction)
 
 		if (row > framerows - 2)
 		{
+#ifdef MARTII
+			blit();
+#else
 			memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 			while (1)
 			{
 				GetRCCode(RC_NORMAL);
@@ -5022,7 +5148,11 @@ void ShowFile(FILE* _pipe, char* szAction)
 	}
 	if (row>0)
 	{
+#ifdef MARTII
+		blit();
+#else
 		memcpy(lfb, lbb, fix_screeninfo.line_length * var_screeninfo.yres);
+#endif
 		while (1)
 		{
 			GetRCCode(RC_NORMAL);

@@ -39,6 +39,9 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 //#include <plugin.h>
+#ifdef HAVE_SPARK_HARDWARE
+#include <linux/stmfb.h>
+#endif
 
 #if 0
 #include <dbox/avs_core.h>
