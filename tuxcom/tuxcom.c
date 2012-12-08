@@ -26,9 +26,12 @@
 
 #include "tuxcom.h"
 #ifdef MARTII
-#define DEFAULT_XRES 1280
-#define DEFAULT_YRES 720
+# define DEFAULT_XRES 1280
+# define DEFAULT_YRES 720
 static int stride;
+# ifdef HAVE_SPARK_HARDWARE
+static int sync_blitter = 0;
+# endif
 #endif
 /******************************************************************************
  * GetRCCode  (Code from Tuxmail)
@@ -527,8 +530,8 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 
 		_ex = _sx + maxwidth;
 
-#ifdef MARTII
-		if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		if(sync_blitter && ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
 			perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
 #endif
 		while(*string != '\0' && *string != '\n')
@@ -558,6 +561,9 @@ void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 	unsigned char *p1, *p2, *p3, *p4;
 #endif
 
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+	sync_blitter = 1;
+#endif
 	if(mode == FILL)
 	{
 #if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
@@ -745,8 +751,11 @@ void blit(void) {
 	bltData.dst_bottom = s.yres - 1;
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
+#if 0
 	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
 		perror("blit ioctl STMFBIO_SYNC_BLITTER 2");
+#endif
+	sync_blitter = 0;
 #else
 	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
 #endif
@@ -5474,3 +5483,5 @@ void WriteSettings()
 		fclose(fp);
 	}
 }
+
+// vim:ts=4
