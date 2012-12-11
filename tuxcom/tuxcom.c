@@ -31,6 +31,8 @@
 static int stride;
 # ifdef HAVE_SPARK_HARDWARE
 static int sync_blitter = 0;
+static uint32_t oldbgcolor = 0, oldfgcolor = 0, colors[256];
+static struct fb_var_screeninfo screeninfo;
 # endif
 #endif
 /******************************************************************************
@@ -353,7 +355,11 @@ FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library _library, FT_Pointer req
 
 int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 {
+#ifdef MARTII
+	int row, pitch;
+#else
 	int row, pitch, bit;
+#endif
 	FT_UInt glyphindex;
 	FT_Vector kerning;
 	FT_Error error;
@@ -391,6 +397,16 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 			return 0;
 		}
 
+#ifdef MARTII
+		if(use_kerning)
+		{
+			FT_Get_Kerning(face, prev_glyphindex, glyphindex, ft_kerning_default, &kerning);
+
+			prev_glyphindex = glyphindex;
+			kerning.x >>= 6;
+		}
+		else
+#else
 // no kerning used
 /*
 		if(use_kerning)
@@ -402,13 +418,43 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 		}
 		else
 */
+#endif
 			kerning.x = 0;
 
-	//render char
+		//render char
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
 #ifdef MARTII
+			uint32_t bgcolor = *(lbb + (StartY + _sy) * stride + (StartX + _sx));
+			uint32_t fgcolor = bgra[color];
+			if (oldbgcolor != bgcolor || oldfgcolor != fgcolor) {
+				int i;
+				oldbgcolor = bgcolor;
+				oldfgcolor = fgcolor;
+				int rl = screeninfo.red.length;
+				int ro = screeninfo.red.offset;
+				int gl = screeninfo.green.length;
+				int go = screeninfo.green.offset;
+				int bl = screeninfo.blue.length;
+				int bo = screeninfo.blue.offset;
+				int tl = screeninfo.transp.length;
+				int to = screeninfo.transp.offset;
+				int fgr = (((int)fgcolor >> ro) & ((1 << rl) - 1));
+				int fgg = (((int)fgcolor >> go) & ((1 << gl) - 1));
+				int fgb = (((int)fgcolor >> bo) & ((1 << bl) - 1));
+				int fgt = (((int)fgcolor >> to) & ((1 << tl) - 1));
+				int deltar = (((int)bgcolor >> ro) & ((1 << rl) - 1)) - fgr;
+				int deltag = (((int)bgcolor >> go) & ((1 << gl) - 1)) - fgg;
+				int deltab = (((int)bgcolor >> bo) & ((1 << bl) - 1)) - fgb;
+				int deltat = (((int)bgcolor >> to) & ((1 << tl) - 1)) - fgt;
+				for (i = 0; i < 256; i++)
+					colors[255 - i] =
+						((((fgr + deltar * i / 255) & ((1 << rl) - 1)) << ro) |
+						(((fgg + deltag * i / 255) & ((1 << gl) - 1)) << go) |
+						(((fgb + deltab * i / 255) & ((1 << bl) - 1)) << bo) |
+						(((fgt + deltat * i / 255) & ((1 << tl) - 1)) << to));
+			}
 			uint32_t *p = lbb + (StartX + _sx + sbit->left + kerning.x) + stride * (StartY + _sy - sbit->top);
 			uint32_t *r = p + (_ex - _sx);	/* end of usable box */
 #else
@@ -419,30 +465,31 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 			{
 #ifdef MARTII
 				uint32_t *q = p;
+				uint8_t *s = sbit->buffer + row * sbit->pitch;
+				for(pitch = 0; pitch < sbit->width; pitch++)
+				{
+					if (*s)
+							*q = colors[*s];
+					q++, s++;
+					if (q > r)	/* we are past _ex */
+						break;
+				}
+				p += stride;
+				r += stride;
 #else
 				unsigned char *q = p;
-#endif
 				for(pitch = 0; pitch < sbit->pitch; pitch++)
 				{
 					for(bit = 7; bit >= 0; bit--)
 					{
 						if(pitch*8 + 7-bit >= sbit->width) break; /* render needed bits only */
 						if ((sbit->buffer[row * sbit->pitch + pitch]) & 1<<bit)
-#ifdef MARTII
-							*q = bgra[color];
-						q++;
-#else
 							memcpy(q, bgra[color], 4);
 						q += 4;
-#endif
 						if (q > r)	/* we are past _ex */
 							break;
 					}
 				}
-#ifdef MARTII
-				p += stride;
-				r += stride;
-#else
 				p += fix_screeninfo.line_length;
 				r += fix_screeninfo.line_length;
 #endif
@@ -549,8 +596,8 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 
 void RenderBox(int _sx, int _sy, int _ex, int _ey, int mode, int color)
 {
-	int loop;
 #if !defined(MARTII) || !defined(HAVE_SPARK_HARDWARE)
+	int loop;
 	int tx;
 #endif
 #ifdef MARTII
@@ -813,6 +860,8 @@ int main()
 		return 2;
 	}
 #ifdef MARTII
+	if (ioctl(fb, FBIOGET_VSCREENINFO, &screeninfo) == -1)
+		perror("blit FBIOGET_VSCREENINFO");
 # ifdef HAVE_SPARK_HARDWARE
 	fix_screeninfo.line_length = DEFAULT_XRES << 2;
 	stride = DEFAULT_XRES;
@@ -910,7 +959,11 @@ int main()
 		desc.face_id = FONT;
 	use_kerning = FT_HAS_KERNING(face);
 
+#ifdef MARTII
+	desc.flags = FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT;
+#else
 	desc.flags = FT_LOAD_MONOCHROME;
+#endif
 
 	//init backbuffer
 
