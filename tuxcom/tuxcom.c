@@ -440,20 +440,24 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 				int bo = screeninfo.blue.offset;
 				int tl = screeninfo.transp.length;
 				int to = screeninfo.transp.offset;
-				int fgr = (((int)fgcolor >> ro) & ((1 << rl) - 1));
-				int fgg = (((int)fgcolor >> go) & ((1 << gl) - 1));
-				int fgb = (((int)fgcolor >> bo) & ((1 << bl) - 1));
-				int fgt = (((int)fgcolor >> to) & ((1 << tl) - 1));
-				int deltar = (((int)bgcolor >> ro) & ((1 << rl) - 1)) - fgr;
-				int deltag = (((int)bgcolor >> go) & ((1 << gl) - 1)) - fgg;
-				int deltab = (((int)bgcolor >> bo) & ((1 << bl) - 1)) - fgb;
-				int deltat = (((int)bgcolor >> to) & ((1 << tl) - 1)) - fgt;
+				int rm = (1 << rl) - 1;
+				int gm = (1 << gl) - 1;
+				int bm = (1 << bl) - 1;
+				int tm = (1 << tl) - 1;
+				int fgr = ((int)fgcolor >> ro) & rm;
+				int fgg = ((int)fgcolor >> go) & gm;
+				int fgb = ((int)fgcolor >> bo) & bm;
+				int fgt = ((int)fgcolor >> to) & tm;
+				int deltar = (((int)bgcolor >> ro) & rm) - fgr;
+				int deltag = (((int)bgcolor >> go) & gm) - fgg;
+				int deltab = (((int)bgcolor >> bo) & bm) - fgb;
+				int deltat = (((int)bgcolor >> to) & tm) - fgt;
 				for (i = 0; i < 256; i++)
 					colors[255 - i] =
-						((((fgr + deltar * i / 255) & ((1 << rl) - 1)) << ro) |
-						(((fgg + deltag * i / 255) & ((1 << gl) - 1)) << go) |
-						(((fgb + deltab * i / 255) & ((1 << bl) - 1)) << bo) |
-						(((fgt + deltat * i / 255) & ((1 << tl) - 1)) << to));
+						(((fgr + deltar * i / 255) & rm) << ro) |
+						(((fgg + deltag * i / 255) & gm) << go) |
+						(((fgb + deltab * i / 255) & bm) << bo) |
+						(((fgt + deltat * i / 255) & tm) << to);
 			}
 			uint32_t *p = lbb + (StartX + _sx + sbit->left + kerning.x) + stride * (StartY + _sy - sbit->top);
 			uint32_t *r = p + (_ex - _sx);	/* end of usable box */
