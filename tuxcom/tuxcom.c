@@ -31,8 +31,6 @@
 static int stride;
 # ifdef HAVE_SPARK_HARDWARE
 static int sync_blitter = 0;
-static uint32_t oldbgcolor = 0, oldfgcolor = 0, colors[256];
-static struct fb_var_screeninfo screeninfo;
 # endif
 #endif
 /******************************************************************************
@@ -352,6 +350,64 @@ FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library _library, FT_Pointer req
 /******************************************************************************
  * RenderChar
  ******************************************************************************/
+#ifdef MARTII
+struct colors_struct
+{
+	uint32_t fgcolor, bgcolor;
+	uint32_t colors[256];
+};
+
+#define COLORS_LRU_SIZE 16
+static struct colors_struct *colors_lru_array[COLORS_LRU_SIZE] = { NULL };
+
+static uint32_t *lookup_colors(uint32_t fgcolor, uint32_t bgcolor)
+{
+	struct colors_struct *cs;
+	int i = 0, j;
+	for (i = 0; i < COLORS_LRU_SIZE; i++)
+		if (colors_lru_array[i] && colors_lru_array[i]->fgcolor == fgcolor && colors_lru_array[i]->bgcolor == bgcolor) {
+			cs = colors_lru_array[i];
+			for (j = i; j > 0; j--)
+				colors_lru_array[j] = colors_lru_array[j - 1];
+			colors_lru_array[0] = cs;
+			return cs->colors;
+		}
+	i--;
+	cs = colors_lru_array[i];
+	if (!cs)
+		cs = (struct colors_struct *) calloc(1, sizeof(struct colors_struct));
+	for (j = i; j > 0; j--)
+		colors_lru_array[j] = colors_lru_array[j - 1];
+	cs->fgcolor = fgcolor;
+	cs->bgcolor = bgcolor;
+
+	int ro = var_screeninfo.red.offset;
+	int go = var_screeninfo.green.offset;
+	int bo = var_screeninfo.blue.offset;
+	int to = var_screeninfo.transp.offset;
+	int rm = (1 << var_screeninfo.red.length) - 1;
+	int gm = (1 << var_screeninfo.green.length) - 1;
+	int bm = (1 << var_screeninfo.blue.length) - 1;
+	int tm = (1 << var_screeninfo.transp.length) - 1;
+	int fgr = ((int)fgcolor >> ro) & rm;
+	int fgg = ((int)fgcolor >> go) & gm;
+	int fgb = ((int)fgcolor >> bo) & bm;
+	int fgt = ((int)fgcolor >> to) & tm;
+	int deltar = (((int)bgcolor >> ro) & rm) - fgr;
+	int deltag = (((int)bgcolor >> go) & gm) - fgg;
+	int deltab = (((int)bgcolor >> bo) & bm) - fgb;
+	int deltat = (((int)bgcolor >> to) & tm) - fgt;
+	for (i = 0; i < 256; i++)
+		cs->colors[255 - i] =
+			(((fgr + deltar * i / 255) & rm) << ro) |
+			(((fgg + deltag * i / 255) & gm) << go) |
+			(((fgb + deltab * i / 255) & bm) << bo) |
+			(((fgt + deltat * i / 255) & tm) << to);
+
+	colors_lru_array[0] = cs;
+	return cs->colors;
+}
+#endif
 
 int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 {
@@ -428,42 +484,11 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 #ifdef MARTII
 			uint32_t bgcolor = *(lbb + (StartY + _sy) * stride + (StartX + _sx));
 			uint32_t fgcolor = bgra[color];
-			if (oldbgcolor != bgcolor || oldfgcolor != fgcolor) {
-				int i;
-				oldbgcolor = bgcolor;
-				oldfgcolor = fgcolor;
-				int ro = screeninfo.red.offset;
-				int go = screeninfo.green.offset;
-				int bo = screeninfo.blue.offset;
-				int to = screeninfo.transp.offset;
-				int rm = (1 << screeninfo.red.length) - 1;
-				int gm = (1 << screeninfo.green.length) - 1;
-				int bm = (1 << screeninfo.blue.length) - 1;
-				int tm = (1 << screeninfo.transp.length) - 1;
-				int fgr = ((int)fgcolor >> ro) & rm;
-				int fgg = ((int)fgcolor >> go) & gm;
-				int fgb = ((int)fgcolor >> bo) & bm;
-				int fgt = ((int)fgcolor >> to) & tm;
-				int deltar = (((int)bgcolor >> ro) & rm) - fgr;
-				int deltag = (((int)bgcolor >> go) & gm) - fgg;
-				int deltab = (((int)bgcolor >> bo) & bm) - fgb;
-				int deltat = (((int)bgcolor >> to) & tm) - fgt;
-				for (i = 0; i < 256; i++)
-					colors[255 - i] =
-						(((fgr + deltar * i / 255) & rm) << ro) |
-						(((fgg + deltag * i / 255) & gm) << go) |
-						(((fgb + deltab * i / 255) & bm) << bo) |
-						(((fgt + deltat * i / 255) & tm) << to);
-			}
+			uint32_t *colors = lookup_colors(fgcolor, bgcolor);
 			uint32_t *p = lbb + (StartX + _sx + sbit->left + kerning.x) + stride * (StartY + _sy - sbit->top);
 			uint32_t *r = p + (_ex - _sx);	/* end of usable box */
-#else
-			unsigned char *p = lbb + (StartX + _sx + sbit->left + kerning.x) * 4 + fix_screeninfo.line_length * (StartY + _sy - sbit->top);
-			unsigned char *r = p + (_ex - _sx) * 4;	/* end of usable box */
-#endif
 			for(row = 0; row < sbit->height; row++)
 			{
-#ifdef MARTII
 				uint32_t *q = p;
 				uint8_t *s = sbit->buffer + row * sbit->pitch;
 				for(pitch = 0; pitch < sbit->width; pitch++)
@@ -476,7 +501,12 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 				}
 				p += stride;
 				r += stride;
+			}
 #else
+			unsigned char *p = lbb + (StartX + _sx + sbit->left + kerning.x) * 4 + fix_screeninfo.line_length * (StartY + _sy - sbit->top);
+			unsigned char *r = p + (_ex - _sx) * 4;	/* end of usable box */
+			for(row = 0; row < sbit->height; row++)
+			{
 				unsigned char *q = p;
 				for(pitch = 0; pitch < sbit->pitch; pitch++)
 				{
@@ -492,8 +522,8 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 				}
 				p += fix_screeninfo.line_length;
 				r += fix_screeninfo.line_length;
-#endif
 			}
+#endif
 			if (_sx + sbit->xadvance >= _ex)
 				return -1; /* limit to maxwidth */
 		}
@@ -860,8 +890,6 @@ int main()
 		return 2;
 	}
 #ifdef MARTII
-	if (ioctl(fb, FBIOGET_VSCREENINFO, &screeninfo) == -1)
-		perror("blit FBIOGET_VSCREENINFO");
 # ifdef HAVE_SPARK_HARDWARE
 	fix_screeninfo.line_length = DEFAULT_XRES << 2;
 	stride = DEFAULT_XRES;
