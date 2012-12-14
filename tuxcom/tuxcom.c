@@ -1795,19 +1795,35 @@ void RenderMenuLine(int highlight, int refresh)
 		if (refresh == EDIT)
 		{
 			if (textuppercase == 0)
+#ifdef MARTII
+				RenderString(numberchars[(i+1)%10], menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, BLACK);
+#else
 				RenderString(numberchars[(i+1)%10], menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, WHITE);
+#endif
 			else
 			{
 				strcpy(szEntry,numberchars[(i+1)%10]);
 				for (j = 0; j < strlen(szEntry); j++) szEntry[j] = toupper(szEntry[j]);
+#ifdef MARTII
+				RenderString(szEntry, menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, BLACK);
+#else
 				RenderString(szEntry, menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, WHITE);
+#endif
 			}
 
 		}
 		else if (refresh == EDITOR)
+#ifdef MARTII
+			RenderString(editorline[tool[i]*NUM_LANG+language], menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, BLACK);
+#else
 			RenderString(editorline[tool[i]*NUM_LANG+language], menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, WHITE);
+#endif
 		else
+#ifdef MARTII
+			RenderString(menuline[tool[i]*NUM_LANG+language], menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, BLACK);
+#else
 			RenderString(menuline[tool[i]*NUM_LANG+language], menuitemwidth * i + menuitemnumber, viewy-(MENUSIZE/2 + FONT_OFFSET_BIG) , menuitemwidth-menuitemnumber, CENTER, SMALL, WHITE);
+#endif
 
 
 	}
@@ -1825,8 +1841,10 @@ void RenderMenuLine(int highlight, int refresh)
 	}
 	for (i = 0; i < COLORBUTTONS; i++)
 	{
-#endif
+		RenderString(colorline[colortool[i]*NUM_LANG+language], (viewx/COLORBUTTONS) *i , viewy- FONT_OFFSET_BIG , viewx/COLORBUTTONS, CENTER, SMALL  , ((i == 1 || i == 2) ? BLACK : WHITE));
+#else
 		RenderString(colorline[colortool[i]*NUM_LANG+language], (viewx/COLORBUTTONS) *i , viewy- FONT_OFFSET_BIG , viewx/COLORBUTTONS, CENTER, SMALL  , (i == 2 ? BLACK : WHITE));
+#endif
 	}
 	if (refresh == YES)
 #ifdef MARTII
