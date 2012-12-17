@@ -53,6 +53,7 @@ AC_OUTPUT([
 Makefile
 include/Makefile
 tuxcom/Makefile
+tuxwetter/Makefile
 ])
 #AC_OUTPUT([
 #Makefile
