@@ -54,6 +54,7 @@ Makefile
 include/Makefile
 tuxcom/Makefile
 tuxwetter/Makefile
+msgbox/Makefile
 ])
 #AC_OUTPUT([
 #Makefile
