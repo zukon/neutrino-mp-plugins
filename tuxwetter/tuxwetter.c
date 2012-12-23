@@ -3369,11 +3369,14 @@ PLISTENTRY pl=&epl;
 	//init backbuffer
 
 #ifdef MARTII
+# ifdef HAVE_SPARK_HARDWARE
 		lbb = lfb + 1920 * 1080;
 		fix_screeninfo.line_length = DEFAULT_XRES * sizeof(uint32_t);
 		stride = DEFAULT_XRES;
-#else
+# else
 		stride = fix_screeninfo.line_length/sizeof(uint32_t);
+# endif
+#else
 		if(!(lbb = malloc(fix_screeninfo.line_length*var_screeninfo.yres)))
 		{
 			perror("tuxwetter <allocating of Backbuffer>\n");
