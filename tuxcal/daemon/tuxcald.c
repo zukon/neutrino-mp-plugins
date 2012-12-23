@@ -326,7 +326,11 @@ int OpenFB(void)
 	colormap=NULL;
 
 	// framebuffer stuff
+#ifdef FB_DEVICE
+	if ((fbdev = open(FB_DEVICE, O_RDWR))<0)
+#else
 	if ((fbdev = open("/dev/fb/0", O_RDWR))<0)
+#endif
 	{
 		slog ? syslog(LOG_DAEMON | LOG_INFO, "open fb failed"): printf("TuxCalD <open fb failed>");
 		return 0;

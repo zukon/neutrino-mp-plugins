@@ -15,10 +15,14 @@
 
 #ifndef USEX
 
+#ifdef FB_DEVICE
+#define fbdevname FB_DEVICE
+#else
 #ifdef __i386__
 #define fbdevname	"/dev/fb0"
 #else
 #define fbdevname	"/dev/fb/0"
+#endif
 #endif
 
 #ifndef abs

@@ -33,7 +33,9 @@
 #include "gfx.h"
 #include "fb_display.h"
 
+#ifndef FB_DEVICE
 #define FB_DEVICE	"/dev/fb/0"
+#endif
 
 /* Public Use Functions:
  *

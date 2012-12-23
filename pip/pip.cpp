@@ -75,7 +75,11 @@ extern "C"
 
 #define FONT	"/share/fonts/pakenham.ttf"
 
+#ifdef FB_DEVICE
+#define FB	FB_DEVICE
+#else
 #define FB	"/dev/fb/0"
+#endif
 #define RC	"/dev/rawir2"
 
 #define	RC_0		0x00

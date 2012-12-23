@@ -152,7 +152,9 @@ extern int instance;
 int get_instance(void);
 void put_instance(int pval);
 
+#ifndef FB_DEVICE
 #define FB_DEVICE	"/dev/fb/0"
+#endif
 
 #endif
 

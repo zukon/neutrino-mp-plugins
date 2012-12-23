@@ -131,7 +131,9 @@ struct fb_var_screeninfo var_screeninfo;
 
 //int startx, starty, sx, ex, sy, ey;
 
+#ifndef FB_DEVICE
 #define FB_DEVICE	"/dev/fb/0"
+#endif
 
 #define MAXSLOTS		4
 

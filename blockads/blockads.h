@@ -167,7 +167,9 @@ struct input_event ev;
 
 unsigned short rccode;
 
+#ifndef FB_DEVICE
 #define FB_DEVICE	"/dev/fb/0"
+#endif
 
 #if HAVE_DVB_API_VERSION < 3
 #define RC_DEVICE	"/dev/dbox/rc0"

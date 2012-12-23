@@ -11,10 +11,14 @@ extern	int	atoi(char* in);
 
 #include <fbemul.h>
 
+#ifdef FB_DEVICE
+#define fbdevname DB_DEVICE
+#else
 #ifdef i386
 #define fbdevname	"/dev/fb0"
 #else
 #define fbdevname	"/dev/fb/0"
+#endif
 #endif
 
 static	int							fd = -1;

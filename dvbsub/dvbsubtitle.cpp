@@ -18,7 +18,11 @@ extern "C" {
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 }
+#ifdef FB_DEVICE
+#define FB	FB_DEVICE
+#else
 #define FB	"/dev/fb/0"
+#endif
 extern int fb_fd;
 unsigned char *lfb = 0;
 struct fb_fix_screeninfo fix_screeninfo;
