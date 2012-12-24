@@ -56,6 +56,7 @@ tuxcom/Makefile
 tuxwetter/Makefile
 msgbox/Makefile
 input/Makefile
+getrc/Makefile
 ])
 #AC_OUTPUT([
 #Makefile
