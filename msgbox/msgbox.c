@@ -731,7 +731,7 @@ FILE *fh;
 			if((tv=Read_Neutrino_Cfg(rstr))>=0)
 				rd[ix]=(float)tv*2.55;
 		}
-		for (ix = 0; ix <= CMH; ix++)
+		for (ix = 0; ix <= RED; ix++)
 			bgra[ix] = (tr[ix] << 24) | (rd[ix] << 16) | (gn[ix] << 8) | bl[ix];
 #else
 		for(index=CMCST; index<=CMH; index++)
