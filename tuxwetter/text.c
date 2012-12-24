@@ -7,7 +7,11 @@ int FSIZE_MED=24;
 int FSIZE_SMALL=20;
 int FSIZE_VSMALL=16;
 int TABULATOR=72;
+#ifdef MARTII
+unsigned char sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä','Ö','Ü','ß','°'};
+#else
 unsigned sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä','Ö','Ü','ß','°'};
+#endif
 
 #ifdef MARTII
 void blit(void);

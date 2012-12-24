@@ -145,7 +145,11 @@ extern unsigned char rd[],gn[],bl[],tr[];
 #endif
 
 int startx, starty, sx, ex, sy, ey, debounce, rblock;
+#ifdef MARTII
+extern unsigned char sc[8], tc[8];
+#else
 extern unsigned sc[8], tc[8];
+#endif
 extern char *butmsg[MAX_BUTTONS];
 extern int buttons,selection;
 extern int instance;

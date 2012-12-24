@@ -54,7 +54,11 @@ unsigned char *lfb = 0, *lbb = 0, *obb = 0, *hbb = 0, *ibb = 0;
 #endif
 unsigned char nstr[BUFSIZE]="";
 unsigned char *trstr;
+#ifdef MARTII
+unsigned char rc,sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={0xE4,0xF6,0xFC,0xC4,0xD6,0xDC,0xDF,0xB0};
+#else
 unsigned rc,sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={0xE4,0xF6,0xFC,0xC4,0xD6,0xDC,0xDF,0xB0};
+#endif
 char INST_FILE[]="/tmp/rc.locked";
 int instance=0;
 #ifdef MARTII
