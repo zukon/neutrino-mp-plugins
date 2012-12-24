@@ -190,7 +190,6 @@ void RenderCircle(int sx, int sy, int col)
 				*(lbb + startx + sx + x + stride*(starty + sy + y)) = pix;
 #else
 			for(x = 0; x < 12; x++) if(circle[x + y*12]) memcpy(lbb + (startx + sx + x)*4 + fix_screeninfo.line_length*(starty + sy + y), pix, 4);
-		}
 #endif
 		}
 }
