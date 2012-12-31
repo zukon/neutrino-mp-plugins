@@ -1,5 +1,22 @@
 #include "input.h"
 
+#ifdef MARTII
+char circle[] =
+{
+	0,2,2,2,2,2,2,2,2,2,2,0,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	0,2,2,2,2,2,2,2,2,2,2,0
+};
+#else
 char circle[] =
 {
 	0,0,0,0,0,1,1,0,0,0,0,0,
@@ -15,6 +32,7 @@ char circle[] =
 	0,0,0,1,1,1,1,1,1,0,0,0,
 	0,0,0,0,0,1,1,0,0,0,0,0
 };
+#endif
 
 #ifdef MARTII
 # ifdef HAVE_SPARK_HARDWARE
@@ -205,6 +223,22 @@ void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
  * RenderCircle
  ******************************************************************************/
 
+#ifdef MARTII
+void RenderCircle(int sx, int sy, int col)
+{
+	int x, y;
+	uint32_t pix = bgra[col];
+	uint32_t *p = lbb + startx + sx;
+	int s = stride * (starty + sy + y);
+
+	for(y = 0; y < 12 * 12; y += 12, s += stride)
+		for(x = 0; x < 12; x++)
+			switch(circle[x + y]) {
+				case 1: *(p + x + s) = pix; break;
+				case 2: *(p + x + s) = 0xFFFFFFFF; break;
+			}
+}
+#else
 void RenderCircle(int sx, int sy, char col)
 {
 	int x, y;
@@ -225,4 +259,5 @@ void RenderCircle(int sx, int sy, char col)
 #endif
 		}
 }
+#endif
 

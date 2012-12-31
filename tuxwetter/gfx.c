@@ -6,6 +6,23 @@
 
 typedef struct { unsigned char width_lo; unsigned char width_hi; unsigned char height_lo; unsigned char height_hi; 	unsigned char transp; } IconHeader;
 
+#ifdef MARTII
+char circle[] =
+{
+	0,2,2,2,2,2,2,2,2,2,2,0,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	2,1,1,1,1,1,1,1,1,1,1,2,
+	0,2,2,2,2,2,2,2,2,2,2,0
+};
+#else
 char circle[] =
 {
 	0,0,0,0,0,1,1,0,0,0,0,0,
@@ -21,6 +38,7 @@ char circle[] =
 	0,0,0,1,1,1,1,1,1,0,0,0,
 	0,0,0,0,0,1,1,0,0,0,0,0
 };
+#endif
 
 void Center_Screen(int wx, int wy, int *csx, int *csy)
 {
@@ -220,6 +238,22 @@ void RenderBox(int rsx, int rsy, int rex, int rey, int rad, int col)
  * RenderCircle
  ******************************************************************************/
 
+#ifdef MARTII
+void RenderCircle(int sx, int sy, int col)
+{
+	int x, y;
+	uint32_t pix = bgra[col];
+	uint32_t *p = lbb + startx + sx;
+	int s = stride * (starty + sy + y);
+
+	for(y = 0; y < 12 * 12; y += 12, s += stride)
+		for(x = 0; x < 12; x++)
+			switch(circle[x + y]) {
+				case 1: *(p + x + s) = pix; break;
+				case 2: *(p + x + s) = 0xFFFFFFFF; break;
+			}
+}
+#else
 void RenderCircle(int sx, int sy, int col)
 {
 	int x, y;
@@ -240,6 +274,7 @@ void RenderCircle(int sx, int sy, int col)
 #endif
 		}
 }
+#endif
 
 #if 0
 /******************************************************************************
