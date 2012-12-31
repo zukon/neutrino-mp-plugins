@@ -1,5 +1,42 @@
 #include "msgbox.h"
 
+#ifdef MARTII
+# ifdef HAVE_SPARK_HARDWARE
+void FillRect(int _sx, int _sy, int _dx, int _dy, uint32_t color)
+{
+	uint32_t *p1, *p2, *p3, *p4;
+	sync_blitter = 1;
+
+	STMFBIO_BLT_DATA bltData;
+	memset(&bltData, 0, sizeof(STMFBIO_BLT_DATA));
+
+	bltData.operation  = BLT_OP_FILL;
+	bltData.dstOffset  = 1920 * 1080 * 4;
+	bltData.dstPitch   = DEFAULT_XRES * 4;
+
+	bltData.dst_left   = _sx;
+	bltData.dst_top    = _sy;
+	bltData.dst_right  = _sx + _dx - 1;
+	bltData.dst_bottom = _sy + _dy - 1;
+
+	bltData.dstFormat  = SURF_ARGB8888;
+	bltData.srcFormat  = SURF_ARGB8888;
+	bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
+	bltData.srcMemBase = STMFBGP_FRAMEBUFFER;
+	bltData.colour     = color;
+
+	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
+		perror("RenderBox ioctl STMFBIO_BLT");
+#if 0
+	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+		perror("blit ioctl STMFBIO_SYNC_BLITTER 2");
+#else
+	sync_blitter = 1;
+#endif
+}
+# endif
+#endif
+
 void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
 {
 	int F,R=rad,ssx=startx+sx,ssy=starty+sy,dxx=ex-sx,dyy=ey-sy,rx,ry,wx,wy,count;
@@ -22,6 +59,13 @@ void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
 
 	if(R)
 	{
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		if(sync_blitter) {
+			sync_blitter = 0;
+			if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+				perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+		}
+#endif
 		if(--dyy<=0)
 		{
 			dyy=1;
@@ -124,6 +168,9 @@ void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
 #endif
 	}
 
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+	FillRect(startx + sx, starty + sy + R, dxx + 1, dyy - 2 * R + 1, pix);
+#else
 	for (count=R; count<(dyy-R); count++)
 	{
 #ifdef MARTII
@@ -136,6 +183,6 @@ void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
 		pos+=fix_screeninfo.line_length;
 #endif
 	}
+#endif
 }
-
 

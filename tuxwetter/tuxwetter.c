@@ -1303,8 +1303,12 @@ int len;
 
 void clear_screen(void)
 {
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+	FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 //	for(; sy <= ey; sy++) memset(lbb + sx + var_screeninfo.xres*(sy),TRANSP, ex-sx + 1);
 	memset(lbb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
 #ifdef MARTII
 	blit();
 #else
@@ -3387,7 +3391,11 @@ PLISTENTRY pl=&epl;
 		}
 #endif
 
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 		memset(lbb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
 
 		startx = sx;
 		starty = sy;
@@ -4044,7 +4052,11 @@ PLISTENTRY pl=&epl;
 	
 
 	// clear Display
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 	memset(lbb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
 #ifdef MARTII
 	blit();
 #else

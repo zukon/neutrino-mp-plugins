@@ -896,7 +896,11 @@ time_t tm1,tm2;
 
 			case RC_MUTE:
 #ifdef MARTII
+#ifdef HAVE_SPARK_HARDWARE
+				FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 				memset(lbb, TRANSP, var_screeninfo.xres * var_screeninfo.yres * sizeof(uint32_t));
+#endif
 				blit();
 #else
 				memset(lfb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
@@ -1793,7 +1797,11 @@ PLISTENTRY pl;
 
 //	lbb=lfb;
 #ifdef MARTII
+#ifdef HAVE_SPARK_HARDWARE
+	FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 	memset(lbb, TRANSP, var_screeninfo.xres*var_screeninfo.yres*sizeof(uint32_t));
+#endif
 	blit();
 #else
 	memset(lbb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
@@ -1890,7 +1898,11 @@ PLISTENTRY pl;
 								else
 								{
 #ifdef MARTII
+#ifdef HAVE_SPARK_HARDWARE
+									FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 									memset(lbb, TRANSP, var_screeninfo.xres * var_screeninfo.yres * sizeof(uint32_t));
+#endif
 									blit();
 #else
 									memset(lbb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
@@ -1947,7 +1959,11 @@ PLISTENTRY pl;
 
 	// clear Display
 #ifdef MARTII
+#ifdef HAVE_SPARK_HARDWARE
+	FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
 	memset(lbb, TRANSP,var_screeninfo.xres*var_screeninfo.yres*sizeof(uint32_t));
+#endif
 	blit();
 #else
 	memset(lbb, TRANSP,fix_screeninfo.line_length*var_screeninfo.yres);

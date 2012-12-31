@@ -26,6 +26,7 @@
 #include <linux/stmfb.h>
 #define DEFAULT_XRES 1280
 #define DEFAULT_YRES 720
+extern int sync_blitter;
 #endif
 #endif
 

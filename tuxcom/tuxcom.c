@@ -608,8 +608,11 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 		_ex = _sx + maxwidth;
 
 #if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
-		if(sync_blitter && ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-			perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+		if(sync_blitter) {
+			sync_blitter = 0;
+			if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+				perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+		}
 #endif
 		while(*string != '\0' && *string != '\n')
 		{
@@ -831,8 +834,9 @@ void blit(void) {
 #if 0
 	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
 		perror("blit ioctl STMFBIO_SYNC_BLITTER 2");
+#else
+	sync_blitter = 1;
 #endif
-	sync_blitter = 0;
 #else
 	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
 #endif
