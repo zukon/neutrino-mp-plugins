@@ -57,6 +57,7 @@ tuxwetter/Makefile
 msgbox/Makefile
 input/Makefile
 getrc/Makefile
+shellexec/Makefile
 ])
 #AC_OUTPUT([
 #Makefile

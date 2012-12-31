@@ -44,13 +44,23 @@ int CloseRC(void)
 
 int RCKeyPressed(void)
 {
+#ifdef MARTII
+	rccode = -1;
+#endif
 	if(read(rc, &ev, sizeof(ev)) == sizeof(ev))
 	{
+#ifdef MARTII
+		if(ev.value)
+#else
 		if(ev.code)
+#endif
 		{
 			rccode=ev.code;
 			return 1;
 		}
+#ifdef MARTII
+		return 1;
+#endif
 	}
 	rccode = -1;
 	return 0;

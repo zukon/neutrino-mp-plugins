@@ -47,6 +47,9 @@ int CloseRC(void)
 
 int RCKeyPressed(void)
 {
+#ifdef MARTII
+	rccode = -1;
+#endif
 	if(read(rc, &ev, sizeof(ev)) == sizeof(ev))
 	{
 		if(ev.value)
