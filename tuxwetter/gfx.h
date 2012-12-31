@@ -7,5 +7,8 @@ void RenderBox(int sx, int sy, int ex, int ey, int mode, int color);
 //void PaintIcon(char *filename, int x, int y, unsigned char offset);
 void RenderLine( int xa, int ya, int xb, int yb, unsigned char farbe );
 void RenderCircle(int sx, int sy, int col);
+#ifdef MARTII
+void FillRect(int _sx, int _sy, int _dx, int _dy, uint32_t color);
+#endif
 
 #endif

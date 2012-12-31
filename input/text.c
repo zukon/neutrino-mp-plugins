@@ -7,6 +7,10 @@ int FSIZE_MED=24;
 int FSIZE_SMALL=20;
 int TABULATOR=300;
 
+#ifdef MARTII
+void blit(void);
+extern int sync_blitter;
+#endif
 /******************************************************************************
  * MyFaceRequester
  ******************************************************************************/
@@ -138,6 +142,13 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+			if(sync_blitter) {
+				sync_blitter = 0;
+				if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+					perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+			}
+#endif
 			uint32_t bgcolor = *(lbb + (sy + _sy) * stride + (sx + _sx));
 			//unsigned char pix[4]={bl[color],gn[color],rd[color],tr[color]};
 			uint32_t fgcolor = bgra[color];
@@ -340,9 +351,12 @@ int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int siz
 
 		ex = sx + maxwidth;
 
-#ifdef MARTII
-		if(sync_blitter && ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-			perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+		if(sync_blitter) {
+			sync_blitter = 0;
+			if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+				perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+		}
 #endif
 		while(*rptr != '\0')
 		{
