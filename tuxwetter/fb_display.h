@@ -26,6 +26,9 @@ void fb_display(unsigned char *rgbbuff, int x_size, int y_size, int x_pan, int y
 int fb_set_gmode(int gmode);
 void getCurrentRes(int *x,int *y);
 void clearFB(int cfx, int cfy, int bpp, int cpp);
+#ifdef MARTII
+void clearBB(void);
+#endif
 void closeFB(void);
 
 int showBusy(int sx, int sy, int width, char r, char g, char b);

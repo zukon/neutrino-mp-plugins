@@ -155,8 +155,8 @@ void fb_display(unsigned char *rgbbuff, int x_size, int y_size, int x_pan, int y
 		return;
 	}
 #ifdef MARTII
-var.xres = DEFAULT_XRES;
-var.yres = DEFAULT_YRES;
+    var.xres = DEFAULT_XRES;
+    var.yres = DEFAULT_YRES;
 #endif
 
     /* correct panning */
@@ -172,7 +172,11 @@ var.yres = DEFAULT_YRES;
 		 return;
 	 /* ClearFB if image is smaller */
    if(clearflag)
+#ifdef MARTII
+       clearBB();
+#else
        clearFB(0,0,var.bits_per_pixel, bp);
+#endif
     blit2FB(fbbuff, x_size, y_size, var.xres, var.yres, x_pan, y_pan, x_offs, y_offs, bp, setpal);
     free(fbbuff);
     gbpp=bp;
@@ -300,9 +304,21 @@ void blit2FB(void *fbbuff,
 
 
 #ifdef MARTII
+void clearBB()
+{
+#ifdef HAVE_SPARK_HARDWARE
+	FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#else
+	memset(lbb, 0, DEFAULT_XRES * DEFAULT_YRES * sizeof(uint32_t));
+#endif
+}
 void clearFB(int cfx __attribute((unused)) __attribute((unused)), int cfy __attribute((unused)) __attribute((unused)), int bpp, int cpp __attribute((unused)))
 {
+#ifdef MARTII
+	clearBB();
+#else
 	memset(lbb, 0, DEFAULT_XRES * DEFAULT_YRES * sizeof(uint32_t));
+#endif
 	blit();
 }
 #else

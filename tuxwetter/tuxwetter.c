@@ -1303,15 +1303,12 @@ int len;
 
 void clear_screen(void)
 {
-#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
-	FillRect(0, 0, DEFAULT_XRES, DEFAULT_YRES, 0);
+#if defined(MARTII)
+	clearBB();
+	blit();
 #else
 //	for(; sy <= ey; sy++) memset(lbb + sx + var_screeninfo.xres*(sy),TRANSP, ex-sx + 1);
 	memset(lbb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
-#endif
-#ifdef MARTII
-	blit();
-#else
 	memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
 #endif
 }
@@ -3895,7 +3892,11 @@ PLISTENTRY pl=&epl;
 							wloop=1;
 							while(wloop)
 							{
+#ifdef MARTII
+								clearBB();
+#else
 								clear_screen();
+#endif
 								switch(Get_Selection(&funcs))
 								{
 									case -99:
