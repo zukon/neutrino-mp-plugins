@@ -177,7 +177,7 @@ int GetRCCode(void)
 	}
 	rv=rccode;
 #ifdef MARTII
-	usleep(200000);
+	usleep(300000);
 	fcntl(rc, F_SETFL, O_NONBLOCK | O_SYNC);
 #endif
 	while(RCKeyPressed());
