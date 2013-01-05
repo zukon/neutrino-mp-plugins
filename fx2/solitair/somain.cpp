@@ -57,11 +57,16 @@ int solitair_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 
 extern "C"
 {
+#ifdef MARTII
+	int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+#else
 	int plugin_exec( PluginParam *par )
+#endif
 	{
 		int		fd_fb=-1;
 		int		fd_rc=-1;
 
+#ifndef MARTII
 		for( ; par; par=par->next )
 		{
 			if ( !strcmp(par->id,P_ID_FBUFFER) )
@@ -71,6 +76,7 @@ extern "C"
 			else if ( !strcmp(par->id,P_ID_NOPIG) )
 				fx2_use_pig=!_atoi(par->val);
 		}
+#endif
 
 		return solitair_exec( fd_fb, fd_rc, -1, 0 );
 	}

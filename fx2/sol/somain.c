@@ -79,7 +79,7 @@ int sol_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 		  
 		  RcGetActCode( );
 		  MoveMouse();
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		  FBFlushGrafic();
 #endif
 		}
@@ -104,7 +104,7 @@ int sol_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 		      
 				//DrawGameOver();
 		    }
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 #ifdef SOLBOARD_DEBUG
 		    printf("somain: FBFlushGrafic()\n");
 #endif
@@ -149,11 +149,16 @@ int sol_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
  * This function is called by neutrino/src/gui/gamelist.cpp
  * @param PluginParam the parameters of the plugin
  */
+#ifdef MARTII
+int main(int argv __attribute__((unused)), char **argc __attribute((unused)))
+#else
 int plugin_exec( PluginParam *par )
+#endif
 {
 	int		fd_fb=-1;
 	int		fd_rc=-1;
 
+#ifndef MARTII
 	for( ; par; par=par->next )
 	{
 		if ( !strcmp(par->id,P_ID_FBUFFER) )
@@ -163,5 +168,6 @@ int plugin_exec( PluginParam *par )
 		else if ( !strcmp(par->id,P_ID_NOPIG) )
 			fx2_use_pig=!_atoi(par->val);
 	}
+#endif
 	return sol_exec( fd_fb, fd_rc, -1, 0 );
 }

@@ -1,19 +1,18 @@
 AM_CPPFLAGS = -I$(srcdir)/../lib -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = sol.la
+noinst_PROGRAMS = sol
 
-sol_la_SOURCES = solboard.c somain.c
+sol_SOURCES = solboard.c somain.c
 
-sol_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+sol_LDFLAGS = \
+	-rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR)
 
-sol_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lfx2
+sol_LDADD = \
+	-lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
-	$(LIBTOOL) --mode=install install sol.la $(DESTDIR)$(PLUGINDIR)
+	install -d $(DESTDIR)$(CONFIGDIR)
+	install --strip-program=$(STRIP) -s -m 0755 .libs/sol $(DESTDIR)$(PLUGINDIR)/sol.so
 	install -m 0644 $(srcdir)/sol.cfg $(DESTDIR)$(PLUGINDIR)
 
-uninstall-local:
-	-rm $(DESTDIR)$(PLUGINDIR)/sol.so
-	-rm $(DESTDIR)$(PLUGINDIR)/sol.cfg
-	-rmdir $(DESTDIR)$(PLUGINDIR)

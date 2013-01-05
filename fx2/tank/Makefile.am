@@ -1,19 +1,18 @@
 AM_CPPFLAGS = -I$(srcdir)/../lib -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = tank.la
+noinst_PROGRAMS = tank
 
-tank_la_SOURCES = board.c somain.c
+tank_SOURCES = board.c somain.c
 
-tank_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+tank_LDFLAGS = \
+	-rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR)
 
-tank_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lfx2
+tank_LDADD = \
+	-lfx2
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
-	$(LIBTOOL) --mode=install install tank.la $(DESTDIR)$(PLUGINDIR)
+	install -d $(DESTDIR)$(CONFIGDIR)
+	install --strip-program=$(STRIP) -s -m 0755 .libs/tank $(DESTDIR)$(PLUGINDIR)/tank.so
 	install -m 0644 $(srcdir)/tank.cfg $(DESTDIR)$(PLUGINDIR)
 
-uninstall-local:
-	-rm $(DESTDIR)$(PLUGINDIR)/tank.so
-	-rm $(DESTDIR)$(PLUGINDIR)/tank.cfg
-	-rmdir $(DESTDIR)$(PLUGINDIR)

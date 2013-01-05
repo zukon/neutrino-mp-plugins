@@ -2,7 +2,7 @@
 #define RC_INPUT_H
 
 #include <config.h>
-#ifdef HAVE_DBOX_HARDWARE
+#if defined(HAVE_DBOX_HARDWARE) || defined(HAVE_SPARK_HARDWARE)
 	#include "input_fake.h"
 	#define RC_0			KEY_0
 	#define RC_1			KEY_1

@@ -86,7 +86,7 @@ static	void	SortBouquet( Channel *ch, int num )
 		FBDrawString( 62, 160, 32, "save",GRAY,0);
 		FBFillRect( 50, 202, 8, 8, YELLOW );
 		FBDrawString( 62, 190, 32, ch==tv_ch?"radio":"tv",GRAY,0);
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 	FBFlushGrafic();
 #endif
 		while( realcode != 0xee )
@@ -188,7 +188,7 @@ static	void	SortBouquet( Channel *ch, int num )
 				doexit=2;
 				break;
 			}
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 			while( realcode != 0xee )
@@ -260,7 +260,7 @@ static	void	SaveServices( void )
 	int		lp=-1;
 
 	FBDrawString( 62, 160, 32, "save",BLACK,GRAY);
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 	fp = fopen( CONFIGDIR "/zapit/services.xml", "w" );
@@ -274,7 +274,7 @@ static	void	SaveServices( void )
 		if ( perc != lp )
 		{
 			FBFillRect( 100, 230, perc, 16, GRAY );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 		}
@@ -344,7 +344,7 @@ int bouquet_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 	if ( !fp )
 	{
 		FBDrawString( 190, 100, 64, "services.xml not found !", RED, 0 );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 		tv.tv_sec = 5;
@@ -487,11 +487,16 @@ int bouquet_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 	return 0;
 }
 
+#ifdef MARTII
+int main(int argv __attribute__((unused)), char **argc __attribute((unused)))
+#else
 int plugin_exec( PluginParam *par )
+#endif
 {
 	int		fd_fb=-1;
 	int		fd_rc=-1;
 
+#ifndef MARTII
 	for( ; par; par=par->next )
 	{
 		if ( !strcmp(par->id,P_ID_FBUFFER) )
@@ -499,5 +504,6 @@ int plugin_exec( PluginParam *par )
 		else if ( !strcmp(par->id,P_ID_RCINPUT) )
 			fd_rc=_atoi(par->val);
 	}
+#endif
 	return bouquet_exec( fd_fb, fd_rc, -1, 0 );
 }

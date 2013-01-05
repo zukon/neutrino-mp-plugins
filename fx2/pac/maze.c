@@ -656,7 +656,7 @@ void	NextLevel( void )
 
 void	MazePig( void )
 {
-#ifdef USEX
+#if defined(USEX)
 	Fx2ShowPig( (int)pig_x[ level ]*32, (int)pig_y[level]*32, 256, 208 );
 #else
 	Fx2ShowPig( (int)pig_x[ level ]*32-1, (int)pig_y[level]*32, 240, 180 );

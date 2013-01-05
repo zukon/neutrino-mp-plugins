@@ -359,7 +359,7 @@ static int by[] = {
 	FBDrawString( 75,370, 30, tlevel, WHITE, BLACK );
 	FBDrawString( 120,370, 30, "Level gefunden", WHITE, BLACK);
 
-#ifdef USEX     
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)     
 	FBFlushGrafic(); 
 #endif
 
@@ -370,7 +370,7 @@ static int by[] = {
 			if (i>=1 && i-1<=85) { FBCopyImage( bx[i-1]+56,by[i-1]+118, 32, 28, man );}
 			if (i>=2 && i-2<=85) { FBCopyImage( bx[i-2]+56,by[i-2]+118, 32, 28, wall );}
 
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic(); 
 #endif
 			RcGetActCode( );
@@ -543,7 +543,7 @@ char zug=' ';
 			FBDrawString( 160,75, 30, "Das Level ist noch nicht beendet!", WHITE, 0 );
 			FBDrawString( 160,110, 30, "ROT   abbruch", WHITE, 0 );
 			FBDrawString( 160,140, 30, "OK    naechstes Level", WHITE, 0 );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 
@@ -583,7 +583,7 @@ char zug=' ';
 			FBDrawString( 160,75, 30, "Das Level ist noch nicht beendet!", WHITE, 0 );
 			FBDrawString( 160,110, 30, "ROT   abbruch", WHITE, 0 );
 			FBDrawString( 160,140, 30, "OK    vorheriges Level", WHITE, 0 );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 
@@ -639,7 +639,7 @@ char zug=' ';
 			FBDrawString( 160,75, 30, "Das Level ist noch nicht beendet!", WHITE, 0 );
 			FBDrawString( 160,110, 30, "ROT   abbruch", WHITE, 0 );
 			FBDrawString( 160,140, 30, "OK    vorheriges Level", WHITE, 0 );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 			actcode=0xee;
@@ -674,7 +674,7 @@ char zug=' ';
 		FBDrawString( 160,290, 30, "STUMM Spiel aus-/einblenden", WHITE, 0 );
 		FBDrawString( 160,330, 30, "HILFE diese Hilfe", WHITE, 0 );
 		FBDrawString( 160,370, 30, "OK    weiter", WHITE, 0 );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 
@@ -830,7 +830,7 @@ char zug=' ';
 
 		doexit=1;
 		}
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 	FBFlushGrafic();
 #endif
 	return;

@@ -25,7 +25,11 @@
 #include <string>
 #include <list>
 
+#ifdef MARTII
+struct tMenuItem
+#else
 typedef struct tMenuItem
+#endif
 {
 	tMenuItem();
 
@@ -41,7 +45,11 @@ typedef struct tMenuItem
 typedef std::list<tMenuItem>						tMenuItemsList;
 typedef std::list<tMenuItem>::iterator	tMenuItemIterator;
 
+#ifdef MARTII
+struct tMenu
+#else
 typedef struct tMenu
+#endif
 {
 	tMenu();
 

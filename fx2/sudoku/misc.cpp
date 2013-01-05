@@ -19,11 +19,15 @@
 	If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef MARTII
+#include "../../config.h"
+#endif
 #include <sys/time.h>
 
 // ----------------------------------------------------------------------------
 // Rand
 // ----------------------------------------------------------------------------
+#ifndef HAVE_SPARK_HARDWARE
 int Rand(void)
 {
 //	return rand();
@@ -31,6 +35,7 @@ int Rand(void)
 	gettimeofday(&tv, 0);
 	return (int) tv.tv_usec;
 }
+#endif
 
 // ----------------------------------------------------------------------------
 // Sleep

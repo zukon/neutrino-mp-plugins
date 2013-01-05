@@ -28,7 +28,9 @@
 
 #ifdef HAVE_CURL
 #include <curl/curl.h>
+#ifndef NEW_LIBCURL
 #include <curl/types.h>
+#endif
 #include <curl/easy.h>
 #endif
 
@@ -94,7 +96,7 @@ static	void	LoadHScore( void )
 
 	FBDrawString( 150,32,32,"try load high score from",GRAY,0);
 	FBDrawString( 150,64,32,hscore,GRAY,0);
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 	FBFlushGrafic();
 #endif
 
@@ -224,7 +226,7 @@ static	void	SaveGame( void )
 		return;
 
 	FBDrawString( 100,230,64,"Inet-Send Highscore ? (OK/BLUE)",GREEN,0);
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 	FBFlushGrafic();
 #endif
 
@@ -339,7 +341,7 @@ static	void	ShowHScore( HScore *g )
 		x = FBDrawString( 400, 100+i*48, 48, pp, BLACK, BLACK );
 		FBDrawString( 500-x, 100+i*48, 48, pp, WHITE, BLACK );
 	}
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 	FBFlushGrafic();
 #endif
 	while( realcode != 0xee )
@@ -536,7 +538,7 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 	}
 #endif
 
-#ifdef HAVE_DBOX_HARDWARE
+#if defined(HAVE_DBOX_HARDWARE) || defined(HAVE_SPARK_HARDWARE)
 	Fx2ShowPig( 480, 400, 176, 144 );
 #endif
 
@@ -570,7 +572,7 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 				if ( !NextItem() )
 					doexit=1;
 			}
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 
@@ -581,7 +583,7 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 		{
 			actcode=0xee;
 			DrawGameOver();
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 			doexit=0;
@@ -593,7 +595,7 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 			ShowHScore(hsc);
 			Fx2PigPause();
 
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 			i=0;
@@ -608,7 +610,7 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 				if ( i == 50 )
 				{
 					FBDrawString( 190, 480, 48, "press OK for new game",GRAY,0);
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 					FBFlushGrafic();
 #endif
 				}
@@ -619,7 +621,7 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 
 	Fx2StopPig();
 
-#ifdef HAVE_DBOX_HARDWARE
+#if defined(HAVE_DBOX_HARDWARE) || defined(HAVE_SPARK_HARDWARE)
 /* fx2 */
 /* buffer leeren, damit neutrino nicht rumspinnt */
 	realcode = RC_0;
@@ -658,11 +660,16 @@ int tetris_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 	return 0;
 }
 
+#ifdef MARTII
+int main(int argv __attribute__((unused)), char **argc __attribute((unused)))
+#else
 int plugin_exec( PluginParam *par )
+#endif
 {
 	int		fd_fb=-1;
 	int		fd_rc=-1;
 
+#ifndef MARTII
 	for( ; par; par=par->next )
 	{
 		if ( !strcmp(par->id,P_ID_FBUFFER) )
@@ -682,5 +689,6 @@ int plugin_exec( PluginParam *par )
 			proxy_user=par->val;
 #endif
 	}
+#endif
 	return tetris_exec( fd_fb, fd_rc, -1, 0 );
 }

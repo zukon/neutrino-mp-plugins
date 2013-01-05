@@ -20,7 +20,7 @@ extern	int		doexit;
 
 extern	unsigned short	actcode;
 extern	unsigned short	realcode;
-#ifdef USEX
+#if defined(USEX)
 static	unsigned long	oran=0;
 #endif
 
@@ -40,7 +40,7 @@ static	int		myrand( int idx )
 	struct timeval tv;
 	gettimeofday(&tv,0);
 
-#ifdef USEX
+#if defined(USEX)
 	oran=tv.tv_usec;
 	tv.tv_sec = 0;
 	tv.tv_usec &= 0x0fff;
@@ -181,7 +181,7 @@ static	void	Flame( int x )
 	{
 		k=myrand(3);
 		FBCopyImage( x, 496, 16, 16, flame[k] );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 		tv.tv_usec = myrand(100000)+50000;
@@ -213,14 +213,14 @@ static	int	Fly( float ang_x, float ang_y )
 		if ( xo2 && yo2 )
 		{
 			FBFillRect( can_x+xo2, can_y-yo2, 2, 2, AIR );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 		}
 		if ( xo && yo )
 		{
 			FBFillRect( can_x+xo, can_y-yo, 2, 2, WHITE );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 			xo2=xo;
@@ -241,7 +241,7 @@ static	int	Fly( float ang_x, float ang_y )
 					((x!=xo-1) || (y!=yo-1)) )
 				{
 					FBFillRect( can_x+x, can_y-y, 2, 2, AIR );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 					FBFlushGrafic();
 #endif
 					break;
@@ -250,7 +250,7 @@ static	int	Fly( float ang_x, float ang_y )
 
 			if ( y > -32 )
 				FBFillRect( can_x+x, can_y-y, 2, 2, RED );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 			FBFlushGrafic();
 #endif
 			xo=x;
@@ -282,14 +282,14 @@ static	int	Fly( float ang_x, float ang_y )
 	if ( xo2 && yo2 )
 	{
 		FBFillRect( can_x+xo2, can_y-yo2, 2, 2, AIR );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 	}
 	if ( xo && yo )
 	{
 		FBFillRect( can_x+xo, can_y-yo, 2, 2, AIR );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 	}
@@ -413,7 +413,7 @@ static	void	Bomb( void )
 			FBDrawVLine( 301+118-89, 529, 3, BLACK );
 		}
 
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 		actcode=0xee;

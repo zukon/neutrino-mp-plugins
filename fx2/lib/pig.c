@@ -10,6 +10,44 @@
 
 #include <config.h>
 
+#ifdef HAVE_SPARK_HARDWARE
+#include "draw.h"
+
+int fx2_use_pig = 1;
+
+void Fx2SetPig(int x __attribute__((unused)), int y __attribute__((unused)), int w __attribute__((unused)), int h __attribute__((unused)))
+{
+	return;
+}
+
+void Fx2ShowPig(int x, int y, int width, int height)
+{
+	int pig = open("/proc/stb/vmpeg/0/dst_all", O_RDWR);
+	if (pig > -1) {
+		char s[80];
+		if (x == -1 && y == -1 && width == -1 && height == -1)
+			x = 0, y = 0, width = 720, height = 576;
+		write(pig, s, snprintf(s, sizeof(s), "%x %x %x %x", x, y, width, height));
+		close(pig);
+		FBSetPig(x, y, width, height);
+	}
+}
+
+void Fx2StopPig(void)
+{
+	Fx2ShowPig(-1, -1, -1, -1);
+}
+
+void Fx2PigPause(void)
+{
+	return;
+}
+
+void Fx2PigResume(void)
+{
+	return;
+}
+#else
 #ifdef HAVE_TRIPLEDRAGON
 // ugly, but works
 int fx2_use_pig = 1;
@@ -236,5 +274,6 @@ void	Fx2PigResume( void )
 {
 	return;
 }
+#endif
 #endif
 #endif

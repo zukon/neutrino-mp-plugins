@@ -233,7 +233,7 @@ void CBoard::InitBoard()
 #ifndef TEST
 	// draw board
 	DrawBoard(DRAWBOARD_SHOW_DEFAULT);
-	#ifdef USEX
+	#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 	#endif
 #endif

@@ -1,28 +1,25 @@
 AM_CPPFLAGS = -I$(srcdir)/../lib -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = tetris.la
+noinst_PROGRAMS = tetris
 
-tetris_la_SOURCES = board.c somain.c
+tetris_SOURCES = board.c somain.c
 
-tetris_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+tetris_LDFLAGS = \
+	-rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR)
 
-tetris_la_LDFLAGS = -rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR) -module -avoid-version -lfx2
+tetris_LDADD = \
+	-lfx2
 
 if !BOXTYPE_DREAMBOX
 
-tetris_la_LDFLAGS += @CURL_LIBS@
+tetris_LDFLAGS += @CURL_LIBS@
 
 endif
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	$(LIBTOOL) --mode=install install tetris.la $(DESTDIR)$(PLUGINDIR)
+	install --strip-program=$(STRIP) -s -m 0755 tetris $(DESTDIR)$(PLUGINDIR)/tetris.so
 	install -m 0644 $(srcdir)/tetris.cfg $(DESTDIR)$(PLUGINDIR)
-	install -m 0644 $(srcdir)/games.cfg $(DESTDIR)$(CONFIGDIR)
+	install -m 0644 $(srcdir)/games.cfg $(DESTDIR)$(PLUGINDIR)
 
-uninstall-local:
-	-rm $(DESTDIR)$(CONFIGDIR)/games.cfg
-	-rm $(DESTDIR)$(PLUGINDIR)/tetris.so
-	-rm $(DESTDIR)$(PLUGINDIR)/tetris.cfg
-	-rmdir $(DESTDIR)$(PLUGINDIR)

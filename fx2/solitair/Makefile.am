@@ -1,8 +1,8 @@
 AM_CPPFLAGS = -I$(srcdir)/../lib -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = solitair.la
+noinst_PROGRAMS = solitair
 
-solitair_la_SOURCES = \
+solitair_SOURCES = \
 	Block.cpp \
 	Buffer.cpp \
 	Card.cpp \
@@ -17,16 +17,15 @@ solitair_la_SOURCES = \
 	pnm_res.cpp \
 	backbuffer.cpp
 
-solitair_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+solitair_LDFLAGS = \
+	-rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR)
 
-solitair_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lz -lfx2
+solitair_LDADD = \
+	-lfx2 -lz
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
-	$(LIBTOOL) --mode=install install solitair.la $(DESTDIR)$(PLUGINDIR)
+	install -d $(DESTDIR)$(CONFIGDIR)
+	install --strip-program=$(STRIP) -s -m 0755 .libs/solitair $(DESTDIR)$(PLUGINDIR)/solitair.so
 	install -m 0644 $(srcdir)/solitair.cfg $(DESTDIR)$(PLUGINDIR)
 
-uninstall-local:
-	-rm $(DESTDIR)$(PLUGINDIR)/solitair.so
-	-rm $(DESTDIR)$(PLUGINDIR)/solitair.cfg
-	-rmdir $(DESTDIR)$(PLUGINDIR)

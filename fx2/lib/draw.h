@@ -1,5 +1,8 @@
 #ifndef DRAW_H
 #define DRAW_H
+#ifdef MARTII
+#include "../../config.h"
+#endif
 
 typedef unsigned char	uchar;
 
@@ -38,8 +41,13 @@ extern	char	*FBEnterWord( int xpos, int ypos, int height,int len,
 				unsigned char col);
 extern	void	FBGetImage( int x1, int y1, int width, int height,
 				unsigned char *to );
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 extern	void	FBFlushGrafic( void );
+#endif
+#ifdef HAVE_SPARK_HARDWARE
+extern	void	FBSetPig( int x, int y, int dx, int dy);
+#define DEFAULT_XRES 720
+#define DEFAULT_YRES 576
 #endif
 
 #define BNR0		0

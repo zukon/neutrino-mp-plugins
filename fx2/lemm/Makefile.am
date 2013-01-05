@@ -1,19 +1,18 @@
 AM_CPPFLAGS = -I$(srcdir)/../lib -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = lemmings.la
+noinst_PROGRAMS = lemmings
 
-lemmings_la_SOURCES = somain.c sprite.c lemm.c pic.c sound.c double.c
+lemmings_SOURCES = somain.c sprite.c lemm.c pic.c sound.c double.c
 
-lemmings_la_LIBFLAGS = $(top_builddir)/fx2/lib/libfx2.la
+lemmings_LDFLAGS = \
+	-rpath $(PLUGINDIR) -R$(TARGET_PLUGINDIR)
 
-lemmings_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version -lz -lfx2
+lemmings_LDADD = \
+	-lfx2 -lz -lpthread
 
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
-	$(LIBTOOL) --mode=install install lemmings.la $(DESTDIR)$(PLUGINDIR)
+	install -d $(DESTDIR)$(CONFIGDIR)
+	install --strip-program=$(STRIP) -s -m 0755 .libs/lemmings $(DESTDIR)$(PLUGINDIR)/lemmings.so
 	install -m 0644 $(srcdir)/lemmings.cfg $(DESTDIR)$(PLUGINDIR)
 
-uninstall-local:
-	-rm $(DESTDIR)$(PLUGINDIR)/lemmings.so
-	-rm $(DESTDIR)$(PLUGINDIR)/lemmings.cfg
-	-rmdir $(DESTDIR)$(PLUGINDIR)

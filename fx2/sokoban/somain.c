@@ -236,7 +236,7 @@ int soko_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 	{
 		doexit=0;
 		BoardInitialize();
-#ifdef USEX
+#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 		FBFlushGrafic();
 #endif
 
@@ -310,11 +310,16 @@ int soko_exec( int fdfb, int fdrc, int fdlcd, char *cfgfile )
 	return 0;
 }
 
+#ifdef MARTII
+int main(int argv __attribute__((unused)), char **argc __attribute((unused)))
+#else
 int plugin_exec( PluginParam *par )
+#endif
 {
 	int		fd_fb=-1;
 	int		fd_rc=-1;
 
+#ifndef MARTII
 	for( ; par; par=par->next )
 	{
 		if ( !strcmp(par->id,P_ID_FBUFFER) )
@@ -324,5 +329,6 @@ int plugin_exec( PluginParam *par )
 		else if ( !strcmp(par->id,P_ID_NOPIG) )
 			fx2_use_pig=!_atoi(par->val);
 	}
+#endif
 	return soko_exec( fd_fb, fd_rc, -1, 0 );
 }

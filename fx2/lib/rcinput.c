@@ -157,6 +157,23 @@ void	KbClose( void )
 
 int	RcInitialize( int extfd )
 {
+#ifdef HAVE_SPARK_HARDWARE
+	struct input_event ev;
+	if ( extfd == -1 )
+	{
+		fd = open("/dev/input/nevis_ir", O_RDONLY );
+		if ( fd == -1 )
+			return kbfd;
+		fcntl(fd, F_SETFL, O_NONBLOCK );
+	}
+	else
+	{
+		fd = extfd;
+		fcntl(fd, F_SETFL, O_NONBLOCK );
+	}
+/* clear rc-buffer */
+	while (read(fd, &ev, sizeof(ev)) > 0);
+#endif
 #if defined HAVE_DREAMBOX_HARDWARE || defined HAVE_IPBOX_HARDWARE
 	char	buf[32];
 	if ( extfd == -1 )
@@ -336,6 +353,9 @@ void		RcGetActCode( void )
 	}
 #else
 	struct input_event ev;
+#ifdef HAVE_SPARK_HARDWARE
+	static int repeat_count = 0;
+#endif
 
 	if ( fd != -1 ) {
 
@@ -343,8 +363,25 @@ void		RcGetActCode( void )
 
 			x = read(fd, &ev, sizeof(struct input_event));
 
+#ifdef HAVE_SPARK_HARDWARE
+			if (x == sizeof(struct input_event)) {
+				if(ev.value == 1) {
+					repeat_count = 0;
+					break;
+				} else if (ev.value == 2) {
+					repeat_count++;
+					if (repeat_count < 2) {
+						realcode = KEY_UNKNOWN;
+						return;
+					}
+					repeat_count = 0;
+				} else
+					repeat_count = 0;
+			}
+#else
 			if ((x == sizeof(struct input_event)) && ((ev.value == 1)||(ev.value == 2)))
 				break;
+#endif
 
 		} while (x == sizeof(struct input_event));
 
@@ -387,10 +424,17 @@ void		RcGetActCode( void )
 			cw=0;
 		}
 		break;
+#ifdef HAVE_SPARK_HARDWARE
+	case KEY_FIND:
+		code = RC_HELP;
+		break;
+	case KEY_EXIT:
+		code = RC_HOME;
+#endif
 	case RC_HOME:
 		doexit=3;
 		break;
-#ifdef HAVE_DBOX_HARDWARE
+#if defined(HAVE_DBOX_HARDWARE) || defined(HAVE_SPARK_HARDWARE)
 	case KEY_1:
 		actcode = 1;
 		break;

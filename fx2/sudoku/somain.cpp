@@ -163,11 +163,16 @@ extern "C"
 	// ----------------------------------------------------------------------------
 	// plugin_exec
 	// ----------------------------------------------------------------------------
+#ifdef MARTII
+	int main(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+#else
 	int plugin_exec(PluginParam *par)
+#endif
 	{
 		int fd_fb	= -1;
 		int fd_rc	= -1;
 		
+#ifndef MARTII
 		for( ; par; par=par->next)
 		{
 			if(strcmp(par->id, P_ID_FBUFFER) == 0)
@@ -177,6 +182,7 @@ extern "C"
 			else if(strcmp(par->id, P_ID_NOPIG) == 0)
 				fx2_use_pig	= !_atoi(par->val);
 		}
+#endif
 
 		return main_exec(fd_fb, fd_rc, -1, NULL);
 	}
