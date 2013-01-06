@@ -19,7 +19,7 @@ endif
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 tetris $(DESTDIR)$(PLUGINDIR)/tetris.so
+	install --strip-program=$(STRIP) -s -m 0755 .libs/tetris $(DESTDIR)$(PLUGINDIR)/tetris.so
 	install -m 0644 $(srcdir)/tetris.cfg $(DESTDIR)$(PLUGINDIR)
 	install -m 0644 $(srcdir)/games.cfg $(DESTDIR)$(PLUGINDIR)
 
