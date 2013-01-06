@@ -146,6 +146,10 @@ int main_exec(int fdfb, int fdrc, int fdlcd, char *cfgfile)
 		RcGetActCode();
 
 		Board.MoveCursor();
+#ifdef HAVE_SPARK_HARDWARE
+		FBFlushGrafic();
+#endif
+
 
 		while(realcode != 0xEE)
 			RcGetActCode();

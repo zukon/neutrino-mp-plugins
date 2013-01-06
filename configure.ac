@@ -69,7 +69,6 @@ fx2/mines/Makefile
 fx2/outdoor/Makefile
 fx2/snake/Makefile
 fx2/sokoban/Makefile
-fx2/solitair/Makefile
 fx2/tetris/Makefile
 fx2/vierg/Makefile
 fx2/sol/Makefile

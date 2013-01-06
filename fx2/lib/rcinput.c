@@ -355,12 +355,16 @@ void		RcGetActCode( void )
 	struct input_event ev;
 #ifdef HAVE_SPARK_HARDWARE
 	static int repeat_count = 0;
+	memset(&ev, 0, sizeof(ev));
 #endif
 
 	if ( fd != -1 ) {
 
 		do {
 
+#ifdef HAVE_SPARK_HARDWARE
+			ev.code = 0xee;
+#endif
 			x = read(fd, &ev, sizeof(struct input_event));
 
 #ifdef HAVE_SPARK_HARDWARE
@@ -371,12 +375,13 @@ void		RcGetActCode( void )
 				}
 				if (ev.value == 2) {
 					if (++repeat_count < 2) {
-						realcode = KEY_UNKNOWN;
-						return;
+						continue;
 					}
 					repeat_count = 0;
 					break;
 				}
+				if (ev.value == 0)
+					repeat_count = 0;
 			}
 #else
 			if ((x == sizeof(struct input_event)) && ((ev.value == 1)||(ev.value == 2)))
@@ -425,8 +430,12 @@ void		RcGetActCode( void )
 		}
 		break;
 #ifdef HAVE_SPARK_HARDWARE
+	case KEY_INFO:
 	case KEY_FIND:
 		code = RC_HELP;
+		break;
+	case KEY_MENU:
+		code = RC_SETUP;
 		break;
 	case KEY_EXIT:
 		code = RC_HOME;

@@ -557,6 +557,9 @@ int CTable::Run()
 	FBCopyImage( 0, 0, WIDTH, HEIGHT, BBGetData() );
 
 	FBDrawString( 300, 255, 42, "Loading...", 250, 0 );
+#ifdef HAVE_SPARK_HARDWARE
+	FBFlushGrafic();
+#endif
 
 	//Outer loop for initialization
 	while( 0 == doexit )
@@ -569,9 +572,11 @@ int CTable::Run()
 		//Inner loop for game controlling
 		while( 0 == doexit )
 		{
+#ifdef HAVE_SPARK_HARDWARE
+			FBFlushGrafic();
+#endif
 			//Handle keys
 			this->HandleKeysPressed();
-
 			if( 0 != doexit ) break;
 
 			//Display changes
@@ -926,8 +931,15 @@ void CTable::Display()
 
 	memset( changed, 0, sizeof( changed ) );
 
+#ifdef HAVE_SPARK_HARDWARE
+	if( some_changes ) {
+		FBCopyImage( 0, 0, WIDTH, HEIGHT, BBGetData() );
+		FBFlushGrafic();
+	}
+#else
 	if( some_changes )
 		FBCopyImage( 0, 0, WIDTH, HEIGHT, BBGetData() );
+#endif
 }
 
 //automaticly select all possible cards or deselect all cards
