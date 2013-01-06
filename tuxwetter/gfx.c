@@ -346,9 +346,9 @@ void RenderLine( int xa, int ya, int xb, int yb, unsigned char col )
 	int	step;
 #ifdef MARTII
 	uint32_t pix = bgra[col];
-# ifdef HAVE_SPARK_HARDWARE
+# ifdef HAVE_SPARK_HARDWARE_NOTYET // the blitter doesn't seem to like drawing lines. wtf...
 	if (xa == xb || ya == yb) {
-		FillRect(xa, ya, xb, yb, pix);
+		FillRect(xa, ya, xb - xa + 1, yb - ya + 1, pix);
 		return;
 	}
 # endif
