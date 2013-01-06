@@ -495,11 +495,13 @@ void ShowMessage(char *message, int wait)
 		}
 #ifdef MARTII
 		blit();
+
+		while(wait && (GetRCCode(-1) != KEY_OK));
 #else
 		memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
-#endif
 
 		while(wait && (GetRCCode() != KEY_OK));
+#endif
 
 
 }

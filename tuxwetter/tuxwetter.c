@@ -112,7 +112,7 @@ void blit(void) {
 	bltData.dst_bottom = s.yres - 1;
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
-	sync_blitter = 0;
+	sync_blitter = 1;
 }
 #else
 void blit(void) {
@@ -818,7 +818,11 @@ char *lcptr = NULL, *lcstr= NULL, *lcdptr = NULL;
 		}
 		LCD_update();
 #endif
+#ifdef MARTII
+		switch((rccode = GetRCCode(-1)))
+#else
 		switch((rccode = GetRCCode()))
+#endif
 		{
 			case KEY_RED:
 				m->act_entry=(m->act_entry/10)*10;
@@ -1518,13 +1522,18 @@ char tun[2]="C",sun[5]="km/h",dun[3]="km",pun[5]="mbar",cun[20];
 		RenderString(grstr, 0, vy, wxw, CENTER, HMED, CMHT);
 #ifdef MARTII
 		blit();
+		rcd=GetRCCode(-1);
 #else
 		memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
-#endif
 		rcd=GetRCCode();
+#endif
 		while((rcd != KEY_OK) && (rcd != KEY_EXIT))
 		{
+#ifdef MARTII
+			rcd=GetRCCode(-1);
+#else
 			rcd=GetRCCode();
+#endif
 		}
 	}
 	else
@@ -2395,14 +2404,22 @@ int rv;
 
 	if(!repeat)
 	{
+#ifdef MARTII
+		rv=GetRCCode(0);
+#else
 		rv=GetRCCode();
+#endif
 		return rv;
 	}
 	time(&t1);
 	t2=t1;
 	while((t2-t1)<repeat)
 	{
+#ifdef MARTII
+		rv=GetRCCode(repeat * 1000);
+#else
 		rv=GetRCCode();
+#endif
 		if(rv==-1)
 		{
 			usleep(200000L);
@@ -2772,10 +2789,18 @@ int col1,sy=0,dy=26,psx,psy,pxw=/*620*/ex-sx,pyw=/*510*/ey-sy;
 	
 			if(!rv)
 			{
+#ifdef MARTII
+				rcp=GetRCCode(-1);
+#else
 				rcp=GetRCCode();
+#endif
 				while((rcp != KEY_OK) && (rcp != KEY_EXIT) && (rcp != KEY_PAGEUP) && (rcp != KEY_PAGEDOWN) && (rcp != KEY_DOWN) && (rcp != KEY_UP) && (rcp != KEY_VOLUMEUP) && (rcp != KEY_VOLUMEDOWN)&& (rcp != KEY_RED))
 				{
+#ifdef MARTII
+					rcp=GetRCCode(-1);
+#else
 					rcp=GetRCCode();
+#endif
 				}
 				if(rcp==KEY_EXIT)
 				{
@@ -3921,10 +3946,18 @@ PLISTENTRY pl=&epl;
 												ShowMessage(prs_translate("Bitte warten",CONVERT_LIST),0);
 											}
 											show_data(funcs.act_entry);
+#ifdef MARTII
+											rce=GetRCCode(-1);
+#else
 											rce=GetRCCode();
+#endif
 											while((rce != KEY_OK) && (rce != KEY_EXIT) && (rce != KEY_DOWN) && (rce != KEY_UP) && (rce != KEY_VOLUMEUP) && (rce != KEY_VOLUMEDOWN))
 											{
+#ifdef MARTII
+												rce=GetRCCode(-1);
+#else
 												rce=GetRCCode();
+#endif
 											}
 #ifdef MARTII
 											ix=funcs.act_entry;

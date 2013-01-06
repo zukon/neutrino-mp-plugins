@@ -49,7 +49,7 @@ static	int							available = 0;
 static	unsigned char				*lfb = 0;
 #ifdef HAVE_SPARK_HARDWARE
 static	unsigned char				*lbb = 0;
-static STMFBIO_PALETTE lut;
+static	STMFBIO_PALETTE				lut;
 #endif
 static	int							stride;
 #ifndef HAVE_SPARK_HARDWARE
@@ -69,7 +69,7 @@ extern	int							doexit;
 void	FBSetColor( int idx, uchar r, uchar g, uchar b )
 {
 #ifdef HAVE_SPARK_HARDWARE
-	lut.entries[idx] = b<<24 | g<<16 | r<<8 | (idx ? 0xff : 0);
+	lut.entries[idx] = (idx ? 0xff : 0) << 24 | r<<16 | g<<8 | b;
 #endif
 	red[idx] = r<<8;
 	green[idx] = g<<8;
@@ -83,7 +83,7 @@ void	FBSetColor( int idx, uchar r, uchar g, uchar b )
 void	FBSetColorEx( int idx, uchar r, uchar g, uchar b, uchar transp )
 {
 #ifdef HAVE_SPARK_HARDWARE
-	lut.entries[idx] = b<<24 | g<<16 | r<<8 | (0xff - transp);
+	lut.entries[idx] = (0xff - transp) << 24 | r<<16 | g<<8 | b;
 #endif
 	red[idx] = r<<8;
 	green[idx] = g<<8;
@@ -182,7 +182,7 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 #ifdef HAVE_SPARK_HARDWARE
 	lbb = lfb + 1920 * 1080 * sizeof(uint32_t);
 	stride = DEFAULT_XRES;
-	memset(lbb,BLACK,stride * screeninfo.yres);
+	memset(lbb,BLACK,stride * DEFAULT_XRES);
 	Fx2PigResume();
 #else
 	memset(lfb,BLACK,stride * screeninfo.yres);
@@ -411,7 +411,11 @@ void	FB2CopyImage( int x1, int y1, int dx, int dy, unsigned char *src, int dbl )
 		return;
 	if ( !dbl )
 	{
+#ifdef HAVE_SPARK_HARDWARE
+		for( y=0; (y < dy) && (y+y1<DEFAULT_YRES); y++ )
+#else
 		for( y=0; (y < dy) && (y+y1<screeninfo.yres); y++ )
+#endif
 		{
 			for( x=0; (x < dx) && (x+x1<688) && (y+y1>=0); x++ )
 			{
@@ -426,7 +430,11 @@ void	FB2CopyImage( int x1, int y1, int dx, int dy, unsigned char *src, int dbl )
 		return;
 	}
 	s=src;
+#ifdef HAVE_SPARK_HARDWARE
+	for( y=0; (y < dy) && (y+y1+y<DEFAULT_YRES); y++ )
+#else
 	for( y=0; (y < dy) && (y+y1+y<screeninfo.yres); y++ )
+#endif
 	{
 		if ( y+y1+y<0 )
 			continue;
@@ -547,12 +555,9 @@ void	FBOverlayImage( int x, int y, int dx, int dy,
 //FIXME
 void	FBPrintScreen( void )
 {
+#ifndef HAVE_SPARK_HARDWARE
 	FILE			*fp;
-#ifdef HAVE_SPARK_HARDWARE
-	unsigned char	*p = lbb;
-#else
 	unsigned char	*p = lfb;
-#endif
 	int				y;
 	int				x=0;
 
@@ -597,6 +602,7 @@ void	FBPrintScreen( void )
 	fflush(fp);
 
 	fclose(fp);
+#endif
 }
 
 void	FBBlink( int x, int y, int dx, int dy, int count )
@@ -916,7 +922,7 @@ void	FBFlushGrafic( void )
 		perror("blit FBIOGET_VSCREENINFO");
 
 	bltData.dstPitch   = s.xres * 4;
-	bltData.dstFormat = SURF_BGRA8888;
+	bltData.dstFormat = SURF_ARGB8888;
 	bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
 
 	if(ioctl(fd, STMFBIO_SYNC_BLITTER) < 0)

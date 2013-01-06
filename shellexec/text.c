@@ -572,11 +572,13 @@ void ShowMessage(char *mtitle, char *message, int wait)
 		}
 #ifdef MARTII
 		blit();
+
+		while(wait && (GetRCCode(-1) != RC_OK));
 #else
 		memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
-#endif
 
 		while(wait && (GetRCCode() != RC_OK));
+#endif
 		
 		startx=lx;
 //		starty=ly;

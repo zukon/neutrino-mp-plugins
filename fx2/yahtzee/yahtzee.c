@@ -120,7 +120,11 @@ void	EnterPlayer( void )
 			return;
 		FBFillRect( 150,200,x,64,BLACK);
 	}
+#ifdef MARTII
+	x=FBDrawString( 100,232,64,"how many players (1-4): ",RED,0);
+#else
 	x=FBDrawString( 100,232,64,"how many player (1-4): ",RED,0);
+#endif
 #if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
 	FBFlushGrafic();
 #endif
@@ -508,16 +512,20 @@ void	RunYahtzee( void )
 	char			cnum[ 64 ];
 
 	/* clear screen */
+#ifdef HAVE_SPARK_HARDWARE
+	FBFillRect( 0, 0, 720, 576, BLACK );
+#else
 	for( y=0; y < 576; y+=4 )
 	{
 		FBFillRect( 0, y, 720, 4, BLACK );
-#if defined(USEX) || defined(HAVE_SPARK_HARDWARE)
+#if defined(USEX)
 		FBFlushGrafic();
 #endif
 		tv.tv_sec = 0;
 		tv.tv_usec = 1000;
 		select( 0, 0, 0, 0, &tv );		/* 1ms pause */
 	}
+#endif
 
 	/* init values */
 	for( i=0; i < numplayers; i++ )

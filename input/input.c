@@ -91,7 +91,7 @@ void blit(void) {
 	bltData.dst_bottom = s.yres - 1;
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
-	sync_blitter = 0;
+	sync_blitter = 1;
 }
 #else
 void blit(void) {

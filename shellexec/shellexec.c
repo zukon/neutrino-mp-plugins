@@ -125,7 +125,7 @@ void blit(void) {
 	bltData.dst_bottom = s.yres - 1;
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
-	sync_blitter = 0;
+	sync_blitter = 1;
 }
 #else
 void blit(void) {
@@ -665,7 +665,11 @@ time_t tm1,tm2;
 			ShowInfo(m, knew);
 		}
 		knew=1;
+#ifdef MARTII
+		switch(rccode = GetRCCode(mtmo * 1000))
+#else
 		switch(rccode = GetRCCode())
+#endif
 		{
 			case RC_RED:
 				if(active && direct[0]>=0)
@@ -905,18 +909,21 @@ time_t tm1,tm2;
 #else
 				memset(lfb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
 #endif
-#ifndef MARTII
+#ifdef MARTII
+				usleep(500000L);
+				while(GetRCCode(0)!=-1);
+				while(GetRCCode(-1)!=RC_MUTE);
+				while((rccode=GetRCCode(0))!=-1);
+#else
 				usleep(500000L);
 				while(GetRCCode()!=-1)
 				{
 					usleep(100000L);
 				}
-#endif
 				while(GetRCCode()!=RC_MUTE)
 				{
 					usleep(500000L);
 				}
-#ifndef MARTII
 				while((rccode=GetRCCode())!=-1)
 				{
 					usleep(100000L);
@@ -1924,9 +1931,6 @@ PLISTENTRY pl;
 								}
 							}
 							system(rptr);
-#ifdef MARTII
-							ClearRC();
-#endif
 
 							mainloop= pl->stay==1;
 							if(pl->stay==1)

@@ -380,7 +380,11 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 			*trnd=(mask && format[i]==NUM && IsNum(estr[i]))?'*':estr[i];
 			RenderString(trnd, exs+xp*exsz+2, eys+yp*eysz+tys, exsz-2, CENTER, MED, (epos==i)?CMCST:(IsInput(format[i]))?CMCT:CMCIT);
 		}
+#ifdef MARTII
+		blit();
+#else
 		memcpy(lfb, lbb, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
 		
 //		sleep(1);
 
@@ -388,14 +392,22 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 		i=-1;
 		while(i==-1)
 		{
+#ifdef MARTII
+			i=GetRCCode(tmo * 1000);
+#else
 			i=GetRCCode();
+#endif
 			if(i!=-1)
 			{
 				tmo=0;
 				if(i==b_key)
 				{
 					usleep(debounce*1000);
+#ifdef MARTII
+					while((i=GetRCCode(0))!=-1);
+#else
 					while((i=GetRCCode())!=-1);
+#endif
 				}
 				b_key=i;
 			}
@@ -501,7 +513,18 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 			break;
 			
 			case KEY_MUTE:
+#ifdef MARTII
+				memset(lbb, 0, DEFAULT_XRES * DEFAULT_YRES * sizeof(uint32_t));
+				blit();
+#else
 				memset(lfb, TRANSP, fix_screeninfo.line_length*var_screeninfo.yres);
+#endif
+#ifdef MARTII
+				usleep(500000L);
+				while(GetRCCode(0)!=-1);
+				while(GetRCCode(-1)!=KEY_MUTE);
+				while((act_key=GetRCCode(0))!=-1);
+#else
 				usleep(500000L);
 				while(GetRCCode()!=-1)
 				{
@@ -515,6 +538,7 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 				{
 					usleep(100000L);
 				}
+#endif
 //				knew=1;
 			break;
 

@@ -96,7 +96,7 @@ void blit(void) {
 	bltData.dst_bottom = s.yres - 1;
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
-	sync_blitter = 0;
+	sync_blitter = 1;
 }
 #else
 void blit(void) {
@@ -974,29 +974,41 @@ FILE *fh;
 	//main loop
 	while((rcc!=KEY_EXIT) && (rcc!=KEY_OK) && ((timeout==-1)||((tm2-tm1)<timeout)))
 	{
+#ifdef MARTII
+		rcc=GetRCCode(1000);
+#else
 		rcc=GetRCCode();
+#endif
 		if(rcc!=-1)
 		{
 			time(&tm1);
 		}
 		else
 		{
+#ifndef MARTII
 			if(++cupd>100)
 			{
+#endif
 				if(cyclic)
 				{
 					show_txt(0);
 					cupd=0;
 				}
+#ifndef MARTII
 			}
 			usleep(10000L);
+#endif
 		}
 		if(mute && rcc==KEY_MUTE)
 		{
 			hide^=1;
 			show_txt(0);
 			usleep(500000L);
+#ifdef MARTII
+			while(GetRCCode(0)!=-1);
+#else
 			while(GetRCCode()!=-1);
+#endif
 			if(hide)
 			{
 				if((fh=fopen(HDF_FILE,"w"))!=NULL)
