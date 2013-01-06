@@ -51,29 +51,32 @@ int CloseRC(void)
 
 int RCKeyPressed(void)
 {
-#ifdef MARTII
-	static int repeat_count = 0;
-#endif
 	if(read(rc, &ev, sizeof(ev)) == sizeof(ev))
 	{
 #ifdef MARTII
-		if(ev.value == 1)
+		static int repeat_count = 0;
+		switch(ev.value) {
+		case 0:
+			repeat_count = 0;
+			break;
+		case 1:
+			repeat_count = 0;
+			rccode=ev.code;
+			return 1;
+		case 2:
+			if (++repeat_count > 1) {
+				repeat_count = 0;
+				rccode=ev.code;
+				return 1;
+			}
+			break;
+		}
 #else
 		if(ev.value)
-#endif
 		{
-#ifdef MARTII
-			repeat_count = 0;
-#endif
 			rccode=ev.code;
 			return 1;
 		}
-#ifdef MARTII
-		if (ev.value == 2 && ++repeat_count > 2) {
-			rccode=ev.code;
-		return 1;
-		}
-		repeat_count = 0;
 #endif
 	}
 	rccode = -1;

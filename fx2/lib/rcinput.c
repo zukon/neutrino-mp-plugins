@@ -369,11 +369,14 @@ void		RcGetActCode( void )
 					repeat_count = 0;
 					break;
 				}
-				if (ev.value == 2 && ++repeat_count < 2) {
+				if (ev.value == 2) {
+					if (++repeat_count < 2) {
 						realcode = KEY_UNKNOWN;
 						return;
+					}
+					repeat_count = 0;
+					break;
 				}
-				repeat_count = 0;
 			}
 #else
 			if ((x == sizeof(struct input_event)) && ((ev.value == 1)||(ev.value == 2)))
