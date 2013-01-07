@@ -404,7 +404,7 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 				{
 					usleep(debounce*1000);
 #ifdef MARTII
-					while((i=GetRCCode(0))!=-1);
+					ClearRC();
 #else
 					while((i=GetRCCode())!=-1);
 #endif
@@ -521,9 +521,9 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 #endif
 #ifdef MARTII
 				usleep(500000L);
-				while(GetRCCode(0)!=-1);
+				ClearRC();
 				while(GetRCCode(-1)!=KEY_MUTE);
-				while((act_key=GetRCCode(0))!=-1);
+				ClearRC();
 #else
 				usleep(500000L);
 				while(GetRCCode()!=-1)

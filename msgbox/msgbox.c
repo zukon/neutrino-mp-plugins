@@ -11,7 +11,9 @@
 #define M_VERSION 1.12
 
 #define NCF_FILE 	"/var/tuxbox/config/neutrino.conf"
+#ifndef MARTII
 #define HDF_FILE	"/tmp/.msgbox_hidden"
+#endif
 
 //#define FONT "/usr/share/fonts/md_khmurabi_10.ttf"
 #define FONT2 "/share/fonts/pakenham.ttf"
@@ -1003,12 +1005,11 @@ FILE *fh;
 		{
 			hide^=1;
 			show_txt(0);
-			usleep(500000L);
 #ifdef MARTII
-			while(GetRCCode(0)!=-1);
+			ClearRC();
 #else
+			usleep(500000L);
 			while(GetRCCode()!=-1);
-#endif
 			if(hide)
 			{
 				if((fh=fopen(HDF_FILE,"w"))!=NULL)
@@ -1021,6 +1022,7 @@ FILE *fh;
 			{
 				remove(HDF_FILE);
 			}
+#endif
 		}
 		if((!hide) && (rcc!=KEY_EXIT) && (rcc!=KEY_OK))
 		{

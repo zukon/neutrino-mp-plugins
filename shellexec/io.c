@@ -29,7 +29,11 @@ static int rc;
 
 int InitRC(void)
 {
+#ifdef MARTII
+	rc = open(RC_DEVICE, O_RDONLY | O_CLOEXEC);
+#else
 	rc = open(RC_DEVICE, O_RDONLY);
+#endif
 	if(rc == -1)
 	{
 		perror("shellexec <open remote control>");
@@ -172,6 +176,18 @@ int RCTranslate(int code)
 }
 
 #ifdef MARTII
+void ClearRC(void)
+{
+	struct pollfd pfd;
+	pfd.fd = rc;
+	pfd.events = POLLIN;
+	pfd.revents = 0;
+
+	do
+		poll(&pfd, 1, 300);
+	while(read(rc, &ev, sizeof(ev)) == sizeof(ev));
+}
+
 int GetRCCode(int timeout_in_ms)
 {
 	int rv = -1;

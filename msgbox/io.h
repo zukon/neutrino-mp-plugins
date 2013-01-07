@@ -9,6 +9,7 @@ int CloseRC(void);
 int RCKeyPressed(void);
 #ifdef MARTII
 int GetRCCode(int);
+void ClearRC(void);
 #else
 int GetRCCode(void);
 #endif

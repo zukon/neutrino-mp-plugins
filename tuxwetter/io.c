@@ -85,6 +85,18 @@ int RCKeyPressed(void)
 
 
 #ifdef MARTII
+void ClearRC(void)
+{
+	struct pollfd pfd;
+	pfd.fd = rc;
+	pfd.events = POLLIN;
+	pfd.revents = 0;
+
+	do
+		poll(&pfd, 1, 300);
+	while(read(rc, &ev, sizeof(ev)) == sizeof(ev));
+}
+
 int GetRCCode(int timeout_in_ms)
 {
 	int rv = -1;

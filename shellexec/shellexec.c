@@ -911,9 +911,9 @@ time_t tm1,tm2;
 #endif
 #ifdef MARTII
 				usleep(500000L);
-				while(GetRCCode(0)!=-1);
+				ClearRC();
 				while(GetRCCode(-1)!=RC_MUTE);
-				while((rccode=GetRCCode(0))!=-1);
+				ClearRC();
 #else
 				usleep(500000L);
 				while(GetRCCode()!=-1)
@@ -1931,6 +1931,9 @@ PLISTENTRY pl;
 								}
 							}
 							system(rptr);
+#ifdef MARTII
+							ClearRC();
+#endif
 
 							mainloop= pl->stay==1;
 							if(pl->stay==1)
