@@ -94,15 +94,11 @@ tMenu::tMenu()
 // ----------------------------------------------------------------------------
 // MenuAddItem
 // ----------------------------------------------------------------------------
-#ifdef MARTII
-bool MenuGetItem(tMenu *pMenu, int nIndex, tMenuItemIterator &res)
-#else
 tMenuItemIterator MenuGetItem(tMenu *pMenu, int nIndex)
-#endif
 {
 	if(nIndex < 0 || nIndex > (pMenu->nItemsCount-1))
 #ifdef MARTII
-		return false;
+		return pMenu->MenuItemsList.end();
 #else
 		return NULL;
 #endif
@@ -112,17 +108,12 @@ tMenuItemIterator MenuGetItem(tMenu *pMenu, int nIndex)
 	for(pMenuItem = pMenu->MenuItemsList.begin(); pMenuItem != pMenu->MenuItemsList.end(); pMenuItem++)
 	{
 		if(i == nIndex)
-#ifdef MARTII
-			res = pMenuItem;
-			return true;
-#else
 			return pMenuItem;
-#endif
 		i++;
 	}
 
 #ifdef MARTII
-	return false;
+	return pMenu->MenuItemsList.end();
 #else
 	return NULL;
 #endif
@@ -154,13 +145,7 @@ void MenuAddItem(tMenu *pMenu, const char *pszFormat, ...)
 // ----------------------------------------------------------------------------
 void MenuSetItem(tMenu *pMenu, int nIndex, const char *pszFormat, ...)
 {
-#ifdef MARTII
-	tMenuItemIterator pMenuItem;
-	if (!MenuGetItem(pMenu, nIndex, pMenuItem))
-		return;
-#else
 	tMenuItemIterator pMenuItem = MenuGetItem(pMenu, nIndex);
-#endif
 	va_list argList;
 	va_start(argList, pszFormat);
 
@@ -189,14 +174,7 @@ void MenuDrawItem(tMenu *pMenu, tMenuItemIterator pMenuItem, bool bHighlighted)
 // ----------------------------------------------------------------------------
 void MenuDrawItem(tMenu *pMenu, int nIndex)
 {
-#ifdef MARTII
-	tMenuItemIterator pMenuItem;
-	if (!MenuGetItem(pMenu, nIndex, pMenuItem))
-		return;
-	MenuDrawItem(pMenu, pMenuItem, (nIndex == pMenu->nSelectedItem));
-#else
 	MenuDrawItem(pMenu, MenuGetItem(pMenu, nIndex), (nIndex == pMenu->nSelectedItem));
-#endif
 }
 
 // ----------------------------------------------------------------------------
