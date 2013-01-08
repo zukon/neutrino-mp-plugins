@@ -354,7 +354,6 @@ void		RcGetActCode( void )
 #else
 	struct input_event ev;
 #ifdef HAVE_SPARK_HARDWARE
-	static int repeat_count = 0;
 	memset(&ev, 0, sizeof(ev));
 #endif
 
@@ -367,26 +366,8 @@ void		RcGetActCode( void )
 #endif
 			x = read(fd, &ev, sizeof(struct input_event));
 
-#ifdef HAVE_SPARK_HARDWARE
-			if (x == sizeof(struct input_event)) {
-				if(ev.value == 1) {
-					repeat_count = 0;
-					break;
-				}
-				if (ev.value == 2) {
-					if (++repeat_count < 2) {
-						continue;
-					}
-					repeat_count = 0;
-					break;
-				}
-				if (ev.value == 0)
-					repeat_count = 0;
-			}
-#else
 			if ((x == sizeof(struct input_event)) && ((ev.value == 1)||(ev.value == 2)))
 				break;
-#endif
 
 		} while (x == sizeof(struct input_event));
 

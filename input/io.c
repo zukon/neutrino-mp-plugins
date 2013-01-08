@@ -53,31 +53,11 @@ int RCKeyPressed(void)
 {
 	if(read(rc, &ev, sizeof(ev)) == sizeof(ev))
 	{
-#ifdef MARTII
-		static int repeat_count = 0;
-		switch(ev.value) {
-		case 0:
-			repeat_count = 0;
-			break;
-		case 1:
-			repeat_count = 0;
-			rccode=ev.code;
-			return 1;
-		case 2:
-			if (++repeat_count > 1) {
-				repeat_count = 0;
-				rccode=ev.code;
-				return 1;
-			}
-			break;
-		}
-#else
 		if(ev.value)
 		{
 			rccode=ev.code;
 			return 1;
 		}
-#endif
 	}
 	rccode = -1;
 	return 0;
