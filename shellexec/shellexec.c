@@ -1930,9 +1930,12 @@ PLISTENTRY pl;
 									rptr=tstr;
 								}
 							}
+#ifdef MARTII
+							CloseRC();
+#endif
 							system(rptr);
 #ifdef MARTII
-							ClearRC();
+							InitRC();
 #endif
 
 							mainloop= pl->stay==1;
