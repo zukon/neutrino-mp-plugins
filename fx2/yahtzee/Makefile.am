@@ -13,6 +13,6 @@ yahtzee_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/yahtzee $(DESTDIR)$(PLUGINDIR)/yahtzee.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 yahtzee $(DESTDIR)$(PLUGINDIR)/yahtzee.so
 	install -m 0644 $(srcdir)/yahtzee.cfg $(DESTDIR)$(PLUGINDIR)
 

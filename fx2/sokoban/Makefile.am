@@ -13,7 +13,7 @@ soko_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/soko $(DESTDIR)$(PLUGINDIR)/soko.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 soko $(DESTDIR)$(PLUGINDIR)/soko.so
 	install -m 0644 $(srcdir)/soko.cfg $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(DATADIR)/sokoban
 	install -m 0644 $(srcdir)/*.xsb $(DESTDIR)$(DATADIR)/sokoban

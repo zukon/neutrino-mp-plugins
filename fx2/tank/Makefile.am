@@ -13,6 +13,6 @@ tank_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/tank $(DESTDIR)$(PLUGINDIR)/tank.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 tank $(DESTDIR)$(PLUGINDIR)/tank.so
 	install -m 0644 $(srcdir)/tank.cfg $(DESTDIR)$(PLUGINDIR)
 

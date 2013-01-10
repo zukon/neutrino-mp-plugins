@@ -13,6 +13,6 @@ lemmings_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/lemmings $(DESTDIR)$(PLUGINDIR)/lemmings.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 lemmings $(DESTDIR)$(PLUGINDIR)/lemmings.so
 	install -m 0644 $(srcdir)/lemmings.cfg $(DESTDIR)$(PLUGINDIR)
 

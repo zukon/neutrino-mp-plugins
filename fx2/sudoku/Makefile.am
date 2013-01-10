@@ -13,6 +13,6 @@ sudoku_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/sudoku $(DESTDIR)$(PLUGINDIR)/sudoku.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 sudoku $(DESTDIR)$(PLUGINDIR)/sudoku.so
 	install -m 0644 $(srcdir)/sudoku.cfg $(DESTDIR)$(PLUGINDIR)
 

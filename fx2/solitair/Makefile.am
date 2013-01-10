@@ -26,6 +26,6 @@ solitair_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/solitair $(DESTDIR)$(PLUGINDIR)/solitair.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 solitair $(DESTDIR)$(PLUGINDIR)/solitair.so
 	install -m 0644 $(srcdir)/solitair.cfg $(DESTDIR)$(PLUGINDIR)
 

@@ -13,6 +13,6 @@ snake_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/snake $(DESTDIR)$(PLUGINDIR)/snake.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 snake $(DESTDIR)$(PLUGINDIR)/snake.so
 	install -m 0644 $(srcdir)/snake.cfg $(DESTDIR)$(PLUGINDIR)
 

@@ -13,6 +13,6 @@ master_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/master $(DESTDIR)$(PLUGINDIR)/master.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 master $(DESTDIR)$(PLUGINDIR)/master.so
 	install -m 0644 $(srcdir)/master.cfg $(DESTDIR)$(PLUGINDIR)
 

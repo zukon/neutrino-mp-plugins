@@ -13,6 +13,6 @@ mines_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/mines $(DESTDIR)$(PLUGINDIR)/mines.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 mines $(DESTDIR)$(PLUGINDIR)/mines.so
 	install -m 0644 $(srcdir)/mines.cfg $(DESTDIR)$(PLUGINDIR)
 

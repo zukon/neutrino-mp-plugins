@@ -17,7 +17,7 @@
 
 #ifndef USEX
 
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 #include <stdint.h>
 #include <sys/ioctl.h>
 #include <linux/stmfb.h>
@@ -47,7 +47,7 @@ static	struct fb_var_screeninfo	screeninfo;
 static	struct fb_var_screeninfo	oldscreen;
 static	int							available = 0;
 static	unsigned char				*lfb = 0;
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 static	unsigned char				*lbb = 0;
 static	STMFBIO_PALETTE				lut;
 #endif
@@ -55,11 +55,11 @@ static	int							stride;
 #ifndef HAVE_SPARK_HARDWARE
 static	int							bpp = 8;
 static	struct fb_cmap				cmap;
-#endif
 static	unsigned short				red[ 256 ];
 static	unsigned short				green[ 256 ];
 static	unsigned short				blue[ 256 ];
 static	unsigned short				trans[ 256 ];
+#endif
 static	int							lastcolor=0;
 extern	unsigned short				actcode;
 extern	unsigned short				realcode;
@@ -68,13 +68,14 @@ extern	int							doexit;
 
 void	FBSetColor( int idx, uchar r, uchar g, uchar b )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	lut.entries[idx] = (idx ? 0xff : 0) << 24 | r<<16 | g<<8 | b;
-#endif
+#else
 	red[idx] = r<<8;
 	green[idx] = g<<8;
 	blue[idx] = b<<8;
 	trans[idx] = idx ? 0 : 0xffff;
+#endif
 
 	if ( idx > lastcolor )
 		lastcolor=idx;
@@ -82,14 +83,14 @@ void	FBSetColor( int idx, uchar r, uchar g, uchar b )
 
 void	FBSetColorEx( int idx, uchar r, uchar g, uchar b, uchar transp )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	lut.entries[idx] = (0xff - transp) << 24 | r<<16 | g<<8 | b;
-#endif
+#else
 	red[idx] = r<<8;
 	green[idx] = g<<8;
 	blue[idx] = b<<8;
 	trans[idx] = transp<<8;
-
+#endif
 	if ( idx > lastcolor )
 		lastcolor=idx;
 
@@ -112,7 +113,7 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 			return(-1);
 		}
 	}
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	memset(&lut, 0, sizeof(STMFBIO_PALETTE));
 	screeninfo.xres = DEFAULT_XRES;
 	screeninfo.yres = DEFAULT_YRES;
@@ -134,14 +135,12 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 	cmap.green=green;
 	cmap.blue=blue;
 	cmap.transp=trans;
-#endif
 
 	memset(red,100,sizeof(unsigned short)*256);
 	memset(green,100,sizeof(unsigned short)*256);
 	memset(blue,100,sizeof(unsigned short)*256);
 	memset(trans,0xff,sizeof(unsigned short)*256);
 
-#ifndef HAVE_SPARK_HARDWARE
 	if (ioctl(fd, FBIOPUT_VSCREENINFO, &screeninfo)<0)
 		perror("FBSetMode");
 	if (ioctl(fd, FBIOGET_VSCREENINFO, &screeninfo)<0)
@@ -153,7 +152,7 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 	FBSetColor( WHITE, 210, 210, 210 );
 	FBSetColor( RED, 240, 50, 80 );
 
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	FBSetupColors();
 #else
 	if (ioctl(fd, FBIOPUTCMAP, &cmap )<0)
@@ -181,11 +180,12 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 		return(-1);
 	}
 
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	lbb = lfb + 1920 * 1080 * sizeof(uint32_t);
 	stride = DEFAULT_XRES;
 	memset(lbb,BLACK,stride * screeninfo.yres);
 	Fx2PigResume();
+	FBFlushGrafic();
 #else
 	memset(lfb,BLACK,stride * screeninfo.yres);
 #endif
@@ -195,7 +195,7 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 
 void	FBSetupColors( void )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	lut.numEntries = lastcolor;
 	if (ioctl(fd, STMFBIO_SET_BLITTER_PALETTE, &lut )<0)
 		perror("STMFBIO_SET_BLITTER_PALETTE");
@@ -227,7 +227,7 @@ void	FBClose( void )
 
 void	FBPaintPixel( int x, int y, unsigned char farbe )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	*(lbb + stride*y + x) = farbe;
 #else
 	*(lfb + stride*y + x) = farbe;
@@ -236,7 +236,7 @@ void	FBPaintPixel( int x, int y, unsigned char farbe )
 
 unsigned char	FBGetPixel( int x, int y )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	return *(lbb + stride*y + x);
 #else
 	return *(lfb + stride*y + x);
@@ -246,7 +246,7 @@ unsigned char	FBGetPixel( int x, int y )
 void	FBGetImage( int x1, int y1, int width, int height, unsigned char *to )
 {
 	int				y;
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	unsigned char	*p=lbb + stride*y1 + x1;
 #else
 	unsigned char	*p=lfb + stride*y1 + x1;
@@ -345,7 +345,7 @@ void	FBDrawLine( int xa, int ya, int xb, int yb, unsigned char farbe )
 
 void	FBDrawHLine( int x, int y, int dx, unsigned char farbe )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	memset(lbb+x+stride*y,farbe,dx);
 #else
 	memset(lfb+x+stride*y,farbe,dx);
@@ -354,7 +354,7 @@ void	FBDrawHLine( int x, int y, int dx, unsigned char farbe )
 
 void	FBDrawVLine( int x, int y, int dy, unsigned char farbe )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	unsigned char	*pos = lbb + x + stride*y;
 #else
 	unsigned char	*pos = lfb + x + stride*y;
@@ -367,7 +367,7 @@ void	FBDrawVLine( int x, int y, int dy, unsigned char farbe )
 
 void	FBFillRect( int x, int y, int dx, int dy, unsigned char farbe )
 {
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	unsigned char	*pos = lbb + x + stride*y;
 #else
 	unsigned char	*pos = lfb + x + stride*y;
@@ -393,7 +393,7 @@ void	FBCopyImage( int x, int y, int dx, int dy, unsigned char *src )
 	if ( !dx || !dy )
 		return;
 	for( i=0; i < dy; i++ )
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 		memcpy(lbb+(y+i)*stride+x,src+dx*i,dx);
 #else
 		memcpy(lfb+(y+i)*stride+x,src+dx*i,dx);
@@ -419,7 +419,7 @@ void	FB2CopyImage( int x1, int y1, int dx, int dy, unsigned char *src, int dbl )
 			for( x=0; (x < dx) && (x+x1<688) && (y+y1>=0); x++ )
 			{
 				if ( ( x+x1>=0 ) && *(src+dx*y+x) )
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 					*(lbb+(y1+y)*stride+x1+x) = *(src+dx*y+x);
 #else
 					*(lfb+(y1+y)*stride+x1+x) = *(src+dx*y+x);
@@ -433,7 +433,7 @@ void	FB2CopyImage( int x1, int y1, int dx, int dy, unsigned char *src, int dbl )
 	{
 		if ( y+y1+y<0 )
 			continue;
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 		d=lbb+(y1+y+y)*stride+x1;
 #else
 		d=lfb+(y1+y+y)*stride+x1;
@@ -471,7 +471,7 @@ void	FBCopyImageCol( int x, int y, int dx, int dy, unsigned char col,
 		return;
 	for( i=0; i < dy; i++ )
 	{
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 		to=lbb+(y+i)*stride+x;
 #else
 		to=lfb+(y+i)*stride+x;
@@ -500,7 +500,7 @@ void	FBOverlayImage( int x, int y, int dx, int dy,
 		return;
 	for( i=0; i < dy; i++ )
 	{
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 		p = lbb+(y+i)*stride+x;
 #else
 		p = lfb+(y+i)*stride+x;
@@ -549,8 +549,9 @@ void	FBOverlayImage( int x, int y, int dx, int dy,
 
 void	FBPrintScreen( void )
 {
+#ifndef HAVE_SPARK_HARDWARE
 	FILE			*fp;
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 	unsigned char	*p = lbb;
 #else
 	unsigned char	*p = lfb;
@@ -603,6 +604,7 @@ void	FBPrintScreen( void )
 	fflush(fp);
 
 	fclose(fp);
+#endif
 }
 
 void	FBBlink( int x, int y, int dx, int dy, int count )
@@ -614,7 +616,7 @@ void	FBBlink( int x, int y, int dx, int dy, int count )
 /* copy out */
 	back = malloc(dx*dy);
 	for( i=0; i < dy; i++ )
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 		memcpy(back+dx*i,lbb+(y+i)*stride+x,dx);
 #else
 		memcpy(back+dx*i,lfb+(y+i)*stride+x,dx);
@@ -648,7 +650,7 @@ void	FBMove( int x, int y, int x2, int y2, int dx, int dy )
 	{
 		back=malloc(dx*dy);
 		for( i=0; i < dy; i++, f+=stride )
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 			memcpy(back+(i*dx),lbb+f,dx);
 #else
 			memcpy(back+(i*dx),lfb+f,dx);
@@ -659,7 +661,7 @@ void	FBMove( int x, int y, int x2, int y2, int dx, int dy )
 		return;
 	}
 	for( i=0; i < dy; i++, f+=stride, t+=stride )
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 		memcpy(lbb+t,lbb+f,dx);
 #else
 		memcpy(lfb+t,lfb+f,dx);
@@ -802,10 +804,18 @@ void	FBPause( void )
 	Fx2PigResume();
 #else
 	int j;
+#if defined(HAVE_SPARK_HARDWARE)
+	STMFBIO_PALETTE				lut_sav;
+#else
 	unsigned short	trans_sav[ 256 ];
+#endif
 	unsigned char 	img_sav[ 42*100];
 
+#if defined(HAVE_SPARK_HARDWARE)
+	memcpy(&lut_sav, &lut, sizeof(lut));
+#else
 	memcpy(trans_sav, trans, 256 * sizeof( unsigned short) );
+#endif
 
 	Fx2PigPause();
 
@@ -815,33 +825,38 @@ void	FBPause( void )
 		FBGetImage( 50, 50, 100, 42, img_sav );
 
 		/* dimm out */
+#if defined(HAVE_SPARK_HARDWARE)
+		for( i = 0; i < 256; i++ )
+#else
 		for( i = 0; i < 129; i++ )
+#endif
 		{
 			for( j = 0; j < 256; j++ )
 			{
+#if defined(HAVE_SPARK_HARDWARE)
+				if ((lut.entries[j] & 0xff000000))
+					lut.entries[j] -= 0x01000000;
+#else
 				if( (trans[j]>>8) < 128 )
 				{
-#ifdef HAVE_SPARK_HARDWARE
-					int t = lut.entries[j] & 0xff;
-					t -= 1;
-					t &= 0xff;
-					lut.entries[j] &= 0xff;
-					lut.entries[j] |= t;
-#endif
 					trans[j] += 0x100;
 				}
+#endif
   			}
 			FBSetupColors();
+#if defined(HAVE_SPARK_HARDWARE)
+			FBFlushGrafic();
+#endif
 		}
 
 		FBSetColor( RESERVED, 150, 210, 210 );
 		FBSetupColors();
 		FBDrawString( 50, 50, 42, "Pause", RESERVED, 0 );
+#if defined(HAVE_SPARK_HARDWARE)
+		FBFlushGrafic();
+#endif
 	}
 
-#if defined(HAVE_SPARK_HARDWARE)
-	FBFlushGrafic();
-#endif
 	while( realcode != 0xee )
 		RcGetActCode();
 	actcode = 0xee;
@@ -859,21 +874,23 @@ void	FBPause( void )
 		FBCopyImage( 50, 50, 100, 42, img_sav );
 
 		/* dimm in */
+#if defined(HAVE_SPARK_HARDWARE)
+		for( i = 0; i < 256; i++ )
+#else
 		for( i = 0; i < 129; i++ )
+#endif
 		{
 			for( j = 0; j < 256; j++ )
 			{
+#if defined(HAVE_SPARK_HARDWARE)
+				if ((lut.entries[j] < lut_sav.entries[j]))
+					lut.entries[j] += 0x01000000;
+#else
 				if( trans[j] > trans_sav[j] )
 				{
-#ifdef HAVE_SPARK_HARDWARE
-					int t = lut.entries[j] & 0xff;
-					t += 1;
-					t &= 0xff;
-					lut.entries[j] &= 0xff;
-					lut.entries[j] |= t;
-#endif
 					trans[j]-= 0x100;
 				}
+#endif
 			}
 			FBSetupColors();
 #if defined(HAVE_SPARK_HARDWARE)
@@ -893,7 +910,7 @@ void	FBPause( void )
 #endif
 }
 
-#ifdef HAVE_SPARK_HARDWARE
+#if defined(HAVE_SPARK_HARDWARE)
 static int pig_x = -1;
 static int pig_y = -1;
 static int pig_dx = -1;
@@ -939,7 +956,7 @@ void	FBFlushGrafic( void )
 
 	if(ioctl(fd, STMFBIO_SYNC_BLITTER) < 0)
 		perror("blit ioctl STMFBIO_SYNC_BLITTER 1");
-	msync(lbb, DEFAULT_XRES * DEFAULT_YRES * 4, MS_SYNC);
+	msync(lbb, DEFAULT_XRES * DEFAULT_YRES, MS_SYNC);
 
 	bltData.dst_right  = s.xres - 1;
 	bltData.dst_bottom = s.yres - 1;

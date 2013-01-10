@@ -13,6 +13,6 @@ sol_LDADD = \
 install-exec-local:
 	install -d $(DESTDIR)$(PLUGINDIR)
 	install -d $(DESTDIR)$(CONFIGDIR)
-	install --strip-program=$(STRIP) -s -m 0755 .libs/sol $(DESTDIR)$(PLUGINDIR)/sol.so
+	$(LIBTOOL) --mode=install install --strip-program=$(STRIP) -s -m 0755 sol $(DESTDIR)$(PLUGINDIR)/sol.so
 	install -m 0644 $(srcdir)/sol.cfg $(DESTDIR)$(PLUGINDIR)
 
