@@ -114,6 +114,8 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 	}
 #ifdef HAVE_SPARK_HARDWARE
 	memset(&lut, 0, sizeof(STMFBIO_PALETTE));
+	screeninfo.xres = DEFAULT_XRES;
+	screeninfo.yres = DEFAULT_YRES;
 #else
 	if (ioctl(fd, FBIOGET_VSCREENINFO, &screeninfo)<0)
 	{
@@ -182,7 +184,7 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 #ifdef HAVE_SPARK_HARDWARE
 	lbb = lfb + 1920 * 1080 * sizeof(uint32_t);
 	stride = DEFAULT_XRES;
-	memset(lbb,BLACK,stride * DEFAULT_XRES);
+	memset(lbb,BLACK,stride * screeninfo.yres);
 	Fx2PigResume();
 #else
 	memset(lfb,BLACK,stride * screeninfo.yres);
@@ -206,8 +208,9 @@ void	FBSetupColors( void )
 void	FBClose( void )
 {
 	/* clear screen */
-#ifdef MARTII
-	memset(lbb,0,stride * DEFAULT_XRES);
+#ifndef HAVE_SPARK_HARDWARE
+	memset(lbb,0,stride * screeninfo.yres);
+	FBFlushGrafic();
 #else
 	memset(lfb,0,stride * screeninfo.yres);
 #endif
@@ -244,7 +247,7 @@ void	FBGetImage( int x1, int y1, int width, int height, unsigned char *to )
 {
 	int				y;
 #ifdef HAVE_SPARK_HARDWARE
-	unsigned char	*p=lfb + stride*y1 + x1;
+	unsigned char	*p=lbb + stride*y1 + x1;
 #else
 	unsigned char	*p=lfb + stride*y1 + x1;
 #endif
@@ -411,11 +414,7 @@ void	FB2CopyImage( int x1, int y1, int dx, int dy, unsigned char *src, int dbl )
 		return;
 	if ( !dbl )
 	{
-#ifdef HAVE_SPARK_HARDWARE
-		for( y=0; (y < dy) && (y+y1<DEFAULT_YRES); y++ )
-#else
 		for( y=0; (y < dy) && (y+y1<screeninfo.yres); y++ )
-#endif
 		{
 			for( x=0; (x < dx) && (x+x1<688) && (y+y1>=0); x++ )
 			{
@@ -430,11 +429,7 @@ void	FB2CopyImage( int x1, int y1, int dx, int dy, unsigned char *src, int dbl )
 		return;
 	}
 	s=src;
-#ifdef HAVE_SPARK_HARDWARE
-	for( y=0; (y < dy) && (y+y1+y<DEFAULT_YRES); y++ )
-#else
 	for( y=0; (y < dy) && (y+y1+y<screeninfo.yres); y++ )
-#endif
 	{
 		if ( y+y1+y<0 )
 			continue;
@@ -552,19 +547,25 @@ void	FBOverlayImage( int x, int y, int dx, int dy,
 	}
 }
 
-//FIXME
 void	FBPrintScreen( void )
 {
-#ifndef HAVE_SPARK_HARDWARE
 	FILE			*fp;
+#ifdef HAVE_SPARK_HARDWARE
+	unsigned char	*p = lbb;
+#else
 	unsigned char	*p = lfb;
+#endif
 	int				y;
 	int				x=0;
 
 #define H(x)	((x/26)+65)
 #define L(x)	((x%26)+65)
 
+#ifdef MARTII
+	fp = fopen( "/tmp/screen.xpm", "w" );
+#else
 	fp = fopen( "/var/tmp/screen.xpm", "w" );
+#endif
 	if ( !fp )
 	{
 		return;
@@ -602,7 +603,6 @@ void	FBPrintScreen( void )
 	fflush(fp);
 
 	fclose(fp);
-#endif
 }
 
 void	FBBlink( int x, int y, int dx, int dy, int count )
@@ -630,6 +630,9 @@ void	FBBlink( int x, int y, int dx, int dy, int count )
 		tv.tv_sec = 0;
 		select(0,0,0,0,&tv);
 		FBCopyImage( x, y, dx, dy, back );
+#if defined(HAVE_SPARK_HARDWARE)
+		FBFlushGrafic();
+#endif
 	}
 	free( back );
 }
@@ -836,6 +839,9 @@ void	FBPause( void )
 		FBDrawString( 50, 50, 42, "Pause", RESERVED, 0 );
 	}
 
+#if defined(HAVE_SPARK_HARDWARE)
+	FBFlushGrafic();
+#endif
 	while( realcode != 0xee )
 		RcGetActCode();
 	actcode = 0xee;
@@ -870,6 +876,9 @@ void	FBPause( void )
 				}
 			}
 			FBSetupColors();
+#if defined(HAVE_SPARK_HARDWARE)
+			FBFlushGrafic();
+#endif
 		}
 	}
 
@@ -878,6 +887,9 @@ void	FBPause( void )
 	actcode = 0xee;
 
 	Fx2PigResume();
+#if defined(HAVE_SPARK_HARDWARE)
+	FBFlushGrafic();
+#endif
 #endif
 }
 
