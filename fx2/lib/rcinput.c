@@ -413,13 +413,13 @@ void		RcGetActCode( void )
 #ifdef HAVE_SPARK_HARDWARE
 	case KEY_INFO:
 	case KEY_FIND:
-		code = RC_HELP;
+		actcode = RC_HELP;
 		break;
 	case KEY_MENU:
-		code = RC_SETUP;
+		actcode = RC_SETUP;
 		break;
 	case KEY_EXIT:
-		code = RC_HOME;
+		actcode = RC_HOME;
 #endif
 	case RC_HOME:
 		doexit=3;
