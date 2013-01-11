@@ -73,6 +73,7 @@ fx2/tetris/Makefile
 fx2/vierg/Makefile
 fx2/sol/Makefile
 fx2/sudoku/Makefile
+fx2/solitair/Makefile
 ])
 #AC_OUTPUT([
 #Makefile
