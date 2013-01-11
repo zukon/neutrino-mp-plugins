@@ -2265,7 +2265,11 @@ const unsigned char data_table[NBYTES] = {
 /* 9270 */   193
 };
 
+#ifdef MARTII
+int	FBDrawString( int xpos, int ypos, int height, const char *msg,
+#else
 int	FBDrawString( int xpos, int ypos, int height, char *msg,
+#endif
 			unsigned char col,		/* text color */
 			unsigned char backcol )	/* background 0==transp */
 { 

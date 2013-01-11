@@ -33,7 +33,11 @@ extern	void	FBBlink( int x, int y, int dx, int dy, int count );
 extern	void	FBMove( int x, int y, int x2, int y2, int dx, int dy );
 extern	void	FBPrintScreen( void );
 extern	void	FBPause( void );
+#ifdef MARTII
+extern	int	FBDrawString( int xpos, int ypos, int height, const char *msg,
+#else
 extern	int	FBDrawString( int xpos, int ypos, int height, char *msg,
+#endif
 				unsigned char col,		/* text color */
 				unsigned char backcol );/* background 0==transp */
 extern	void	FBDrawFx2Logo( int x, int y );
