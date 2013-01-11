@@ -565,18 +565,20 @@ int CTable::Run()
 	while( 0 == doexit )
 	{
 
+#ifdef MARTII
+		this->Init();
+#else
 //		this->Init();
+#endif
 
 		this->Display();
 
 		//Inner loop for game controlling
 		while( 0 == doexit )
 		{
-#ifdef HAVE_SPARK_HARDWARE
-			FBFlushGrafic();
-#endif
 			//Handle keys
 			this->HandleKeysPressed();
+
 			if( 0 != doexit ) break;
 
 			//Display changes
@@ -699,6 +701,9 @@ bool CTable::Setup()
 				loiShowCards==1?FC:Convert_24_8( 255,255,255), 0 );
 
 			FBDrawString( Hx + 5, Hy + 333, 24, "(OK) - Accept changes, (DBOX) - Cancel", Convert_24_8( 255,255,255), 0 );
+#ifdef HAVE_SPARK_HARDWARE
+			FBFlushGrafic();
+#endif
 
 		}
 
@@ -726,6 +731,9 @@ void CTable::HandleKeysPressed()
 	if( true == HelpOnScreen )
 	{
 		FBCopyImage( 0, 0, WIDTH, HEIGHT, BBGetData() );
+#ifdef HAVE_SPARK_HARDWARE
+		FBFlushGrafic();
+#endif
 		HelpOnScreen = false;
 		return;
 	}
@@ -834,9 +842,15 @@ void CTable::HandleKeysPressed()
 			break;
 		case RC_RED	 :
 			this->Init();
+#ifdef HAVE_SPARK_HARDWARE
+			FBFlushGrafic();
+#endif
 			break;
 		case RC_BLUE :
 			Wizard();
+#ifdef HAVE_SPARK_HARDWARE
+			FBFlushGrafic();
+#endif
 			break;
 		case RC_PLUS :
 			changed[ act_slot ] = true;
@@ -849,6 +863,9 @@ void CTable::HandleKeysPressed()
 		case RC_HELP :
 
 			this->ShowHelp();
+#ifdef HAVE_SPARK_HARDWARE
+			FBFlushGrafic();
+#endif
 			HelpOnScreen = true;
 
 			break;
@@ -856,6 +873,9 @@ void CTable::HandleKeysPressed()
 			if( this->Setup() )
 				this->Init();
 			FBCopyImage( 0, 0, WIDTH, HEIGHT, BBGetData() );
+#ifdef HAVE_SPARK_HARDWARE
+			FBFlushGrafic();
+#endif
 			break;
 		case RC_HOME :
 
