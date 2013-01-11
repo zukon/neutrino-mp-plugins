@@ -9,7 +9,13 @@
 
 struct PNM_FILE
 {
+#ifdef MARTII
+   const
+#endif
    char*            file_name;
+#ifdef MARTII
+   const
+#endif
    unsigned char*   body;
    unsigned int     lenght;
    unsigned int     current_position;
@@ -53,7 +59,11 @@ struct IMAGE
 
 		raw_data = new unsigned char[ width*height];
 
+#ifdef MARTII
+		return (raw_data != NULL);
+#else
 		if( raw_data == NULL ) return false;
+#endif
 	}
 };
 
