@@ -838,7 +838,7 @@ void CTable::HandleKeysPressed()
 
 			break;
 		case RC_YELLOW :
-//			FBPrintScreen();
+			FBPrintScreen();
 			break;
 		case RC_RED	 :
 			this->Init();

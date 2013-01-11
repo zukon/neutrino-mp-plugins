@@ -3,7 +3,9 @@
 */
 
 #ifdef MARTII
+#define _FILE_OFFSET_BITS 64
 #include "draw.h"
+#include <png.h>
 #endif
 
 #include <stdio.h>
@@ -547,6 +549,76 @@ void	FBOverlayImage( int x, int y, int dx, int dy,
 	}
 }
 
+#ifdef HAVE_SPARK_HARDWARE
+void	FBPrintScreen( void ) {
+	STMFBIO_BLT_DATA  bltData;
+	uint32_t *b = (uint32_t *) (lfb + (1920 * 1080 + DEFAULT_XRES * DEFAULT_YRES) * sizeof(uint32_t));
+	memset(&bltData, 0, sizeof(STMFBIO_BLT_DATA));
+
+	bltData.operation  = BLT_OP_COPY;
+	bltData.ulFlags = BLT_OP_FLAGS_CLUT_ENABLE;
+
+	bltData.srcOffset  = 1920 * 1080 * 4;
+	bltData.srcPitch   = DEFAULT_XRES;
+
+	bltData.src_right  = DEFAULT_XRES - 1;
+	bltData.src_bottom = DEFAULT_YRES - 1;
+
+	bltData.srcFormat = SURF_CLUT8;
+	bltData.srcMemBase = STMFBGP_FRAMEBUFFER;
+
+	bltData.dstOffset  = (1920 * 1080 + DEFAULT_XRES * DEFAULT_YRES) * 4;
+	bltData.dstPitch   = DEFAULT_XRES * 4;
+	bltData.dstFormat = SURF_ARGB8888;
+	bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
+
+	if(ioctl(fd, STMFBIO_SYNC_BLITTER) < 0)
+		perror("blit ioctl STMFBIO_SYNC_BLITTER 1");
+	msync(lbb, DEFAULT_XRES * DEFAULT_YRES, MS_SYNC);
+
+	bltData.dst_right  = DEFAULT_XRES - 1;
+	bltData.dst_bottom = DEFAULT_YRES - 1;
+	if (ioctl(fd, STMFBIO_BLT, &bltData ) < 0)
+		perror("STMFBIO_BLT");
+	if(ioctl(fd, STMFBIO_SYNC_BLITTER) < 0)
+		perror("blit ioctl STMFBIO_SYNC_BLITTER 2");
+
+	int i;
+	char oldpath[40], newpath[40];
+	for (i = 8; i > -1; i--) {
+		snprintf(oldpath, sizeof(oldpath), "/tmp/fx2-%d.png", i);
+		snprintf(newpath, sizeof(newpath), "/tmp/fx2-%d.png", i + 1);
+		rename(oldpath, newpath);
+	}
+
+	FILE *out = fopen(oldpath, "w");
+	if (!out)
+		return;
+
+	png_bytep row_pointers[DEFAULT_YRES];
+	png_structp png_ptr = png_create_write_struct( PNG_LIBPNG_VER_STRING,
+		(png_voidp) NULL, (png_error_ptr) NULL, (png_error_ptr) NULL);
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+
+	png_init_io(png_ptr, out);
+
+	unsigned int y;
+	for (y = 0; y < DEFAULT_YRES; y++)
+		row_pointers[y] = (png_bytep) (b + y * DEFAULT_XRES);
+
+	png_set_compression_level(png_ptr, 9);
+	png_set_bgr(png_ptr);
+	png_set_filter(png_ptr, 0, PNG_FILTER_NONE);
+	png_set_IHDR(png_ptr, info_ptr, DEFAULT_XRES, DEFAULT_YRES, 8, PNG_COLOR_TYPE_RGBA,
+		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	png_write_info(png_ptr, info_ptr);
+	png_write_image(png_ptr, row_pointers);
+	png_write_end(png_ptr, NULL);
+	png_destroy_write_struct(&png_ptr, &info_ptr);
+
+	fclose(out);
+}
+#else
 void	FBPrintScreen( void )
 {
 #ifndef HAVE_SPARK_HARDWARE
@@ -606,6 +678,7 @@ void	FBPrintScreen( void )
 	fclose(fp);
 #endif
 }
+#endif
 
 void	FBBlink( int x, int y, int dx, int dy, int count )
 {

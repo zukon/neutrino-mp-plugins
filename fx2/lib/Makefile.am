@@ -4,6 +4,9 @@ libfx2_la_SOURCES = draw.c pig.c rcinput.c math.c
 
 libfx2_la_LDFLAGS = -rpath $(PLUGINDIR) -module -avoid-version
 
+libfx2_la_LIBADD = \
+	@PNG_LIBS@
+
 libfx2_la_CPPFLAGS = -fPIC
 
 install-exec-local:
