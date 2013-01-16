@@ -348,7 +348,11 @@ static	int	GameOver( int mask )
 		return 0;
 	if ( k == 2 )		// patt
 	{
+#ifdef MARTII
+		FBDrawString( 190, 410, 64, "Good game !", WHITE, 0 );
+#else
 		FBDrawString( 190, 410, 64, "good game !", WHITE, 0 );
+#endif
 	}
 	else if ( mask == 1 )
 	{
@@ -356,7 +360,11 @@ static	int	GameOver( int mask )
 	}
 	else
 	{
+#ifdef MARTII
+		FBDrawString( 190, 410, 64, "I am the Winner !", WHITE, 0 );
+#else
 		FBDrawString( 190, 410, 64, "Iam the Winner !", WHITE, 0 );
+#endif
 	}
 	doexit=1;
 	return 1;
