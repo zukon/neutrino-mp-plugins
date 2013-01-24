@@ -11,7 +11,8 @@ extern int FSIZE_SMALL;
 FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face *aface);
 int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int size, int color);
 #ifdef MARTII
-int GetStringLen(char *string, int size);
+void TranslateString(char *src, size_t size);
+int GetStringLen(char *string, size_t size);
 #else
 int GetStringLen(unsigned char *string, int size);
 #endif

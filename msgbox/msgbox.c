@@ -56,9 +56,7 @@ unsigned char *lfb = 0, *lbb = 0, *obb = 0, *hbb = 0, *ibb = 0;
 #endif
 unsigned char nstr[BUFSIZE]="";
 unsigned char *trstr;
-#ifdef MARTII
-unsigned char rc,sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={0xE4,0xF6,0xFC,0xC4,0xD6,0xDC,0xDF,0xB0};
-#else
+#ifndef MARTII
 unsigned rc,sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={0xE4,0xF6,0xFC,0xC4,0xD6,0xDC,0xDF,0xB0};
 #endif
 char INST_FILE[]="/tmp/rc.locked";
@@ -238,7 +236,15 @@ char *pt1=strdup(sptr),*pt2,*pt3;
 		if(strlen(pt2))
 		{	
 			rbutt[btn]=tbuttons;
+#ifdef MARTII
+			size_t l = strlen(pt2);
+			char *t = (char *)alloca(l * 4 + 1);
+			memcpy(t, pt2, l + 1);
+			TranslateString(t, l * 4);
+			butmsg[btn]=strdup(t);
+#else
 			butmsg[btn]=strdup(pt2);
+#endif
 			CatchTabs(butmsg[btn++]);
 		}
 		if(run)
@@ -405,6 +411,13 @@ FILE *xfh;
 	}
 	else
 	{
+#ifdef MARTII
+		size_t l = strlen(msg);
+		char *t = (char *)alloca(l * 4 + 1);
+		memcpy(t, msg, l + 1);
+		TranslateString(t, l * 4);
+		msg = t;
+#endif
 		if((xfh=fopen(TMP_FILE,"w"))!=NULL)
 		{
 			while(*msg)
@@ -463,16 +476,19 @@ void ShowUsage(void)
 int main (int argc, char **argv)
 {
 #ifdef MARTII
-int ix,index2,tv,found=0, spr;
+int ix,tv,found=0, spr;
+int dloop=1, rcc=-1;
 #else
 int index,index2,tv,found=0, spr;
-#endif
 int dloop=1, rcc=-1, cupd=0;
+#endif
 char rstr[BUFSIZE], *rptr, *aptr;
 time_t tm1,tm2;
+#ifndef MARTII
 unsigned int alpha;
 //clock_t tk1=0;
 FILE *fh;
+#endif
 
 		if(argc<2)
 		{
@@ -502,7 +518,15 @@ FILE *fh;
 				{
 					if(strstr(aptr,"title=")!=NULL)
 					{
+#ifdef MARTII
+						size_t l = strlen(rptr);
+						char *t = (char *)alloca(l * 4 + 1);
+						memcpy(t, rptr, l + 1);
+						TranslateString(t, l * 4);
+						title = strdup(t);
+#else
 						title=strdup(rptr);
+#endif
 						CatchTabs(title);
 						if(strcmp(title,"none")==0)
 						{
@@ -989,16 +1013,17 @@ FILE *fh;
 		}
 		else
 		{
-#ifndef MARTII
+#ifdef MARTII
+			if(cyclic)
+				show_txt(0);
+#else
 			if(++cupd>100)
 			{
-#endif
 				if(cyclic)
 				{
 					show_txt(0);
 					cupd=0;
 				}
-#ifndef MARTII
 			}
 			usleep(10000L);
 #endif

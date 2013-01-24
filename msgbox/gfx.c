@@ -25,14 +25,8 @@ void FillRect(int _sx, int _sy, int _dx, int _dy, uint32_t color)
 	bltData.srcMemBase = STMFBGP_FRAMEBUFFER;
 	bltData.colour     = color;
 
-	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
-		perror("RenderBox ioctl STMFBIO_BLT");
-#if 0
-	if(ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-		perror("blit ioctl STMFBIO_SYNC_BLITTER 2");
-#else
+	ioctl(fb, STMFBIO_BLT, &bltData);
 	sync_blitter = 1;
-#endif
 }
 # endif
 #endif
@@ -63,7 +57,7 @@ void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
 		if(sync_blitter) {
 			sync_blitter = 0;
 			if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-				perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+				perror("RenderBox ioctl STMFBIO_SYNC_BLITTER");
 		}
 #endif
 		if(--dyy<=0)

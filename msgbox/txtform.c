@@ -66,25 +66,41 @@ int just, color=CMCT;
 		if((loop>0) && (ys<(ey-dy)))
 		{
 			rstr[j]=0;
+#ifdef MARTII
+			char *t = (char *)alloca(j * 4 + 1);
+			memcpy(t, rstr, j + 1);
+			TranslateString(t, j * 4);
+#endif
 			if(plot)
 			{
 				if(loop>=line)
 				{
+#ifdef MARTII
+					RenderString(t, xs, ys, xw, just, size, color);
+#else
+					if(strlen(t))
 					RenderString(rstr, xs, ys, xw, just, size, color);
 					if(strlen(rstr))
 					{
-#ifndef MARTII
 						first=0;
-#endif
 					}
+#endif
 					ys+=dy;
 				}
 			}
 			else
 			{
+#ifdef MARTII
+				if(strlen(t))
+#else
 				if(strlen(rstr))
+#endif
 				{
+#ifdef MARTII
+					slen=GetStringLen(xs, t, size);
+#else
 					slen=GetStringLen(xs, rstr, size);
+#endif
 					if(slen>*x)
 					{
 						*x=slen;

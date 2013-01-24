@@ -20,7 +20,12 @@
 #define ndelay	3
 
 char rstr[512],tstr[512], *format, *estr;
+#ifdef MARTII
+unsigned int kpos=0;
+int epos=-1,cpos=0,cnt,first=1,hex=0;
+#else
 int epos=-1,cpos=0,kpos=0,cnt,first=1,hex=0;
+#endif
 char kcod[10][13]={"0 _.:,;$@()#","1-+*/", "2abcä", "3def", "4ghi", "5jkl", "6mnoö", "7pqrsß", "8tuvü", "9wxyz"};
 char hcod[10][13]={"0","1", "2abc", "3def", "4", "5", "6", "7", "8", "9"};
 unsigned rc;
@@ -232,6 +237,9 @@ void SetCode(int code)
 
 int ReTransform_Msg(char *msg)
 {
+#ifdef MARTII
+	return strlen(msg);
+#else
 int found=0,i;
 char *sptr=msg, *tptr=tstr;
 
@@ -255,11 +263,17 @@ char *sptr=msg, *tptr=tstr;
 	}
 	*tptr=0;
 	return strlen(rstr);
+#endif
 }
 
 char *inputd(char *form, char *title, char *defstr, int keys, int frame, int mask, int bhelp, int cols, int tmo, int debounce)
 {
+#ifdef MARTII
+unsigned int i,j;
+int exs,eys,wxs,wxw,wys,wyw,xp,yp;
+#else
 int exs,eys,wxs,wxw,wys,wyw,i,j,xp,yp;
+#endif
 char trnd[2]={0,0},tch;
 int act_key=-1, last_key=-1, b_key=-1, run=1, ipos=0;
 time_t t1,t2,tm1;

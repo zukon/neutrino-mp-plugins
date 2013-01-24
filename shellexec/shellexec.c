@@ -258,7 +258,11 @@ char *pt1;
 				TrimString(buffer);
 			}
 		}
+#ifdef MARTII
+		TranslateString(buffer, size);
+#else
 		TranslateString(buffer);
+#endif
 	}
 	return rv;
 }

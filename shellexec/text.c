@@ -3,6 +3,7 @@
 #include "io.h"
 #ifdef MARTII
 #include "shellexec.h"
+#include <iconv.h>
 #endif
 
 int FSIZE_BIG=28;
@@ -11,18 +12,131 @@ int FSIZE_SMALL=20;
 int TABULATOR=72;
 
 #ifdef MARTII
-static char unsigned sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä','Ö','Ü','ß','°'}, su[7]={0xA4,0xB6,0xBC,0x84,0x96,0x9C,0x9F};
 extern int sync_blitter;
 extern void blit();
-#else
-static unsigned sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä','Ö','Ü','ß','°'}, su[7]={0xA4,0xB6,0xBC,0x84,0x96,0x9C,0x9F};
 #endif
 
+#ifdef MARTII
+static char *sc = "aouAOUzd", *su= "\xA4\xB6\xBC\x84\x96\x9C\x9F", *tc="\xE4\xF6\xFC\xDE\xC4\xD6\xDC\xB0";
+// from neutrino/src/driver/fontrenderer.cpp
+int UTF8ToUnicode(char **textp, const int utf8_encoded) // returns -1 on error
+{
+	int unicode_value, i;
+	char *text = *textp;
+	if (utf8_encoded && ((((unsigned char)(*text)) & 0x80) != 0))
+	{
+		int remaining_unicode_length;
+		if ((((unsigned char)(*text)) & 0xf8) == 0xf0) {
+			unicode_value = ((unsigned char)(*text)) & 0x07;
+			remaining_unicode_length = 3;
+		} else if ((((unsigned char)(*text)) & 0xf0) == 0xe0) {
+			unicode_value = ((unsigned char)(*text)) & 0x0f;
+			remaining_unicode_length = 2;
+		} else if ((((unsigned char)(*text)) & 0xe0) == 0xc0) {
+			unicode_value = ((unsigned char)(*text)) & 0x1f;
+			remaining_unicode_length = 1;
+		} else {
+			(*textp)++;
+			return -1;
+		}
+
+		*textp += remaining_unicode_length;
+
+		for (i = 0; *text && i < remaining_unicode_length; i++) {
+			text++;
+			if (((*text) & 0xc0) != 0x80) {
+				remaining_unicode_length = -1;
+				return -1;          // incomplete or corrupted character
+			}
+			unicode_value <<= 6;
+			unicode_value |= ((unsigned char)(*text)) & 0x3f;
+		}
+	} else
+		unicode_value = (unsigned char)(*text);
+
+	(*textp)++;
+	return unicode_value;
+}
+
+void CopyUTF8Char(char **to, char **from)
+{
+	int remaining_unicode_length;
+	if (!((unsigned char)(**from) & 0x80))
+		remaining_unicode_length = 1;
+	else if ((((unsigned char)(**from)) & 0xf8) == 0xf0)
+		remaining_unicode_length = 4;
+	else if ((((unsigned char)(**from)) & 0xf0) == 0xe0)
+		remaining_unicode_length = 3;
+	else if ((((unsigned char)(**from)) & 0xe0) == 0xc0)
+		remaining_unicode_length = 2;
+	else {
+		(*from)++;
+		return;
+	}
+	while (**from && remaining_unicode_length) {
+		**to = **from;
+		(*from)++, (*to)++, remaining_unicode_length--;
+	}
+}
+
+int isValidUTF8(char *text) {
+	while (*text)
+		if (-1 == UTF8ToUnicode(&text, 1))
+			return 0;
+	return 1;
+}
+
+void TranslateString(char *src, size_t size)
+{
+	char *fptr = src;
+	size_t src_len = strlen(src);
+	char *tptr_start = alloca(src_len * 4 + 1);
+	char *tptr = tptr_start;
+
+	if (isValidUTF8(src))
+		strncpy(tptr_start, fptr, src_len + 1);
+	else {
+		while (*fptr) {
+			int i;
+			for (i = 0; tc[i] && (tc[i] != *fptr); i++);
+			if (tc[i]) {
+				*tptr++ = 0xC3;
+				*tptr++ = su[i];
+				fptr++;
+			} else if (*fptr & 0x80)
+				*fptr++;
+			else
+				*tptr++ = *fptr++;
+		}
+		*tptr = 0;
+	}
+
+	fptr = tptr_start;
+	tptr = src;
+	char *tptr_end = src + size - 5;
+	while (*fptr && tptr < tptr_end) {
+		if (*fptr == '~') {
+			fptr++;
+			int i;
+			for (i = 0; sc[i] && (sc[i] != *fptr); i++);
+			if (sc[i]) {
+				*tptr++ = 0xC3;
+				*tptr++ = su[i];
+				fptr++;
+			} else if (*fptr == 'd') {
+				*tptr++ = 0xC2;
+				*tptr++ = 0xb0;
+				fptr++;
+			} else
+				*tptr++ = '~';
+		} else
+			CopyUTF8Char(&tptr, &fptr);
+	}
+	*tptr = 0;
+}
+#else
 void TranslateString(char *src)
 {
-#ifdef MARTII
-unsigned
-#endif
 int i,found,quota=0;
 char rc,*rptr=src,*tptr=src;
 
@@ -37,7 +151,6 @@ char rc,*rptr=src,*tptr=src;
 			++rptr;
 			rc=*rptr;
 			found=0;
-			for(i=0; i<sizeof(sc) && !found; i++)
 			for(i=0; i<sizeof(sc) && !found; i++)
 			{
 				if(rc==sc[i])
@@ -86,16 +199,25 @@ char rc,*rptr=src,*tptr=src;
 	}
 	*tptr=0;
 }
+#endif
 
 /******************************************************************************
 * MyFaceRequester
 ******************************************************************************/
 
+#ifdef MARTII
+FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library lib, FT_Pointer request_data __attribute__((unused)), FT_Face *aface)
+#else
 FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face *aface)
+#endif
 {
 	FT_Error result;
 
+#ifdef MARTII
+	result = FT_New_Face(lib, face_id, 0, aface);
+#else
 	result = FT_New_Face(library, face_id, 0, aface);
+#endif
 
 	if(result) printf("shellexec <Font \"%s\" failed>\n", (char*)face_id);
 
@@ -169,7 +291,7 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 	int row, pitch;
 	FT_UInt glyphindex;
 	FT_Vector kerning;
-	FT_Error error;
+	FT_Error err;
 
 	if (currentchar == '\r') // display \r in windows edited files
 	{
@@ -187,72 +309,70 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 	{
 		/* simulate horizontal TAB */
 		return 15;
-	};
+	}
 
 	//load char
 
-		if(!(glyphindex = FT_Get_Char_Index(face, currentchar)))
-		{
-			printf("TuxCom <FT_Get_Char_Index for Char \"%c\" failed\n", (int)currentchar);
-			return 0;
+	if(!(glyphindex = FT_Get_Char_Index(face, currentchar)))
+	{
+		printf("TuxCom <FT_Get_Char_Index for Char \"%c\" failed\n", (int)currentchar);
+		return 0;
+	}
+
+	if((err = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, NULL)))
+	{
+		printf("TuxCom <FTC_SBitCache_Lookup for Char \"%c\" failed with Errorcode 0x%.2X>\n", (int)currentchar, err);
+		return 0;
+	}
+
+	if(use_kerning)
+	{
+		FT_Get_Kerning(face, prev_glyphindex, glyphindex, ft_kerning_default, &kerning);
+
+		prev_glyphindex = glyphindex;
+		kerning.x >>= 6;
+	} else
+		kerning.x = 0;
+
+	//render char
+
+	if(color != -1) /* don't render char, return charwidth only */
+	{
+#if defined(HAVE_SPARK_HARDWARE)
+		if(sync_blitter) {
+			sync_blitter = 0;
+			if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+				perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
 		}
-
-
-		if((error = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, NULL)))
-		{
-			printf("TuxCom <FTC_SBitCache_Lookup for Char \"%c\" failed with Errorcode 0x%.2X>\n", (int)currentchar, error);
-			return 0;
-		}
-
-		if(use_kerning)
-		{
-			FT_Get_Kerning(face, prev_glyphindex, glyphindex, ft_kerning_default, &kerning);
-
-			prev_glyphindex = glyphindex;
-			kerning.x >>= 6;
-		}
-		else
-			kerning.x = 0;
-
-		//render char
-
-		if(color != -1) /* don't render char, return charwidth only */
-		{
-#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
-			if(sync_blitter) {
-				sync_blitter = 0;
-				if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-					perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
-			}
 #endif
-			uint32_t bgcolor = *(lbb + (starty + _sy) * stride + (startx + _sx));
-			//unsigned char pix[4]={bl[color],gn[color],rd[color],tr[color]};
-			uint32_t fgcolor = bgra[color];
-			uint32_t *colors = lookup_colors(fgcolor, bgcolor);
-			uint32_t *p = lbb + (startx + _sx + sbit->left + kerning.x) + stride * (starty + _sy - sbit->top);
-			uint32_t *r = p + (_ex - _sx);	/* end of usable box */
-			for(row = 0; row < sbit->height; row++)
+		uint32_t bgcolor = *(lbb + (starty + _sy) * stride + (startx + _sx));
+		//unsigned char pix[4]={bl[color],gn[color],rd[color],tr[color]};
+		uint32_t fgcolor = bgra[color];
+		uint32_t *colors = lookup_colors(fgcolor, bgcolor);
+		uint32_t *p = lbb + (startx + _sx + sbit->left + kerning.x) + stride * (starty + _sy - sbit->top);
+		uint32_t *r = p + (_ex - _sx);	/* end of usable box */
+		for(row = 0; row < sbit->height; row++)
+		{
+			uint32_t *q = p;
+			uint8_t *s = sbit->buffer + row * sbit->pitch;
+			for(pitch = 0; pitch < sbit->width; pitch++)
 			{
-				uint32_t *q = p;
-				uint8_t *s = sbit->buffer + row * sbit->pitch;
-				for(pitch = 0; pitch < sbit->width; pitch++)
-				{
-					if (*s)
-							*q = colors[*s];
-					q++, s++;
-					if (q > r)	/* we are past _ex */
-						break;
-				}
-				p += stride;
-				r += stride;
+				if (*s)
+						*q = colors[*s];
+				q++, s++;
+				if (q > r)	/* we are past _ex */
+					break;
 			}
-			if (_sx + sbit->xadvance >= _ex)
-				return -1; /* limit to maxwidth */
+			p += stride;
+			r += stride;
 		}
+		if (_sx + sbit->xadvance >= _ex)
+		return -1; /* limit to maxwidth */
+	}
 
 	//return charwidth
 
-		return sbit->xadvance + kerning.x;
+	return sbit->xadvance + kerning.x;
 }
 #else
 int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
@@ -332,10 +452,45 @@ return sbit->xadvance + kerning.x;
  ******************************************************************************/
 
 #ifdef MARTII
-int GetStringLen(int sx, char *string, int size)
+int GetStringLen(int _sx, char *string, size_t size)
+{
+	int i, stringlen = 0;
+	
+	//reset kerning
+	
+	prev_glyphindex = 0;
+	
+	//calc len
+	
+	switch (size)
+	{
+		case SMALL: desc.width = desc.height = FSIZE_SMALL; break;
+		case MED:   desc.width = desc.height = FSIZE_MED; break;
+		case BIG:   desc.width = desc.height = FSIZE_BIG; break;
+		default:    desc.width = desc.height = size; break;
+	}
+
+	while(*string) {
+		switch(*string) {
+		case '~':
+			string++;
+			if(*string=='t')
+				stringlen=desc.width+TABULATOR*((int)(stringlen/TABULATOR)+1);
+			else if(*string=='T' && sscanf(string+1,"%4d",&i)==1) {
+				string+=5;
+				stringlen=i-_sx;
+			}
+			break;
+		default:
+			stringlen += RenderChar(UTF8ToUnicode(&string, 1), -1, -1, -1, -1);
+			break;
+		}
+	}
+	
+	return stringlen;
+}
 #else
 int GetStringLen(int sx, unsigned char *string, int size)
-#endif
 {
 	int i, found;
 	int stringlen = 0;
@@ -380,11 +535,7 @@ int GetStringLen(int sx, unsigned char *string, int size)
 				else
 				{
 					found=0;
-#ifdef MARTII
-						for(i=0; i<(int)sizeof(sc) && !found; i++)
-#else
 					for(i=0; i<sizeof(sc) && !found; i++)
-#endif
 					{
 						if(*string==sc[i])
 						{
@@ -400,6 +551,7 @@ int GetStringLen(int sx, unsigned char *string, int size)
 	
 	return stringlen;
 }
+#endif
 
 
 /******************************************************************************
@@ -483,10 +635,16 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 			}
 			else
 			{
+#ifdef MARTII
+				if((charwidth = RenderChar(UTF8ToUnicode(&rptr, 1), sx, sy, ex, ((color!=CMCIT) && (color!=CMCST))?varcolor:color)) == -1) return; /* string > maxwidth */
+#else
 				if((charwidth = RenderChar(*rptr, sx, sy, ex, ((color!=CMCIT) && (color!=CMCST))?varcolor:color)) == -1) return; /* string > maxwidth */
+#endif
 				sx += charwidth;
 			}
+#ifndef MARTII
 			rptr++;
+#endif
 		}
 }
 

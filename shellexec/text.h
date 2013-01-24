@@ -8,10 +8,11 @@ extern int FSIZE_BIG;
 extern int FSIZE_MED;
 extern int FSIZE_SMALL;
 
-void TranslateString(char *src);
 #ifdef MARTII
-int GetStringLen(int sx, char *string, int size);
+void TranslateString(char *src, size_t size);
+int GetStringLen(int sx, char *string, size_t size);
 #else
+void TranslateString(char *src);
 int GetStringLen(int sx, unsigned char *string, int size);
 #endif
 FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer request_data, FT_Face *aface);

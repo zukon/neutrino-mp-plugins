@@ -24,6 +24,7 @@
 #include <linux/stmfb.h>
 #define DEFAULT_XRES 1280
 #define DEFAULT_YRES 720
+void blit();
 extern int sync_blitter;
 #endif
 #endif
@@ -132,7 +133,9 @@ struct fb_fix_screeninfo fix_screeninfo;
 struct fb_var_screeninfo var_screeninfo;
 
 int startx, starty, sx, ex, sy, ey;
+#ifndef MARTII
 extern unsigned char sc[8], tc[8];
+#endif
 extern char *butmsg[3];
 extern int buttons,selection;
 

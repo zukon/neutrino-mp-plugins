@@ -53,8 +53,8 @@ char *trstr;
 unsigned char *lfb = 0, *lbb = 0, *obb = 0;
 unsigned char nstr[512]="",rstr[512]="";
 unsigned char *trstr;
-#endif
 unsigned char rc,sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={0xE4,0xF6,0xFC,0xC4,0xD6,0xDC,0xDF,0xB0};
+#endif
 int radius=10;
 #ifdef MARTII
 #ifdef HAVE_SPARK_HARDWARE
@@ -179,11 +179,18 @@ char *pt1=strg, *pt2=strg;
 	}
 }
 
+#ifdef MARTII
+int Transform_Msg(char **msg) {
+	size_t l = strlen(*msg);
+	char *t = (char *)alloca(l * 4 + 1);
+	memcpy(t, *msg, l + 1);
+	TranslateString(t, l * 4);
+	*msg = strdup(t);
+	return strlen(*msg);
+}
+#else
 int Transform_Msg(char *msg)
 {
-#ifdef MARTII
-unsigned
-#endif
 int found=0,i;
 char *sptr=msg, *tptr=msg;
 
@@ -221,6 +228,7 @@ char *sptr=msg, *tptr=msg;
 	*tptr=0;
 	return strlen(msg);
 }
+#endif
 
 void ShowUsage(void)
 {
@@ -253,7 +261,9 @@ int tv,cols=25,debounce=25,tmo=0,index, spr;
 char ttl[]="Eingabe";
 int dloop=1,keys=0,frame=1,mask=0,bhelp=0;
 char *title=NULL, *format=NULL, *defstr=NULL, *aptr, *rptr; 
+#ifndef MARTII
 unsigned int alpha;
+#endif
 //FILE *fh;
 
 		if(argc==1)
@@ -272,21 +282,33 @@ unsigned int alpha;
 				if(strstr(aptr,"l=")!=NULL)
 				{
 					format=rptr;
+#ifdef MARTII
+					dloop=Transform_Msg(&format)==0;
+#else
 					dloop=Transform_Msg(format)==0;
+#endif
 				}
 				else
 				{
 					if(strstr(aptr,"t=")!=NULL)
 					{
 						title=rptr;
+#ifdef MARTII
+						dloop=Transform_Msg(&title)==0;
+#else
 						dloop=Transform_Msg(title)==0;
+#endif
 					}
 					else
 					{
 						if(strstr(aptr,"d=")!=NULL)
 						{
 							defstr=rptr;
+#ifdef MARTII
+							dloop=Transform_Msg(&defstr)==0;
+#else
 							dloop=Transform_Msg(defstr)==0;
+#endif
 						}
 						else
 						{
