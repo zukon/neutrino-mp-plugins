@@ -1,9 +1,6 @@
 #include "text.h"
 #include "gfx.h"
 #include "io.h"
-#ifdef MARTII
-#include <iconv.h>
-#endif
 
 int FSIZE_BIG=32;
 int FSIZE_MED=24;

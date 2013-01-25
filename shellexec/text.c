@@ -3,7 +3,6 @@
 #include "io.h"
 #ifdef MARTII
 #include "shellexec.h"
-#include <iconv.h>
 #endif
 
 int FSIZE_BIG=28;
