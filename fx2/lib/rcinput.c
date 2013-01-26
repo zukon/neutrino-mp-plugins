@@ -158,11 +158,19 @@ void	KbClose( void )
 int	RcInitialize( int extfd )
 {
 #ifdef HAVE_SPARK_HARDWARE
+#ifndef RC_DEVICE
+#define RC_DEVICE "/dev/input/nevis_ir"
+#endif
+#ifndef RC_DEVICE_FALLBACK
+#define RC_DEVICE_FALLBACK "/dev/input/event1"
+#endif
 	struct input_event ev;
 	if ( extfd == -1 )
 	{
-		fd = open("/dev/input/nevis_ir", O_RDONLY );
-		if ( fd == -1 )
+		fd = open(RC_DEVICE, O_RDONLY );
+		if ( fd < 0 )
+			fd = open(RC_DEVICE_FALLBACK, O_RDONLY );
+		if ( fd < 0 )
 			return kbfd;
 		fcntl(fd, F_SETFL, O_NONBLOCK );
 	}

@@ -870,6 +870,8 @@ int main()
 	/* open Framebuffer */
 #ifdef FB_DEVICE
 	fb=open(FB_DEVICE, O_RDWR);
+	if (fb < 0)
+			fb=open(FB_DEVICE_FALLBACK, O_RDWR);
 #else
 	fb=open("/dev/fb/0", O_RDWR);
 #endif
@@ -881,6 +883,10 @@ int main()
 	/* open Remote Control */
 #if HAVE_COOL_HARDWARE || HAVE_TRIPLEDRAGON || HAVE_SPARK_HARDWARE
 	rc = open("/dev/input/nevis_ir", O_RDONLY);
+#if HAVE_SPARK_HARDWARE
+	if (rc < 0)
+		rc = open("/dev/input/event1", O_RDONLY);
+#endif
 #else
 #error your hardware is not yet implemented.
 #endif

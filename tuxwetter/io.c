@@ -22,7 +22,9 @@
 
 #include "io.h"
 #include "tuxwetter.h"
+#ifndef MARTII
 #define RC_DEVICE	"/dev/input/nevis_ir"
+#endif
 
 extern int instance;
 struct input_event ev;
@@ -32,6 +34,10 @@ static int rc;
 int InitRC(void)
 {
 	rc = open(RC_DEVICE, O_RDONLY);
+#ifdef MARTII
+	if (rc < 0)
+		rc = open(RC_DEVICE_FALLBACK, O_RDONLY);
+#endif
 	if(rc == -1)
 	{
 		perror("msgbox <open remote control>");

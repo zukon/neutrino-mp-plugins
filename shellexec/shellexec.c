@@ -1680,6 +1680,10 @@ PLISTENTRY pl;
 #endif
 
 	fb = open(FB_DEVICE, O_RDWR);
+#ifdef MARTII
+	if (fb < 0)
+		fb = open(FB_DEVICE_FALLBACK, O_RDWR);
+#endif
 	if(fb == -1)
 	{
 		perror("shellexec <open framebuffer device>");

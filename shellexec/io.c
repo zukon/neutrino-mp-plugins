@@ -31,6 +31,8 @@ int InitRC(void)
 {
 #ifdef MARTII
 	rc = open(RC_DEVICE, O_RDONLY | O_CLOEXEC);
+	if (rc < 0)
+		rc = open(RC_DEVICE_FALLBACK, O_RDONLY | O_CLOEXEC);
 #else
 	rc = open(RC_DEVICE, O_RDONLY);
 #endif

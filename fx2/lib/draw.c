@@ -20,12 +20,15 @@
 #ifndef USEX
 
 #if defined(HAVE_SPARK_HARDWARE)
-#include <stdint.h>
-#include <sys/ioctl.h>
-#include <linux/stmfb.h>
+# include <stdint.h>
+# include <sys/ioctl.h>
+# include <linux/stmfb.h>
 #endif
-#ifdef FB_DEVICE
-#define fbdevname FB_DEVICE
+#ifndef FB_DEVICE
+# define FB_DEVICE "/dev/fb/0"
+#endif
+#ifndef FB_DEVICE_FALLBACK
+# define FB_DEVICE_FALLBACK "/dev/fb0"
 #else
 #ifdef __i386__
 #define fbdevname	"/dev/fb0"
@@ -108,12 +111,22 @@ int	FBInitialize( int xRes, int yRes, int nbpp, int extfd )
 	}
 	else
 	{
+#ifdef MARTII
+		fd = open(FB_DEVICE, O_RDWR );
+		if (fd < 0)
+				fd = open(FB_DEVICE_FALLBACK, O_RDWR );
+		if (fd < 0) {
+			perror("failed - open " FB_DEVICE);
+			return(-1);
+		}
+#else
 		fd = open( fbdevname, O_RDWR );
 		if ( fd == -1 )
 		{
 			perror("failed - open " fbdevname);
 			return(-1);
 		}
+#endif
 	}
 #if defined(HAVE_SPARK_HARDWARE)
 	memset(&lut, 0, sizeof(STMFBIO_PALETTE));
