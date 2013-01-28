@@ -924,6 +924,7 @@ void SetLanguage()
  ******************************************************************************/
 
 #ifdef MARTII
+static int startX, startY, endX, endY, pitch;
 void blit(void) {
 #ifdef HAVE_SPARK_HARDWARE
 	STMFBIO_BLT_DATA  bltData;
@@ -940,11 +941,7 @@ void blit(void) {
 	bltData.srcFormat = SURF_BGRA8888;
 	bltData.srcMemBase = STMFBGP_FRAMEBUFFER;
 
-	struct fb_var_screeninfo s;
-	if (ioctl(fb, FBIOGET_VSCREENINFO, &s) == -1)
-		perror("blit FBIOGET_VSCREENINFO");
-
-	bltData.dstPitch   = s.xres * 4;
+	bltData.dstPitch   = pitch;
 	bltData.dstFormat = SURF_BGRA8888;
 	bltData.dstMemBase = STMFBGP_FRAMEBUFFER;
 
@@ -952,8 +949,10 @@ void blit(void) {
 		perror("blit ioctl STMFBIO_SYNC_BLITTER 1");
 	msync(lbb, DEFAULT_XRES * DEFAULT_YRES * 4, MS_SYNC);
 
-	bltData.dst_right  = s.xres - 1;
-	bltData.dst_bottom = s.yres - 1;
+	bltData.dst_left  = startX;
+	bltData.dst_top = startY;
+	bltData.dst_right  = endX;
+	bltData.dst_bottom = endY;
 	if (ioctl(fb, STMFBIO_BLT, &bltData ) < 0)
 		perror("STMFBIO_BLT");
 #if 0
@@ -976,7 +975,12 @@ int main()
 	char szMessage[400];
 
 	//get params
+#ifdef MARTII
+	sx = sy = 0, ex = DEFAULT_XRES - 1, ey = DEFAULT_YRES - 1;
+	fb = rc = -1;
+#else
 	fb = rc = sx = ex = sy = ey = -1;
+#endif
 
 	char *env;
 	env = getenv("SCREEN_OFF_X");
@@ -1032,6 +1036,14 @@ int main()
 # ifdef HAVE_SPARK_HARDWARE
 	fix_screeninfo.line_length = DEFAULT_XRES << 2;
 	stride = DEFAULT_XRES;
+	struct fb_var_screeninfo s;
+	if (ioctl(fb, FBIOGET_VSCREENINFO, &s) == -1)
+		perror("blit FBIOGET_VSCREENINFO");
+	startX = (sx * s.xres) / DEFAULT_XRES; 
+	startY = (sy * s.yres) / DEFAULT_YRES; 
+	endX = (ex * s.xres) / DEFAULT_XRES; 
+	endY = (ey * s.yres) / DEFAULT_YRES;
+	pitch = s.xres * 4, sx = 0, sy = 0, ex = DEFAULT_XRES - 1, ey = DEFAULT_YRES - 1;
 # else
 	stride = fix_screeninfo.line_length >> 2;
 # endif
