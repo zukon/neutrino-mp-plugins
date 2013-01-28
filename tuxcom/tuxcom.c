@@ -537,9 +537,114 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
  * GetStringLen
  ******************************************************************************/
 
+#ifdef MARTII
+static char *sc = "aouAOUzd", *su= "\xA4\xB6\xBC\x84\x96\x9C\x9F", *tc="\xE4\xF6\xFC\xDE\xC4\xD6\xDC\xB0";
+// from neutrino/src/driver/fontrenderer.cpp
+int UTF8ToUnicode(char **textp, const int utf8_encoded) // returns -1 on error
+{
+	int unicode_value, i;
+	char *text = *textp;
+	if (utf8_encoded && ((((unsigned char)(*text)) & 0x80) != 0))
+	{
+		int remaining_unicode_length;
+		if ((((unsigned char)(*text)) & 0xf8) == 0xf0) {
+			unicode_value = ((unsigned char)(*text)) & 0x07;
+			remaining_unicode_length = 3;
+		} else if ((((unsigned char)(*text)) & 0xf0) == 0xe0) {
+			unicode_value = ((unsigned char)(*text)) & 0x0f;
+			remaining_unicode_length = 2;
+		} else if ((((unsigned char)(*text)) & 0xe0) == 0xc0) {
+			unicode_value = ((unsigned char)(*text)) & 0x1f;
+			remaining_unicode_length = 1;
+		} else {
+			(*textp)++;
+			return -1;
+		}
+
+		*textp += remaining_unicode_length;
+
+		for (i = 0; *text && i < remaining_unicode_length; i++) {
+			text++;
+			if (((*text) & 0xc0) != 0x80) {
+				remaining_unicode_length = -1;
+				return -1;          // incomplete or corrupted character
+			}
+			unicode_value <<= 6;
+			unicode_value |= ((unsigned char)(*text)) & 0x3f;
+		}
+	} else
+		unicode_value = (unsigned char)(*text);
+
+	(*textp)++;
+	return unicode_value;
+}
+
+void CopyUTF8Char(char **to, char **from)
+{
+	int remaining_unicode_length;
+	if (!((unsigned char)(**from) & 0x80))
+		remaining_unicode_length = 1;
+	else if ((((unsigned char)(**from)) & 0xf8) == 0xf0)
+		remaining_unicode_length = 4;
+	else if ((((unsigned char)(**from)) & 0xf0) == 0xe0)
+		remaining_unicode_length = 3;
+	else if ((((unsigned char)(**from)) & 0xe0) == 0xc0)
+		remaining_unicode_length = 2;
+	else {
+		(*from)++;
+		return;
+	}
+	while (**from && remaining_unicode_length) {
+		**to = **from;
+		(*from)++, (*to)++, remaining_unicode_length--;
+	}
+}
+
+int isValidUTF8(char *text) {
+	while (*text)
+		if (-1 == UTF8ToUnicode(&text, 1))
+			return 0;
+	return 1;
+}
+
+void TranslateString(char *src, size_t size)
+{
+	char *tptr = src;
+	size_t src_len = strlen(src);
+	char *fptr = alloca(src_len * 4 + 1);
+	char *tptr_end = src + size - 5;
+
+	if (isValidUTF8(src))
+		return;
+
+	strcpy(fptr, src);
+	while (*fptr && tptr < tptr_end) {
+		int i;
+		for (i = 0; tc[i] && (tc[i] != *fptr); i++);
+		if (tc[i]) {
+			*tptr++ = 0xC3;
+			*tptr++ = su[i];
+			fptr++;
+		} else if (*fptr & 0x80)
+			fptr++;
+		else
+			*tptr++ = *fptr++;
+	}
+	*tptr = 0;
+}
+
+int GetStringLen(const char *_string, int size)
+#else
 int GetStringLen(const char *string, int size)
+#endif
 {
 	int stringlen = 0;
+#ifdef MARTII
+	int len = strlen(_string);
+	char *string = alloca(len * 4 + 1);
+	strcpy(string, _string);
+	TranslateString(string, len * 4 + 1);
+#endif
 
 	//set size
 
@@ -559,8 +664,12 @@ int GetStringLen(const char *string, int size)
 
 		while(*string != '\0')
 		{
+#ifdef MARTII
+			stringlen += RenderChar(UTF8ToUnicode(&string, 1), -1, -1, -1, -1);
+#else
 			stringlen += RenderChar(*string, -1, -1, -1, -1);
 			string++;
+#endif
 		}
 
 	return stringlen;
@@ -570,9 +679,19 @@ int GetStringLen(const char *string, int size)
  * RenderString
  ******************************************************************************/
 
+#ifdef MARTII
+void RenderString(const char *_string, int _sx, int _sy, int maxwidth, int layout, int size, int color)
+#else
 void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout, int size, int color)
+#endif
 {
 	int stringlen, _ex, charwidth;
+#ifdef MARTII
+	int len = strlen(_string);
+	char *string = alloca(len * 4 + 1);
+	strcpy(string, _string);
+	TranslateString(string, len * 4 + 1);
+#endif
 
 	//set size
 
@@ -616,10 +735,16 @@ void RenderString(const char *string, int _sx, int _sy, int maxwidth, int layout
 #endif
 		while(*string != '\0' && *string != '\n')
 		{
+#ifdef MARTII
+			if ((charwidth = RenderChar(UTF8ToUnicode(&string, 1), _sx, _sy, _ex, color)) == -1) return; /* string > maxwidth */
+#else
 			if ((charwidth = RenderChar(*string, _sx, _sy, _ex, color)) == -1) return; /* string > maxwidth */
+#endif
 
 			_sx += charwidth;
+#ifndef MARTII
 			string++;
+#endif
 		}
 }
 
