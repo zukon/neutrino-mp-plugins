@@ -651,6 +651,9 @@ FILE *fh;
 	{
 		while(fgets(line_buffer, BUFSIZE, fh))
 		{
+#ifdef MARTII
+			TranslateString(line_buffer, BUFSIZE);
+#endif
 			TrimString(line_buffer);
 			if(strstr(line_buffer,TYPESTR[TYP_MENU])==line_buffer)
 			{
@@ -3157,9 +3160,17 @@ PLISTENTRY pl=&epl;
 			}
 			if(strchr(argv[tv],'='))
 			{
+#ifdef MARTII
+				int len = strlen(argv[tv]);
+				char *t = alloca(len * 4 + 1);
+				TrimString(t);
+				TranslateString(t, len * 4 + 1);
+				cmdline=strdup(t);
+#else
 				cmdline=strdup(argv[tv]);
 				TrimString(cmdline);
 				TranslateString(cmdline);
+#endif
 			}
 		}
 

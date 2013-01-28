@@ -8,14 +8,81 @@ int FSIZE_SMALL=20;
 int FSIZE_VSMALL=16;
 int TABULATOR=72;
 #ifdef MARTII
-unsigned char sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä','Ö','Ü','ß','°'};
+extern int sync_blitter;
+extern void blit();
 #else
 unsigned sc[8]={'a','o','u','A','O','U','z','d'}, tc[8]={'ä','ö','ü','Ä','Ö','Ü','ß','°'};
 #endif
 
 #ifdef MARTII
-void blit(void);
-extern int sync_blitter;
+static char *sc = "aouAOUzd", *su= "\xA4\xB6\xBC\x84\x96\x9C\x9F", *tc="\xE4\xF6\xFC\xDE\xC4\xD6\xDC\xB0";
+// from neutrino/src/driver/fontrenderer.cpp
+int UTF8ToUnicode(char **textp, const int utf8_encoded) // returns -1 on error
+{
+	int unicode_value, i;
+	char *text = *textp;
+	if (utf8_encoded && ((((unsigned char)(*text)) & 0x80) != 0))
+	{
+		int remaining_unicode_length;
+		if ((((unsigned char)(*text)) & 0xf8) == 0xf0) {
+			unicode_value = ((unsigned char)(*text)) & 0x07;
+			remaining_unicode_length = 3;
+		} else if ((((unsigned char)(*text)) & 0xf0) == 0xe0) {
+			unicode_value = ((unsigned char)(*text)) & 0x0f;
+			remaining_unicode_length = 2;
+		} else if ((((unsigned char)(*text)) & 0xe0) == 0xc0) {
+			unicode_value = ((unsigned char)(*text)) & 0x1f;
+			remaining_unicode_length = 1;
+		} else {
+			(*textp)++;
+			return -1;
+		}
+
+		*textp += remaining_unicode_length;
+
+		for (i = 0; *text && i < remaining_unicode_length; i++) {
+			text++;
+			if (((*text) & 0xc0) != 0x80) {
+				remaining_unicode_length = -1;
+				return -1;          // incomplete or corrupted character
+			}
+			unicode_value <<= 6;
+			unicode_value |= ((unsigned char)(*text)) & 0x3f;
+		}
+	} else
+		unicode_value = (unsigned char)(*text);
+
+	(*textp)++;
+	return unicode_value;
+}
+
+void CopyUTF8Char(char **to, char **from)
+{
+	int remaining_unicode_length;
+	if (!((unsigned char)(**from) & 0x80))
+		remaining_unicode_length = 1;
+	else if ((((unsigned char)(**from)) & 0xf8) == 0xf0)
+		remaining_unicode_length = 4;
+	else if ((((unsigned char)(**from)) & 0xf0) == 0xe0)
+		remaining_unicode_length = 3;
+	else if ((((unsigned char)(**from)) & 0xe0) == 0xc0)
+		remaining_unicode_length = 2;
+	else {
+		(*from)++;
+		return;
+	}
+	while (**from && remaining_unicode_length) {
+		**to = **from;
+		(*from)++, (*to)++, remaining_unicode_length--;
+	}
+}
+
+int isValidUTF8(char *text) {
+	while (*text)
+		if (-1 == UTF8ToUnicode(&text, 1))
+			return 0;
+	return 1;
+}
 #endif
 /******************************************************************************
  * MyFaceRequester
@@ -99,7 +166,7 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 	int row, pitch;
 	FT_UInt glyphindex;
 	FT_Vector kerning;
-	FT_Error error;
+	FT_Error err;
 
 	if (currentchar == '\r') // display \r in windows edited files
 	{
@@ -117,7 +184,7 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 	{
 		/* simulate horizontal TAB */
 		return 15;
-	};
+	}
 
 	//load char
 
@@ -127,8 +194,7 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 			return 0;
 		}
 
-
-		if((error = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, NULL)))
+		if((err = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, NULL)))
 		{
 			printf("TuxCom <FTC_SBitCache_Lookup for Char \"%c\" failed with Errorcode 0x%.2X>\n", (int)currentchar, error);
 			return 0;
@@ -140,15 +206,14 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 
 			prev_glyphindex = glyphindex;
 			kerning.x >>= 6;
-		}
-		else
+		} else
 			kerning.x = 0;
 
 		//render char
 
 		if(color != -1) /* don't render char, return charwidth only */
 		{
-#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
+#if defined(HAVE_SPARK_HARDWARE)
 			if(sync_blitter) {
 				sync_blitter = 0;
 				if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
@@ -261,6 +326,40 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
  * GetStringLen
  ******************************************************************************/
 
+#ifdef MARTII
+int GetStringLen(int _sx, char *string, size_t size)
+{
+	int i, stringlen = 0;
+	
+	//reset kerning
+	
+	prev_glyphindex = 0;
+	
+	//calc len
+	
+	if (size)
+			desc.width = desc.height = size;
+
+	while(*string) {
+		switch(*string) {
+		case '~':
+			string++;
+			if(*string=='t')
+				stringlen=desc.width+TABULATOR*((int)(stringlen/TABULATOR)+1);
+			else if(*string=='T' && sscanf(string+1,"%4d",&i)==1) {
+				string+=5;
+				stringlen=i-_sx;
+			}
+			break;
+		default:
+			stringlen += RenderChar(UTF8ToUnicode(&string, 1), -1, -1, -1, -1);
+			break;
+		}
+	}
+	
+	return stringlen;
+}
+#else
 int GetStringLen(int sx, char *string, int size)
 {
 int i, found;
@@ -303,11 +402,7 @@ int stringlen = 0;
 					else
 					{
 						found=0;
-#ifdef MARTII
-						for(i=0; i<(int)sizeof(sc) && !found; i++)
-#else
 						for(i=0; i<sizeof(sc) && !found; i++)
-#endif
 						{
 							if(*string==sc[i])
 							{
@@ -323,6 +418,7 @@ int stringlen = 0;
 
 	return stringlen;
 }
+#endif
 
 
 void CatchTabs(char *text)
@@ -347,6 +443,87 @@ void CatchTabs(char *text)
  * RenderString
  ******************************************************************************/
 
+#ifdef MARTII
+int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int size, int color)
+{
+	int stringlen, ex, charwidth,i,found;
+#ifdef MARTII
+	int len = strlen(string);
+	char *rstr = alloca(len * 4 + 1);
+	char *rptr=rstr, rc;
+#else
+	char rstr[BUFSIZE], *rptr=rstr, rc;
+#endif
+	int varcolor=color;
+
+	//set size
+
+	strcpy(rstr,string);
+#ifdef MARTII
+	TranslateString(rstr, len * 4 + 1);
+#endif	
+
+	desc.width = desc.height = size;
+	TABULATOR=3*size;
+	//set alignment
+
+	stringlen = GetStringLen(sx, rstr, size);
+
+	switch(layout) {
+		case CENTER:
+			if(stringlen < maxwidth) sx += (maxwidth - stringlen)/2;
+			break;
+		case RIGHT:
+			if(stringlen < maxwidth) sx += maxwidth - stringlen;
+		case LEFT:
+			;
+	}
+
+	//reset kerning
+
+	prev_glyphindex = 0;
+
+	//render string
+
+	ex = sx + maxwidth;
+
+#if defined(HAVE_SPARK_HARDWARE)
+	if(sync_blitter) {
+		sync_blitter = 0;
+		if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
+			perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
+	}
+#endif
+	while(*rptr) {
+		if(*rptr=='~') {
+			++rptr;
+			switch(*rptr) {
+				case 'R': varcolor=RED; break;
+				case 'G': varcolor=GREEN; break;
+				case 'Y': varcolor=YELLOW; break;
+				case 'B': varcolor=BLUE0; break;
+				case 'S': varcolor=color; break;
+				case 't':				
+					sx=TABULATOR*((int)(sx/TABULATOR)+1);
+					rptr++;
+					continue;
+				case 'T':
+					if(sscanf(rptr+1,"%4d",&i)==1) {
+						rptr+=4;
+						sx=i;
+					}
+					rptr++;
+					continue;
+			}
+			if((charwidth = RenderChar('~', sx, sy, ex, varcolor)) == -1) return sx; /* string > maxwidth */
+				sx += charwidth;
+		}
+		if((charwidth = RenderChar(UTF8ToUnicode(&rptr, 1), sx, sy, ex, varcolor)) == -1) return sx; /* string > maxwidth */
+			sx += charwidth;
+	}
+	return stringlen;
+}
+#else
 int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int size, int color)
 {
 	int stringlen, ex, charwidth,i,found;
@@ -382,13 +559,6 @@ int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int siz
 
 		ex = sx + maxwidth;
 
-#if defined(MARTII) && defined(HAVE_SPARK_HARDWARE)
-		if(sync_blitter) {
-			sync_blitter = 0;
-			if (ioctl(fb, STMFBIO_SYNC_BLITTER) < 0)
-				perror("RenderString ioctl STMFBIO_SYNC_BLITTER");
-		}
-#endif
 		while(*rptr != '\0')
 		{
 			if(*rptr=='~')
@@ -396,11 +566,7 @@ int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int siz
 				++rptr;
 				rc=*rptr;
 				found=0;
-#ifdef MARTII
-				for(i=0; i<(int)sizeof(sc) && !found; i++)
-#else
 				for(i=0; i<sizeof(sc) && !found; i++)
-#endif
 				{
 					if(rc==sc[i])
 					{
@@ -459,6 +625,7 @@ int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int siz
 		}
 	return stringlen;
 }
+#endif
 
 /******************************************************************************
  * ShowMessage
@@ -506,6 +673,56 @@ void ShowMessage(char *message, int wait)
 
 }
 
+#ifdef MARTII
+void TranslateString(char *src, size_t size)
+{
+	char *fptr = src;
+	size_t src_len = strlen(src);
+	char *tptr_start = alloca(src_len * 4 + 1);
+	char *tptr = tptr_start;
+
+	if (isValidUTF8(src))
+		strncpy(tptr_start, fptr, src_len + 1);
+	else {
+		while (*fptr) {
+			int i;
+			for (i = 0; tc[i] && (tc[i] != *fptr); i++);
+			if (tc[i]) {
+				*tptr++ = 0xC3;
+				*tptr++ = su[i];
+				fptr++;
+			} else if (*fptr & 0x80)
+				fptr++;
+			else
+				*tptr++ = *fptr++;
+		}
+		*tptr = 0;
+	}
+
+	fptr = tptr_start;
+	tptr = src;
+	char *tptr_end = src + size - 5;
+	while (*fptr && tptr < tptr_end) {
+		if (*fptr == '~') {
+			fptr++;
+			int i;
+			for (i = 0; sc[i] && (sc[i] != *fptr); i++);
+			if (sc[i]) {
+				*tptr++ = 0xC3;
+				*tptr++ = su[i];
+				fptr++;
+			} else if (*fptr == 'd') {
+				*tptr++ = 0xC2;
+				*tptr++ = 0xb0;
+				fptr++;
+			} else
+				*tptr++ = '~';
+		} else
+			CopyUTF8Char(&tptr, &fptr);
+	}
+	*tptr = 0;
+}
+#else
 void TranslateString(char *src)
 {
 int i,found;
@@ -550,4 +767,5 @@ char rc,*rptr=src,*tptr=src;
 	}
 	*tptr=0;
 }
+#endif
 // vim:ts=4

@@ -102,7 +102,7 @@ void TranslateString(char *src, size_t size)
 				*tptr++ = su[i];
 				fptr++;
 			} else if (*fptr & 0x80)
-				*fptr++;
+				fptr++;
 			else
 				*tptr++ = *fptr++;
 		}

@@ -146,9 +146,7 @@ extern unsigned char rd[],gn[],bl[],tr[];
 #endif
 
 int startx, starty, sx, ex, sy, ey, debounce, rblock;
-#ifdef MARTII
-extern unsigned char sc[8], tc[8];
-#else
+#ifndef MARTII
 extern unsigned sc[8], tc[8];
 #endif
 extern int instance;
