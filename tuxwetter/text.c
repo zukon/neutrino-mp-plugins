@@ -327,9 +327,13 @@ int RenderChar(FT_ULong currentchar, int sx, int sy, int ex, int color)
  ******************************************************************************/
 
 #ifdef MARTII
-int GetStringLen(int _sx, char *string, size_t size)
+int GetStringLen(int _sx, char *_string, size_t size)
 {
 	int i, stringlen = 0;
+	int len = strlen(_string);
+	char *string = alloca(4 * len + 1);
+	strcpy(string, _string);
+	TranslateString(string, len * 4 + 1);
 	
 	//reset kerning
 	
