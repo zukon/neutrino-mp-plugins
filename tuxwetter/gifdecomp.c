@@ -18,7 +18,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
 */
-
+#ifdef MARTII
+#include <config.h>
+#endif
 #define HAVE_VARARGS_H
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +34,14 @@
 #define GIF_ASM_NAME   "Tuxwetter"
 #define COMMENT_GIF_ASM    "New-Tuxwetter-Team"
 #define SQR(x)     ((x) * (x))
+#ifdef MARTII
+# ifndef TRUE
+#  define TRUE -1
+# endif
+# ifndef FALSE
+#  define FALSE 0
+# endif
+#endif
 
 static int
    ImageNum = 0,
@@ -70,12 +80,24 @@ int i;
     /* Open input file: */
     if (InFileName != NULL) 
     {	
+#ifdef ENABLE_GIFLIB
+	if ((GifFileIn = DGifOpenFileName(InFileName, NULL)) == NULL)
+#else
 	if ((GifFileIn = DGifOpenFileName(InFileName)) == NULL)
+#endif
 		QuitGifError(GifFileIn, GifFileOut);
     }
+#ifdef ENABLE_GIFLIB
+    if ((GifFileIn = DGifOpenFileName(InFileName, NULL)) != NULL)
+#else
     if ((GifFileIn = DGifOpenFileName(InFileName)) != NULL)
+#endif
     {
+#ifdef ENABLE_GIFLIB
+		if ((GifFileOut = EGifOpenFileName(TempGifName, TRUE, NULL)) == NULL)
+#else
 		if ((GifFileOut = EGifOpenFileName(TempGifName, TRUE)) == NULL)
+#endif
 		QuitGifError(GifFileIn, GifFileOut);
    
     
@@ -137,14 +159,22 @@ int i;
   	  if (EGifCloseFile(GifFileOut) == GIF_ERROR)
 		QuitGifError(GifFileIn, GifFileOut);
                
+#ifdef ENABLE_GIFLIB
+	if ((GifFileIn = DGifOpenFileName(TempGifName, NULL)) == NULL)
+#else
 	if ((GifFileIn = DGifOpenFileName(TempGifName)) == NULL)
+#endif
 	QuitGifError(GifFileIn, GifFileOut);
 
     
    		 /* Scan the content of GIF file and dump image(s) to seperate file(s): */
     		do {
 		sprintf(CrntFileName, "%s%02d.gif", OutFileName, FileNum++);
+#ifdef ENABLE_GIFLIB
+		if ((GifFileOut = EGifOpenFileName(CrntFileName, TRUE, NULL)) == NULL)
+#else
 		if ((GifFileOut = EGifOpenFileName(CrntFileName, TRUE)) == NULL)
+#endif
 		    QuitGifError(GifFileIn, GifFileOut);
 		FileEmpty = TRUE;
 
@@ -228,13 +258,21 @@ return FileNum;
 ******************************************************************************/
 void QuitGifError(GifFileType *GifFileIn, GifFileType *GifFileOut)
 {
+#ifndef ENABLE_GIFLIB
     PrintGifError();
+#endif
     if (GifFileIn != NULL) DGifCloseFile(GifFileIn);
     if (GifFileOut != NULL) EGifCloseFile(GifFileOut);
 //    exit(EXIT_FAILURE);
 }
 
-
+#ifdef ENABLE_GIFLIB
+static void GIF_EXIT(char *err) {
+	fprintf(stderr, "%s\n", err);
+	exit(-1);
+	
+}
+#endif
 int LoadImage(GifFileType *GifFile, GifRowType **ImageBufferPtr)
 {
     int Size, i, j, Count;
@@ -256,9 +294,11 @@ int LoadImage(GifFileType *GifFile, GifRowType **ImageBufferPtr)
 
     *ImageBufferPtr = ImageBuffer;
 
+#ifndef ENABLE_GIFLIB
     GifQprintf("\n%s: Image %d at (%d, %d) [%dx%d]:     ",
 	PROGRAM_NAME, ++ImageNum, GifFile->Image.Left, GifFile->Image.Top,
 				 GifFile->Image.Width, GifFile->Image.Height);
+#endif
     if (GifFile->Image.Interlace) {
 	/* Need to perform 4 passes on the images: */
 	for (Count = i = 0; i < 4; i++)

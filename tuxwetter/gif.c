@@ -19,6 +19,9 @@
  *
 */
 
+#ifdef MARTII
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -79,7 +82,11 @@ int fh_gif_load(const char *name,unsigned char *buffer,int x,int y)
 	ColorMapObject *cmap;
 	int cmaps;
 
+#ifdef ENABLE_GIFLIB // MARTII
+	gft=DGifOpenFileName(name, NULL);
+#else
 	gft=DGifOpenFileName(name);
+#endif
 	if(gft==NULL) gflush;
 	do
 	{
@@ -147,7 +154,11 @@ int fh_gif_getsize(const char *name,int *x,int *y, int wanted_width, int wanted_
 	int extcode;
 	GifRecordType rt;
 
+#ifdef ENABLE_GIFLIB // MARTII
+	gft=DGifOpenFileName(name, NULL);
+#else
 	gft=DGifOpenFileName(name);
+#endif
 	if(gft==NULL) gflush;
 	do
 	{

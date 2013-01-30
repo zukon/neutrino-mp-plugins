@@ -49,6 +49,15 @@ fi
 # CPPFLAGS="$CPPFLAGS $TUXTXT_CFLAGS"
 # CFLAGS="$CFLAGS $TUXTXT_CFLAGS"
 
+AC_ARG_ENABLE(giflib,
+	AS_HELP_STRING(--enable-giflib,use giflib instead of libungif),
+	,[enable_giflib=no])
+
+AM_CONDITIONAL(ENABLE_GIFLIB,test "$enable_giflib" = "yes")
+if test "$enable_giflib" = "yes"; then
+	AC_DEFINE(ENABLE_GIFLIB,1,[use giflib instead of libungif])
+fi
+
 AC_OUTPUT([
 Makefile
 include/Makefile
