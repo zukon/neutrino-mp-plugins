@@ -366,6 +366,23 @@ int i, res=0;
 	}
 	return res;
 }
+#ifdef MARTII
+static int mysystem(const char *command) {
+	if (!command)
+		return -1;
+	char *a = (char *) alloca(strlen(command) + 1);
+	strcpy(a, command);
+	char *s = a;
+	while (*s && *s != ' ' && *s != '\t')
+		s++;
+	*s = 0;
+	if (access(a, X_OK))
+		chmod(a, 0755);
+
+	return system(command);
+}
+#define system mysystem
+#endif
 
 void OnMenuClose(char *cmd, char *dep)
 {
