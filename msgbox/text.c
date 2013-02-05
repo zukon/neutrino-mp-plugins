@@ -500,6 +500,8 @@ void CatchTabs(char *text)
  * RenderString
  ******************************************************************************/
 
+extern int psx;
+
 int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int size, int color)
 {
 #ifdef MARTII
@@ -585,7 +587,11 @@ int RenderString(char *string, int sx, int sy, int maxwidth, int layout, int siz
 							if(sscanf(rptr+1,"%4d",&i)==1)
 							{
 								rptr+=4;
+#ifdef MARTII
+								sx = psx + 10 + i;
+#else
 								sx=i;
+#endif
 							}
 						break;
 					}

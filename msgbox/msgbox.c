@@ -265,7 +265,12 @@ char *pt1=strdup(sptr),*pt2,*pt3;
 }
 
 static int yo=80,dy;
+#ifdef MARTII
+int psx;
+static int psy, pxw, pyw, myo=0, buttx=80, butty=30, buttdx=20, buttdy=10, buttsize=0, buttxstart=0, buttystart=0;
+#else
 static int psx, psy, pxw, pyw, myo=0, buttx=80, butty=30, buttdx=20, buttdy=10, buttsize=0, buttxstart=0, buttystart=0;
+#endif
 
 int show_txt(int buttonly)
 {
