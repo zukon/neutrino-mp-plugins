@@ -235,11 +235,9 @@ void SetCode(int code)
 	}
 }
 
+#ifndef MARTII
 int ReTransform_Msg(char *msg)
 {
-#ifdef MARTII
-	return strlen(msg);
-#else
 int found=0,i;
 char *sptr=msg, *tptr=tstr;
 
@@ -263,8 +261,8 @@ char *sptr=msg, *tptr=tstr;
 	}
 	*tptr=0;
 	return strlen(rstr);
-#endif
 }
+#endif
 
 char *inputd(char *form, char *title, char *defstr, int keys, int frame, int mask, int bhelp, int cols, int tmo, int debounce)
 {
@@ -655,7 +653,11 @@ char kalp[12][5]={"+-*/","abcä","def","ghi","jkl","mnoö","pqrs","tuvü","wxyz",""
 		rstr[j]=0;
 		free(estr);
 	}	
+#ifdef MARTII
+	return rstr;
+#else
 	ReTransform_Msg(rstr);
 	return tstr;
+#endif
 }
 
