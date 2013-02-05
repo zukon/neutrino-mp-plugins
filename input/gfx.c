@@ -86,7 +86,11 @@ void RenderBox(int sx, int sy, int ex, int ey, int rad, int col)
 		
 	if (dxx<0) 
 	{
+#ifdef MARTII
+		fprintf(stderr, "[input] RenderBox called with dx < 0 (%d)\n", dxx);
+#else
 		printf("[input] RenderBox called with dx < 0 (%d)\n", dxx);
+#endif
 		dxx=0;
 	}
 

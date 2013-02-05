@@ -108,7 +108,11 @@ static void quit_signal(int sig)
 #endif
 {
 	put_instance(get_instance()-1);
+#ifdef MARTII
+	fprintf(stderr, "input Version %.2f killed\n",I_VERSION);
+#else
 	printf("input Version %.2f killed\n",I_VERSION);
+#endif
 	exit(1);
 }
 
@@ -186,7 +190,11 @@ int Transform_Msg(char **msg) {
 	memcpy(t, *msg, l + 1);
 	TranslateString(t, l * 4);
 	*msg = strdup(t);
+#ifdef MARTII
+	return -1;
+#else
 	return strlen(*msg);
+#endif
 }
 #else
 int Transform_Msg(char *msg)
@@ -380,12 +388,20 @@ unsigned int alpha;
 			switch (dloop)
 			{
 				case 1:
+#ifdef MARTII
+					fprintf(stderr, "input <param error: %s>\n",aptr);
+#else
 					printf("input <param error: %s>\n",aptr);
+#endif
 					return 0;
 					break;
 				
 				case 2:
+#ifdef MARTII
+					fprintf(stderr, "input <unknown command: %s>\n\n",aptr);
+#else
 					printf("input <unknown command: %s>\n\n",aptr);
+#endif
 					ShowUsage();
 					return 0;
 					break;
@@ -393,7 +409,11 @@ unsigned int alpha;
 		}
 		if(!format)
 		{
+#ifdef MARTII
+			fprintf(stderr, "input <missing format string>\n");
+#else
 			printf("input <missing format string>\n");
+#endif
 			return 0;
     	}
 		if(!title)
@@ -403,7 +423,11 @@ unsigned int alpha;
 
 		if((buffer=calloc(BUFSIZE+1, sizeof(char)))==NULL)
 		{
+#ifdef MARTII
+			fprintf(stderr, NOMEM);
+#else
 			printf(NOMEM);
+#endif
 			return 0;
 		}
 
@@ -486,7 +510,11 @@ unsigned int alpha;
 
 		if((trstr=malloc(BUFSIZE))==NULL)
 		{
+#ifdef MARTII
+			fprintf(stderr, NOMEM);
+#else
 			printf(NOMEM);
+#endif
 			return -1;
 		}
 
@@ -522,14 +550,22 @@ unsigned int alpha;
 
 		if((error = FT_Init_FreeType(&library)))
 		{
+#ifdef MARTII
+			fprintf(stderr, "input <FT_Init_FreeType failed with Errorcode 0x%.2X>", error);
+#else
 			printf("input <FT_Init_FreeType failed with Errorcode 0x%.2X>", error);
+#endif
 			munmap(lfb, fix_screeninfo.smem_len);
 			return -1;
 		}
 
 		if((error = FTC_Manager_New(library, 1, 2, 0, &MyFaceRequester, NULL, &manager)))
 		{
+#ifdef MARTII
+			fprintf(stderr, "input <FTC_Manager_New failed with Errorcode 0x%.2X>\n", error);
+#else
 			printf("input <FTC_Manager_New failed with Errorcode 0x%.2X>\n", error);
+#endif
 			FT_Done_FreeType(library);
 			munmap(lfb, fix_screeninfo.smem_len);
 			return -1;
@@ -537,7 +573,11 @@ unsigned int alpha;
 
 		if((error = FTC_SBitCache_New(manager, &cache)))
 		{
+#ifdef MARTII
+			fprintf(stderr, "input <FTC_SBitCache_New failed with Errorcode 0x%.2X>\n", error);
+#else
 			printf("input <FTC_SBitCache_New failed with Errorcode 0x%.2X>\n", error);
+#endif
 			FTC_Manager_Done(manager);
 			FT_Done_FreeType(library);
 			munmap(lfb, fix_screeninfo.smem_len);
@@ -548,7 +588,11 @@ unsigned int alpha;
 		{
 			if((error = FTC_Manager_LookupFace(manager, FONT2, &face)))
 			{
+#ifdef MARTII
+				fprintf(stderr, "input <FTC_Manager_LookupFace failed with Errorcode 0x%.2X>\n", error);
+#else
 				printf("input <FTC_Manager_LookupFace failed with Errorcode 0x%.2X>\n", error);
+#endif
 				FTC_Manager_Done(manager);
 				FT_Done_FreeType(library);
 				munmap(lfb, fix_screeninfo.smem_len);

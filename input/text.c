@@ -142,11 +142,13 @@ FT_Error MyFaceRequester(FTC_FaceID face_id, FT_Library library, FT_Pointer requ
 
 #ifdef MARTII
 	result = FT_New_Face(lib, face_id, 0, aface);
+
+	if(result) fprintf(stderr, "msgbox <Font \"%s\" failed>\n", (char*)face_id);
 #else
 	result = FT_New_Face(library, face_id, 0, aface);
-#endif
 
 	if(result) printf("msgbox <Font \"%s\" failed>\n", (char*)face_id);
+#endif
 
 	return result;
 }
@@ -242,13 +244,21 @@ int RenderChar(FT_ULong currentchar, int _sx, int _sy, int _ex, int color)
 
 		if(!(glyphindex = FT_Get_Char_Index(face, currentchar)))
 		{
+#ifdef MARTII
+			fprintf(stderr, "TuxCom <FT_Get_Char_Index for Char \"%c\" failed\n", (int)currentchar);
+#else
 			printf("TuxCom <FT_Get_Char_Index for Char \"%c\" failed\n", (int)currentchar);
+#endif
 			return 0;
 		}
 
 		if((err = FTC_SBitCache_Lookup(cache, &desc, glyphindex, &sbit, NULL)))
 		{
+#ifdef MARTII
+			fprintf(stderr, "TuxCom <FTC_SBitCache_Lookup for Char \"%c\" failed with Errorcode 0x%.2X>\n", (int)currentchar, error);
+#else
 			printf("TuxCom <FTC_SBitCache_Lookup for Char \"%c\" failed with Errorcode 0x%.2X>\n", (int)currentchar, error);
+#endif
 			return 0;
 		}
 
