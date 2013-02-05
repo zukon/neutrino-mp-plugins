@@ -190,11 +190,7 @@ int Transform_Msg(char **msg) {
 	memcpy(t, *msg, l + 1);
 	TranslateString(t, l * 4);
 	*msg = strdup(t);
-#ifdef MARTII
 	return -1;
-#else
-	return strlen(*msg);
-#endif
 }
 #else
 int Transform_Msg(char *msg)
