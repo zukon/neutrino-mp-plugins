@@ -705,7 +705,7 @@ void TranslateString(char *src, size_t size)
 
 	fptr = tptr_start;
 	tptr = src;
-	char *tptr_end = src + size - 5;
+	char *tptr_end = src + size - 4;
 	while (*fptr && tptr < tptr_end) {
 		if (*fptr == '~') {
 			fptr++;
