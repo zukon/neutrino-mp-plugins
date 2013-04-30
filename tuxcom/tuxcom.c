@@ -1002,7 +1002,7 @@ int main()
 	if (fb < 0)
 			fb=open(FB_DEVICE_FALLBACK, O_RDWR);
 #else
-	fb=open("/dev/fb/0", O_RDWR);
+	fb=open("/dev/fb0", O_RDWR);
 #endif
 	if (fb < 0) {
 		perror("TuxCom <open framebuffer>");
@@ -1014,7 +1014,7 @@ int main()
 	rc = open("/dev/input/nevis_ir", O_RDONLY);
 #if HAVE_SPARK_HARDWARE
 	if (rc < 0)
-		rc = open("/dev/input/event1", O_RDONLY);
+		rc = open("/dev/input/event0", O_RDONLY);
 #endif
 #else
 #error your hardware is not yet implemented.
@@ -2670,7 +2670,7 @@ void DoEditFTP(char* szFile,char* szTitle)
 				continue;
 			*p=0;
 			p++;
-			p1=strchr(p,'\r'); // für Windows-Nutzer: '\r' überlesen
+			p1=strchr(p,'\r'); // f\FCr Windows-Nutzer: '\r' \FCberlesen
 			if (p1 != NULL) *p1 = 0x00;
 			if      ( !strcmp(line,"host") ) strcpy(entries[0], p);
 			else if ( !strcmp(line,"port") ) strcpy(entries[1], p);
@@ -5186,7 +5186,7 @@ void OpenFTP()
 				continue;
 			*p=0;
 			p++;
-			p1=strchr(p,'\r'); // für Windows-Nutzer: '\r' überlesen
+			p1=strchr(p,'\r'); // f\FCr Windows-Nutzer: '\r' \FCberlesen
 			if (p1 != NULL) *p1 = 0x00;
 			if      ( !strcmp(line,"host") ) strcpy(finfo[curframe].ftphost, p);
 			else if ( !strcmp(line,"port") ) finfo[curframe].ftpport = atoi(p);
