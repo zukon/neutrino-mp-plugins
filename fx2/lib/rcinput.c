@@ -162,7 +162,7 @@ int	RcInitialize( int extfd )
 #define RC_DEVICE "/dev/input/nevis_ir"
 #endif
 #ifndef RC_DEVICE_FALLBACK
-#define RC_DEVICE_FALLBACK "/dev/input/event1"
+#define RC_DEVICE_FALLBACK "/dev/input/event0"
 #endif
 	struct input_event ev;
 	if ( extfd == -1 )
