@@ -1002,7 +1002,7 @@ int main()
 	if (fb < 0)
 			fb=open(FB_DEVICE_FALLBACK, O_RDWR);
 #else
-	fb=open("/dev/fb0", O_RDWR);
+	fb=open("/dev/fb/0", O_RDWR);
 #endif
 	if (fb < 0) {
 		perror("TuxCom <open framebuffer>");
@@ -1014,7 +1014,11 @@ int main()
 	rc = open("/dev/input/nevis_ir", O_RDONLY);
 #if HAVE_SPARK_HARDWARE
 	if (rc < 0)
+#if HAVE_DUCKBOX_HARDWARE
 		rc = open("/dev/input/event0", O_RDONLY);
+#else
+		rc = open("/dev/input/event1", O_RDONLY);
+#endif
 #endif
 #else
 #error your hardware is not yet implemented.

@@ -43,6 +43,13 @@
 #include <linux/stmfb.h>
 #endif
 
+#ifndef FB_DEVICE
+#define FB_DEVICE	"/dev/fb/0"
+#endif
+#ifndef FB_DEVICE_FALLBACK
+#define FB_DEVICE_FALLBACK	"/dev/fb0"
+#endif
+
 #if 0
 #include <dbox/avs_core.h>
 #include <dbox/saa7126_core.h>
