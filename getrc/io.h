@@ -2,6 +2,7 @@
 
 #define __IO_H__
 
+#include <config.h>
 #define RC_DEVICE	"/dev/input/nevis_ir"
 #ifdef MARTII
 #ifdef HAVE_DUCKBOX_HARDWARE
