@@ -21,4 +21,4 @@ install-exec-local:
 	install -m 0755 shellexec $(DESTDIR)$(PLUGINDIR)/shellexec.so
 	install -m 0644 $(srcdir)/shellexec.conf $(DESTDIR)$(CONFIGDIR)
 	install -m 0644 $(srcdir)/shellexec.cfg $(DESTDIR)$(PLUGINDIR)
-	ln -s $(PLUGINDIR)/shellexec.so $(DESTDIR)/bin/shellexec
+	ln -sf $(PLUGINDIR)/shellexec.so $(DESTDIR)/bin/shellexec
