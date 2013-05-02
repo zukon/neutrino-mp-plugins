@@ -10,6 +10,6 @@ libfx2_la_LIBADD = \
 libfx2_la_CPPFLAGS = -fPIC
 
 install-exec-local:
-	install -d $(DESTDIR)/lib
-	install --strip-program=$(STRIP) -s -m 0644 .libs/libfx2.so $(DESTDIR)/lib
+	install -d $(DESTDIR)/var/plugins
+	install --strip-program=$(STRIP) -s -m 0644 .libs/libfx2.so $(DESTDIR)/var/plugins
 
