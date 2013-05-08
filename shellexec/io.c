@@ -144,7 +144,8 @@ int RCTranslate(int code)
 		case KEY_SETUP:		rccode = RC_DBOX;
 			break;
 
-		case KEY_EXIT:		rccode = RC_HOME;
+		case KEY_EXIT:
+		case KEY_HOME:		rccode = RC_HOME;
 			break;
 
 		case KEY_POWER:		rccode = RC_STANDBY;
