@@ -1009,7 +1009,7 @@ FILE *fh;
 	tm2=tm1;
 	
 	//main loop
-	while((rcc!=KEY_EXIT) && (rcc!=KEY_OK) && ((timeout==-1)||((tm2-tm1)<timeout)))
+	while((rcc!=KEY_EXIT) && (rcc!=KEY_HOME) && (rcc!=KEY_OK) && ((timeout==-1)||((tm2-tm1)<timeout)))
 	{
 #ifdef MARTII
 		rcc=GetRCCode(1000);
@@ -1060,7 +1060,7 @@ FILE *fh;
 			}
 #endif
 		}
-		if((!hide) && (rcc!=KEY_EXIT) && (rcc!=KEY_OK))
+		if((!hide) && (rcc!=KEY_EXIT) && (rcc!=KEY_HOME) && (rcc!=KEY_OK))
 		{
 			switch(rcc)
 			{
