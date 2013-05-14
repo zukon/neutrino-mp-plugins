@@ -4841,7 +4841,7 @@ void getUidPidProcname(char *p, char *procname, char *uid, char *prid)
 
 void DoTaskManager()
 {
-	FILE* pFile = OpenPipe("ps aux");
+	FILE* pFile = OpenPipe("ps -l");
 	char* szFileBuffer = (char*)malloc(FILEBUFFER_SIZE);
 	szFileBuffer [0]= 0x00;
 	char *p = szFileBuffer, *p1, *pcur = szFileBuffer;
