@@ -630,7 +630,9 @@ void RenderString(char *string, int sx, int sy, int maxwidth, int layout, int si
 						{
 							sx=((sx/TABULATOR)+1)*TABULATOR;
 						}
+					break;
 				}
+				++rptr;
 			}
 			else
 			{
