@@ -405,6 +405,10 @@ AC_ARG_WITH(boxtype,
 			BOXTYPE="duckbox"
 			BOXMODEL="$withval"
 			;;
+		hl101)
+			BOXTYPE="duckbox"
+			BOXMODEL="$withval"
+			;;
 		atevio*)
 			BOXTYPE="duckbox"
 			BOXMODEL="$withval"
@@ -428,7 +432,7 @@ AC_ARG_WITH(boxtype,
 AC_ARG_WITH(boxmodel,
 	[  --with-boxmodel         valid for dreambox: dm500, dm500plus, dm600pvr, dm56x0, dm7000, dm7020, dm7025
                           valid for ipbox: ip200, ip250, ip350, ip400
-                          valid for duckbox: ufs910, ufs912, ufs913, ufs922, atevio7500, fortis_hdbox, octagon1008, cuberevo_mini2],
+                          valid for duckbox: ufs910, ufs912, hl101, ufs913, ufs922, atevio7500, fortis_hdbox, octagon1008, cuberevo_mini2],
 	[case "${withval}" in
 		dm500|dm500plus|dm600pvr|dm56x0|dm7000|dm7020|dm7025)
 			if test "$BOXTYPE" = "dreambox"; then
@@ -444,7 +448,7 @@ AC_ARG_WITH(boxmodel,
 				AC_MSG_ERROR([unknown model $withval for boxtype $BOXTYPE])
 			fi
 			;;
-		ufs910|ufs912|ufs913|ufs922|atevio7500|fortis_hdbox|octagon1008|cuberevo|cuberevo_mini2)
+		ufs910|ufs912|hl101|ufs913|ufs922|atevio7500|fortis_hdbox|octagon1008|cuberevo|cuberevo_mini2)
 			if test "$BOXTYPE" = "duckbox"; then
 				BOXMODEL="$withval"
 			else
@@ -485,6 +489,7 @@ AM_CONDITIONAL(BOXMODEL_IP400,test "$BOXMODEL" = "ip400")
 
 AM_CONDITIONAL(BOXMODEL_UFS910, test "$BOXMODEL" = "ufs910")
 AM_CONDITIONAL(BOXMODEL_UFS912,test "$BOXMODEL" = "ufs912")
+AM_CONDITIONAL(BOXMODEL_HL101,test "$BOXMODEL" = "hl101")
 AM_CONDITIONAL(BOXMODEL_UFS913,test "$BOXMODEL" = "ufs913")
 AM_CONDITIONAL(BOXMODEL_UFS922,test "$BOXMODEL" = "ufs922")
 
@@ -531,6 +536,8 @@ elif test "$BOXMODEL" = "ufs910"; then
 	AC_DEFINE(BOXMODEL_UFS910, 1, [ufs910])
 elif test "$BOXMODEL" = "ufs912"; then
 	AC_DEFINE(BOXMODEL_UFS912, 1, [ufs912])
+elif test "$BOXMODEL" = "hl101"; then
+	AC_DEFINE(BOXMODEL_HL101, 1, [hl101])
 elif test "$BOXMODEL" = "ufs913"; then
 	AC_DEFINE(BOXMODEL_UFS913, 1, [ufs913])
 elif test "$BOXMODEL" = "ufs922"; then
