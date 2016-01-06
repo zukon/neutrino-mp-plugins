@@ -432,7 +432,7 @@ AC_ARG_WITH(boxtype,
 AC_ARG_WITH(boxmodel,
 	[  --with-boxmodel         valid for dreambox: dm500, dm500plus, dm600pvr, dm56x0, dm7000, dm7020, dm7025
                           valid for ipbox: ip200, ip250, ip350, ip400
-                          valid for duckbox: ufs910, ufs912, ,hl101, ufs913, ufs922, atevio7500, fortis_hdbox, octagon1008, cuberevo_mini2],
+                          valid for duckbox: ufs910, ufs912, hl101, ufs913, ufs922, atevio7500, fortis_hdbox, octagon1008, cuberevo_mini2],
 	[case "${withval}" in
 		dm500|dm500plus|dm600pvr|dm56x0|dm7000|dm7020|dm7025)
 			if test "$BOXTYPE" = "dreambox"; then
