@@ -19,9 +19,6 @@
  *
 */
 
-#ifdef MARTII
-#include <config.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,10 +37,10 @@
 #define FH_ERROR_MALLOC 3	/* error during malloc */
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define gflush return(FH_ERROR_FILE);
-#define grflush { DGifCloseFile(gft); return(FH_ERROR_FORMAT); }
-#define mgrflush { free(lb); free(slb); DGifCloseFile(gft); return(FH_ERROR_FORMAT); }
+#define grflush { DGifCloseFile(gft, &err); return(FH_ERROR_FORMAT); }
+#define mgrflush { free(lb); free(slb); DGifCloseFile(gft, &err); return(FH_ERROR_FORMAT); }
 #define agflush return(FH_ERROR_FORMAT);
-#define agrflush { DGifCloseFile(gft); return(FH_ERROR_FORMAT); }
+#define agrflush { DGifCloseFile(gft, &err); return(FH_ERROR_FORMAT); }
 
 int fh_gif_id(const char *name)
 {
@@ -70,8 +67,8 @@ inline void m_rend_gif_decodecolormap(unsigned char *cmb,unsigned char *rgbb,Col
 }
 int fh_gif_load(const char *name,unsigned char *buffer,int x,int y)
 {
-	int px,py,i,ibxs;
-	int j;
+	int err = 0;
+	int px,py,i,j,ibxs;
 	unsigned char *fbptr;
 	unsigned char *lb;
 	unsigned char *slb;
@@ -82,11 +79,7 @@ int fh_gif_load(const char *name,unsigned char *buffer,int x,int y)
 	ColorMapObject *cmap;
 	int cmaps;
 
-#ifdef ENABLE_GIFLIB // MARTII
-	gft=DGifOpenFileName(name, NULL);
-#else
-	gft=DGifOpenFileName(name);
-#endif
+	gft=DGifOpenFileName(name, &err);
 	if(gft==NULL) gflush;
 	do
 	{
@@ -143,22 +136,19 @@ int fh_gif_load(const char *name,unsigned char *buffer,int x,int y)
 		}  
 	}
 	while( rt!= TERMINATE_RECORD_TYPE );
-	DGifCloseFile(gft);
+	DGifCloseFile(gft, &err);
 	return(FH_ERROR_OK);
 }
 int fh_gif_getsize(const char *name,int *x,int *y, int wanted_width, int wanted_height)
 {
+	int err = 0;
 	int px,py;
 	GifFileType *gft;
 	GifByteType *extension;
 	int extcode;
 	GifRecordType rt;
 
-#ifdef ENABLE_GIFLIB // MARTII
-	gft=DGifOpenFileName(name, NULL);
-#else
-	gft=DGifOpenFileName(name);
-#endif
+	gft=DGifOpenFileName(name, &err);
 	if(gft==NULL) gflush;
 	do
 	{
@@ -171,7 +161,7 @@ int fh_gif_getsize(const char *name,int *x,int *y, int wanted_width, int wanted_
 				px=gft->Image.Width;
 				py=gft->Image.Height;
 				*x=px; *y=py;
-				DGifCloseFile(gft);
+				DGifCloseFile(gft, &err);
 				return(FH_ERROR_OK);
 				break;
 			case EXTENSION_RECORD_TYPE:
@@ -184,6 +174,6 @@ int fh_gif_getsize(const char *name,int *x,int *y, int wanted_width, int wanted_
 		}  
 	}
 	while( rt!= TERMINATE_RECORD_TYPE );
-	DGifCloseFile(gft);
+	DGifCloseFile(gft, &err);
 	return(FH_ERROR_FORMAT);
 }

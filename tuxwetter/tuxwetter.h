@@ -2,10 +2,8 @@
 
 #define __TUXWETTER_H__
 
-#ifdef MARTII
 #include <config.h>
 #define _FILE_OFFSET_BITS 64
-#endif
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>

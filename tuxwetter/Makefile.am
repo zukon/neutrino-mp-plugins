@@ -27,13 +27,9 @@ tuxwetter_LDADD = \
 	@FREETYPE_LIBS@ \
 	@CURL_LIBS@ \
 	@PNG_LIBS@ \
-	-ljpeg
+	-ljpeg \
+	-lgif
 
-if ENABLE_GIFLIB
-tuxwetter_LDADD += -lgif
-else
-tuxwetter_LDADD += -lungif
-endif
 
 
 install-exec-local:

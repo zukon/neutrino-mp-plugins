@@ -28,7 +28,6 @@
 //#include "lcd.h"
 #include "tuxwetter.h"
 
-
 double spdsize[3]={100000.0,16000.0,8000.0};
 int speed=0;
 
@@ -133,7 +132,7 @@ int HTTP_downloadFile(char *URL, char *downloadTarget, int showprogress, int tmo
 			}
 			else
 			{
-				curl_easy_setopt(curl, CURLOPT_PROXY, 0);
+				curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
 			}
 			if(proxyuserpwd && strstr(URL,"//127.0.0.1/")==NULL && strstr(URL,"//localhost/")==NULL)
 			{

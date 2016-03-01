@@ -16,6 +16,7 @@
 /*
 Interne Variablen Bitte nicht direkt aufrufen!!!
 */
+
 #ifdef WWEATHER
 #	define MAXITEM	200
 #	define MAXMEM	300
@@ -303,7 +304,7 @@ int parser(char *citycode, char *trans, int metric, int inet, int ctmo)
 	FILE *wxfile=NULL;
 	char url[512];
 	char debug[505];
-	
+
 #ifdef WWEATHER
 	extern char key[];
 	int d_flag=0;	//data flag ">DATA<"
@@ -522,6 +523,7 @@ int parser(char *citycode, char *trans, int metric, int inet, int ctmo)
 
 	exit_ind=1;
 #endif
+	
 //*** Übersetzungs File ***
 	
 	if ((wxfile = fopen(trans,"r"))==NULL)
